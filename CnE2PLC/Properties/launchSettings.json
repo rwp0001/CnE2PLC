@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CnE2PLC": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

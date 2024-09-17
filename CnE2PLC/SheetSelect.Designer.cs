@@ -28,29 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             Selection = new ComboBox();
             Select = new Button();
             Cancel = new Button();
             flowLayoutPanel1 = new FlowLayoutPanel();
+            sheetSelectBindingSource = new BindingSource(components);
             flowLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)sheetSelectBindingSource).BeginInit();
             SuspendLayout();
             // 
             // Selection
             // 
             Selection.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            Selection.DataBindings.Add(new Binding("Text", sheetSelectBindingSource, "SheetName", true));
             Selection.FormattingEnabled = true;
-            Selection.Location = new Point(3, 3);
+            Selection.Location = new Point(2, 2);
+            Selection.Margin = new Padding(2);
             Selection.Name = "Selection";
-            Selection.Size = new Size(230, 33);
+            Selection.Size = new Size(162, 23);
             Selection.TabIndex = 0;
             Selection.SelectedIndexChanged += Selection_SelectedIndexChanged;
             // 
             // Select
             // 
             Select.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            Select.Location = new Point(3, 42);
+            Select.Location = new Point(2, 29);
+            Select.Margin = new Padding(2);
             Select.Name = "Select";
-            Select.Size = new Size(112, 34);
+            Select.Size = new Size(78, 20);
             Select.TabIndex = 1;
             Select.Text = "Select";
             Select.UseVisualStyleBackColor = true;
@@ -59,9 +65,10 @@
             // Cancel
             // 
             Cancel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            Cancel.Location = new Point(121, 42);
+            Cancel.Location = new Point(84, 29);
+            Cancel.Margin = new Padding(2);
             Cancel.Name = "Cancel";
-            Cancel.Size = new Size(112, 34);
+            Cancel.Size = new Size(78, 20);
             Cancel.TabIndex = 2;
             Cancel.Text = "Cancel";
             Cancel.UseVisualStyleBackColor = true;
@@ -74,23 +81,37 @@
             flowLayoutPanel1.Controls.Add(Cancel);
             flowLayoutPanel1.Dock = DockStyle.Fill;
             flowLayoutPanel1.Location = new Point(0, 0);
+            flowLayoutPanel1.Margin = new Padding(2);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(252, 89);
+            flowLayoutPanel1.Size = new Size(176, 53);
             flowLayoutPanel1.TabIndex = 4;
+            // 
+            // sheetSelectBindingSource
+            // 
+            sheetSelectBindingSource.DataSource = typeof(SheetSelect);
+            // 
+            // sheetSelectBindingSource1
+            // 
+            sheetSelectBindingSource1.DataSource = typeof(SheetSelect);
             // 
             // SheetSelect
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AcceptButton = Select;
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(252, 89);
+            CancelButton = Cancel;
+            ClientSize = new Size(176, 53);
             Controls.Add(flowLayoutPanel1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(2);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "SheetSelect";
             ShowIcon = false;
+            StartPosition = FormStartPosition.CenterParent;
             Text = "Select Sheet to Use";
             flowLayoutPanel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)sheetSelectBindingSource).EndInit();
             ResumeLayout(false);
         }
 
@@ -100,5 +121,7 @@
         private Button Select;
         private Button Cancel;
         private FlowLayoutPanel flowLayoutPanel1;
+        private BindingSource sheetSelectBindingSource;
+        private BindingSource sheetSelectBindingSource1;
     }
 }

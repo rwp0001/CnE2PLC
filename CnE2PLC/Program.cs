@@ -1,3 +1,7 @@
+using libplctag.DataTypes;
+using libplctag;
+using System.Collections.ObjectModel;
+
 namespace CnE2PLC
 {
     internal static class Program
@@ -13,5 +17,6 @@ namespace CnE2PLC
             ApplicationConfiguration.Initialize();
             Application.Run(new Form1());
         }
+
     }
 }
