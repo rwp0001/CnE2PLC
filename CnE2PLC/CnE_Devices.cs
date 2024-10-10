@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Runtime.CompilerServices;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
@@ -311,6 +312,79 @@ namespace CnE2PLC
             }
         }
 
+        public static void ProcessCnEFile(string FileName, out BindingList<CnE_Device> Devices)
+        {
+            Excel.Application? excelApp = null;
+            Devices = new BindingList<CnE_Device>();
+
+            try
+            {
+                excelApp = new Excel.Application();
+                excelApp.Visible = !Properties.Settings.Default.HideExcel;
+
+                Excel.Workbook? CnE_Workbook = null;
+                Excel.Worksheet? CnE_Sheet = null;
+
+                // open the file as readonly.
+                excelApp.Workbooks.Open(FileName, false, true);
+                CnE_Workbook = excelApp.ActiveWorkbook;
+
+
+
+                // select the sheet
+                foreach (Excel.Worksheet ws in CnE_Workbook.Worksheets)
+                {
+                    try
+                    {
+                        // Find the last real row
+                        int lastUsedRow = ws.Cells.Find("*", System.Reflection.Missing.Value,
+                                                       System.Reflection.Missing.Value, System.Reflection.Missing.Value,
+                                                       Excel.XlSearchOrder.xlByRows, Excel.XlSearchDirection.xlPrevious,
+                                                       false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Row;
+
+                        // Find the last real column
+                        int lastUsedColumn = ws.Cells.Find("*", System.Reflection.Missing.Value,
+                                                       System.Reflection.Missing.Value, System.Reflection.Missing.Value,
+                                                       Excel.XlSearchOrder.xlByColumns, Excel.XlSearchDirection.xlPrevious,
+                                                       false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Column;
+
+                        //search for the correct sheet
+                        //if (lastUsedColumn != 23) continue;
+                        if (lastUsedRow < 15) continue;
+                        //if (ws.Cells[1, 1].Value.ToString() != "COLOR LEGEND") continue;
+                        //if (ws.Cells[1, 2].Value.ToString() != "CALLOUT CODES") continue;
+                        //if (ws.Cells[1, 11].Value.ToString() != "C&E ACRONYM LEGEND") continue;
+                        Excel.Range range = ws.Cells;
+
+                        int count = 0;
+
+                        for (int i = 16; i < lastUsedRow; i++)
+                        {
+                            Excel.Range row = range.Rows[i];
+                            CnE_Device ThisRow = new CnE_Device(row);
+                            if (ThisRow.PLC_Tag_Name == string.Empty) continue;
+                            Devices.Add(ThisRow);
+                            count++;
+                            Application.DoEvents();
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
+
+                }
+
+                excelApp.Quit();
+
+            }
+            catch (Exception e)
+            {
+                if (excelApp != null) excelApp.Quit();
+            }
+
+        }
 
         static public IDictionary<int, string>? Columns;
 

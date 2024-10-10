@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             toolStripContainer1 = new ToolStripContainer();
             statusStrip1 = new StatusStrip();
             toolStripProgressBar1 = new ToolStripProgressBar();
@@ -36,9 +38,8 @@
             toolStripUDTCount = new ToolStripStatusLabel();
             toolStripDeviceCount = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
-            DataContainer = new SplitContainer();
-            DevicesDataView = new DataGridView();
             TagsDataView = new DataGridView();
+            Tags_DGV_Source = new BindingSource(components);
             LogText = new RichTextBox();
             contextMenuStrip_LogText = new ContextMenuStrip(components);
             copyToolStripMenuItem = new ToolStripMenuItem();
@@ -54,6 +55,15 @@
             connectToPLCToolStripMenuItem = new ToolStripMenuItem();
             outputToolStripMenuItem = new ToolStripMenuItem();
             updateCnEToolStripMenuItem = new ToolStripMenuItem();
+            exportTagsToolStripMenuItem = new ToolStripMenuItem();
+            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            References = new DataGridViewTextBoxColumn();
+            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -63,12 +73,8 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DataContainer).BeginInit();
-            DataContainer.Panel1.SuspendLayout();
-            DataContainer.Panel2.SuspendLayout();
-            DataContainer.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DevicesDataView).BeginInit();
             ((System.ComponentModel.ISupportInitialize)TagsDataView).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)Tags_DGV_Source).BeginInit();
             contextMenuStrip_LogText.SuspendLayout();
             menuStrip1.SuspendLayout();
             SuspendLayout();
@@ -143,7 +149,7 @@
             // 
             // splitContainer1.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(DataContainer);
+            splitContainer1.Panel1.Controls.Add(TagsDataView);
             // 
             // splitContainer1.Panel2
             // 
@@ -152,50 +158,42 @@
             splitContainer1.SplitterDistance = 191;
             splitContainer1.TabIndex = 1;
             // 
-            // DataContainer
-            // 
-            DataContainer.Dock = DockStyle.Fill;
-            DataContainer.Location = new Point(0, 0);
-            DataContainer.Name = "DataContainer";
-            // 
-            // DataContainer.Panel1
-            // 
-            DataContainer.Panel1.Controls.Add(DevicesDataView);
-            // 
-            // DataContainer.Panel2
-            // 
-            DataContainer.Panel2.Controls.Add(TagsDataView);
-            DataContainer.Size = new Size(575, 191);
-            DataContainer.SplitterDistance = 191;
-            DataContainer.TabIndex = 0;
-            // 
-            // DevicesDataView
-            // 
-            DevicesDataView.AllowUserToAddRows = false;
-            DevicesDataView.AllowUserToOrderColumns = true;
-            DevicesDataView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            DevicesDataView.Dock = DockStyle.Fill;
-            DevicesDataView.EditMode = DataGridViewEditMode.EditProgrammatically;
-            DevicesDataView.Location = new Point(0, 0);
-            DevicesDataView.Name = "DevicesDataView";
-            DevicesDataView.ShowEditingIcon = false;
-            DevicesDataView.Size = new Size(191, 191);
-            DevicesDataView.TabIndex = 0;
-            DevicesDataView.CellContentClick += DevicesDataView_CellContentClick;
-            DevicesDataView.RowsAdded += DevicesDataView_RowsAdded;
-            // 
             // TagsDataView
             // 
             TagsDataView.AllowUserToAddRows = false;
             TagsDataView.AllowUserToOrderColumns = true;
+            TagsDataView.AutoGenerateColumns = false;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            TagsDataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             TagsDataView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, References, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
+            TagsDataView.DataSource = Tags_DGV_Source;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Window;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            TagsDataView.DefaultCellStyle = dataGridViewCellStyle2;
             TagsDataView.Dock = DockStyle.Fill;
             TagsDataView.EditMode = DataGridViewEditMode.EditProgrammatically;
             TagsDataView.Location = new Point(0, 0);
             TagsDataView.Name = "TagsDataView";
             TagsDataView.ShowEditingIcon = false;
-            TagsDataView.Size = new Size(380, 191);
+            TagsDataView.Size = new Size(575, 191);
             TagsDataView.TabIndex = 1;
+            TagsDataView.CellClick += DevicesDataView_CellContentClick;
+            // 
+            // Tags_DGV_Source
+            // 
+            Tags_DGV_Source.DataSource = typeof(XTO_AOI);
             // 
             // LogText
             // 
@@ -250,6 +248,7 @@
             // 
             // toolStripMenuItem_CnE
             // 
+            toolStripMenuItem_CnE.Enabled = false;
             toolStripMenuItem_CnE.Name = "toolStripMenuItem_CnE";
             toolStripMenuItem_CnE.Size = new Size(148, 22);
             toolStripMenuItem_CnE.Text = "Open CnE File";
@@ -272,6 +271,7 @@
             // pLCToolStripMenuItem
             // 
             pLCToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { getUDTsToolStripMenuItem, getTagsToolStripMenuItem, connectToPLCToolStripMenuItem });
+            pLCToolStripMenuItem.Enabled = false;
             pLCToolStripMenuItem.Name = "pLCToolStripMenuItem";
             pLCToolStripMenuItem.Size = new Size(40, 20);
             pLCToolStripMenuItem.Text = "PLC";
@@ -299,17 +299,75 @@
             // 
             // outputToolStripMenuItem
             // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem });
+            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem });
             outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             outputToolStripMenuItem.Size = new Size(57, 20);
             outputToolStripMenuItem.Text = "Output";
             // 
             // updateCnEToolStripMenuItem
             // 
+            updateCnEToolStripMenuItem.Enabled = false;
             updateCnEToolStripMenuItem.Name = "updateCnEToolStripMenuItem";
             updateCnEToolStripMenuItem.Size = new Size(136, 22);
             updateCnEToolStripMenuItem.Text = "Update CnE";
             updateCnEToolStripMenuItem.Click += updateCnEToolStripMenuItem_Click;
+            // 
+            // exportTagsToolStripMenuItem
+            // 
+            exportTagsToolStripMenuItem.Name = "exportTagsToolStripMenuItem";
+            exportTagsToolStripMenuItem.Size = new Size(136, 22);
+            exportTagsToolStripMenuItem.Text = "Export Tags";
+            exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
+            // 
+            // equipNumDataGridViewTextBoxColumn
+            // 
+            equipNumDataGridViewTextBoxColumn.DataPropertyName = "EquipNum";
+            equipNumDataGridViewTextBoxColumn.HeaderText = "Equipment Number";
+            equipNumDataGridViewTextBoxColumn.Name = "equipNumDataGridViewTextBoxColumn";
+            equipNumDataGridViewTextBoxColumn.ReadOnly = true;
+            equipNumDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // pathDataGridViewTextBoxColumn
+            // 
+            pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
+            pathDataGridViewTextBoxColumn.HeaderText = "Tag Scope";
+            pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
+            // 
+            // dataTypeDataGridViewTextBoxColumn
+            // 
+            dataTypeDataGridViewTextBoxColumn.DataPropertyName = "DataType";
+            dataTypeDataGridViewTextBoxColumn.HeaderText = "Tag Data Type";
+            dataTypeDataGridViewTextBoxColumn.Name = "dataTypeDataGridViewTextBoxColumn";
+            // 
+            // nameDataGridViewTextBoxColumn
+            // 
+            nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
+            nameDataGridViewTextBoxColumn.HeaderText = "Tag Name";
+            nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
+            // 
+            // References
+            // 
+            References.DataPropertyName = "References";
+            References.HeaderText = "References";
+            References.Name = "References";
+            // 
+            // descriptionDataGridViewTextBoxColumn
+            // 
+            descriptionDataGridViewTextBoxColumn.DataPropertyName = "Description";
+            descriptionDataGridViewTextBoxColumn.HeaderText = "Tag Description";
+            descriptionDataGridViewTextBoxColumn.Name = "descriptionDataGridViewTextBoxColumn";
+            // 
+            // cfgEquipIDDataGridViewTextBoxColumn
+            // 
+            cfgEquipIDDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipID";
+            cfgEquipIDDataGridViewTextBoxColumn.HeaderText = "Equipment ID";
+            cfgEquipIDDataGridViewTextBoxColumn.Name = "cfgEquipIDDataGridViewTextBoxColumn";
+            // 
+            // cfgEquipDescDataGridViewTextBoxColumn
+            // 
+            cfgEquipDescDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipDesc";
+            cfgEquipDescDataGridViewTextBoxColumn.HeaderText = "Equipment Description";
+            cfgEquipDescDataGridViewTextBoxColumn.Name = "cfgEquipDescDataGridViewTextBoxColumn";
             // 
             // Form1
             // 
@@ -335,12 +393,8 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
-            DataContainer.Panel1.ResumeLayout(false);
-            DataContainer.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)DataContainer).EndInit();
-            DataContainer.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)DevicesDataView).EndInit();
             ((System.ComponentModel.ISupportInitialize)TagsDataView).EndInit();
+            ((System.ComponentModel.ISupportInitialize)Tags_DGV_Source).EndInit();
             contextMenuStrip_LogText.ResumeLayout(false);
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
@@ -360,8 +414,6 @@
         private ToolStripStatusLabel toolStripTagCount;
         private ToolStripStatusLabel toolStripDeviceCount;
         private SplitContainer splitContainer1;
-        private SplitContainer DataContainer;
-        private DataGridView DevicesDataView;
         private DataGridViewTextBoxColumn acceptButtonDataGridViewTextBoxColumn;
         private DataGridViewCheckBoxColumn autoScrollDataGridViewCheckBoxColumn;
         private DataGridViewCheckBoxColumn autoSizeDataGridViewCheckBoxColumn;
@@ -423,11 +475,21 @@
         private ToolStripMenuItem getUDTsToolStripMenuItem;
         private ToolStripMenuItem getTagsToolStripMenuItem;
         private ToolStripStatusLabel toolStripUDTCount;
-        private DataGridView TagsDataView;
         private ToolStripMenuItem connectToPLCToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem_CnE;
         private BindingSource TagsBindingSource;
         private ToolStripMenuItem outputToolStripMenuItem;
         private ToolStripMenuItem updateCnEToolStripMenuItem;
+        private ToolStripMenuItem exportTagsToolStripMenuItem;
+        public DataGridView TagsDataView;
+        public BindingSource Tags_DGV_Source;
+        private DataGridViewTextBoxColumn equipNumDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn dataTypeDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn References;
+        private DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn cfgEquipDescDataGridViewTextBoxColumn;
     }
 }

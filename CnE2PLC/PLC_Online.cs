@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace CnE2PLC
 {
-    internal class PLC : INotifyPropertyChanged
+    internal class PLC_Online : INotifyPropertyChanged
     {
-        public PLC() { }
+        public PLC_Online() { }
 
-        public PLC(string IP_Address)
+        public PLC_Online(string IP_Address)
         {
             Gateway = IP_Address;
         }

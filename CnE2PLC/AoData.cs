@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
-    public class AoData : PLCTag
+    public class AoData : XTO_AOI
     {
         public AoData() { }
 
-        public AoData(XmlNode node)
-        {
+        public AoData(XmlNode node) {
             Import(node);
+            if (L5K_strings.Count > 2)
+            {
+                Cfg_EquipID = L5K_strings[1];
+                Cfg_EquipDesc = L5K_strings[0];
+                Cfg_EU = L5K_strings[2];
+            }
         }
 
-
-
-
-        // 296 bytes on PLC
-        static readonly int Length = 296;
+        public static new string AOI_Name = "AoData";
 
         // Parameters
-        public bool? EnableIn { get; set; }
-        public bool? EnableOut { get; set; }
         public float? CV { get; set; }
         public float? MinEU { get; set; }
         public float? MaxEU { get; set; }
@@ -34,15 +29,37 @@ namespace CnE2PLC
         public bool? Sim { get; set; }
         public float? SimCV { get; set; }
         public bool? Cfg_IncToClose { get; set; }
-        public bool? InUse { get; set; }
         public bool? SimReset { get; set; }
         public bool? SimActive { get; set; }
 
         // Local Tags
-        public string? Cfg_EquipDesc { get; set; }
-        public string? Cfg_EquipID { get; set; }
         public string? Cfg_EU { get; set; }
         public bool? SIM_ONS { get; set; }
+
+    public void ToColumn(Excel.Range col)
+        {
+            col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
+            col.Cells[13, 1].Value = InUse == true ? "Yes" : "No";
+            col.Cells[14, 1].Value = Name;
+
+            if (Sim == true)
+            {
+                col.Cells[14, 1].Interior.Color = ColorTranslator.ToOle(Color.DarkRed);
+                col.Cells[14, 1].Font.Color = ColorTranslator.ToOle(Color.White);
+            }
+
+            //comments
+            string c = $"PLC Tag Description:\n{Description}\n";
+            c += $"PLC Tag DataType: {DataType}\n";
+            c += $"Max EU:  {MaxEU} {Cfg_EU}\n";
+            c += $"Min EU:  {MinEU} {Cfg_EU}\n";
+            c += $"Max Raw:  {MaxRaw}\n";
+            c += $"Min Raw:  {MinRaw}\n";
+            if (Sim == true) c += "Output is Simmed.\n";
+            col.Cells[14, 1].AddComment(c);
+
+        }
+
 
     }
 }
