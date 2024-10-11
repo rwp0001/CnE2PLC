@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Xml;
-using System.Xml.Linq;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC

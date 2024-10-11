@@ -1,5 +1,4 @@
 ﻿using System.Xml;
-using Windows.Networking.NetworkOperators;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC

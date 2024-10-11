@@ -1,8 +1,6 @@
 ﻿using libplctag;
 using libplctag.DataTypes;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Runtime.CompilerServices;
 using Excel = Microsoft.Office.Interop.Excel;
 

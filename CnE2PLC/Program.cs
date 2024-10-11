@@ -1,6 +1,3 @@
-using libplctag.DataTypes;
-using libplctag;
-using System.Collections.ObjectModel;
 
 namespace CnE2PLC
 {
