@@ -34,7 +34,7 @@ namespace CnE2PLC
             foreach (Line line in Lines)
             {
                 if (!line.Text.Contains(tag)) continue;
-                count += Regex.Matches(line.Text, tag).Count;
+                count += Regex.Matches(line.Text, Regex.Escape(tag)).Count;
             }
             return count;
         }

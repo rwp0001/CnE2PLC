@@ -5,10 +5,14 @@ namespace CnE2PLC
 {
     public class AiData : XTO_AOI
     {
-        public AiData() { }
+        public AiData() 
+        {
+            AOI_Name = "AIData";
+        }
 
         public AiData(XmlNode node) : base(node)
-        { 
+        {
+            AOI_Name = "AIData";
             Import(node);
             if (L5K_strings.Count > 2)
             {
@@ -17,8 +21,6 @@ namespace CnE2PLC
                 Cfg_EU = L5K_strings[3];
             }
         }
-
-        public static new string AOI_Name = "AiData";
 
         public void ToPVRow(Excel.Range row, int TagCount = -1)
         {
@@ -277,6 +279,35 @@ namespace CnE2PLC
             }
 
         }
+
+        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (this.Sim == true)
+            {
+                e.CellStyle.BackColor = Color.Red;
+                e.CellStyle.ForeColor = Color.White;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                return;
+            }
+
+            if (InUse != true)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+            }
+
+            if (AOICalls==0)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+
+            }
+
+            if (References==0)
+            {
+                e.CellStyle.ForeColor = Color.DarkCyan;
+            }
+        }
+
 
         public float? Raw { get; set; }
         public float? MinRaw { get; set; }

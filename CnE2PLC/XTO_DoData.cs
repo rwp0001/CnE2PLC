@@ -5,18 +5,20 @@ namespace CnE2PLC
 {
     public class DoData : XTO_AOI
     {
-        public DoData() { }
+        public DoData() 
+        {
+            AOI_Name = "DOData";
+        }
         public DoData(XmlNode node)
         {
             Import(node);
             if (L5K_strings.Count > 1)
             {
+                AOI_Name = "DOData";
                 Cfg_EquipID = L5K_strings[1];
                 Cfg_EquipDesc = L5K_strings[0];
             }
         }
-
-        public static new string AOI_Name = "DoData";
 
         //Parameters
         public bool? Value { get; set; }
@@ -52,6 +54,34 @@ namespace CnE2PLC
             c += $"PLC Tag DataType: {DataType}\n";
             if (Sim == true) c += "Output is Simmed.\n";
             col.Cells[14, 1].AddComment(c);
+        }
+
+        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (this.Sim == true)
+            {
+                e.CellStyle.BackColor = Color.Red;
+                e.CellStyle.ForeColor = Color.White;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                return;
+            }
+
+            if (InUse != true)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+            }
+
+            if (AOICalls == 0)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+
+            }
+
+            if (References == 0)
+            {
+                e.CellStyle.ForeColor = Color.DarkCyan;
+            }
         }
     }
 }

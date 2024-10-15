@@ -1,17 +1,8 @@
-using libplctag.DataTypes;
-using libplctag;
-using System.Collections.ObjectModel;
-using System.Drawing;
 using System.ComponentModel;
-using System.IO;
 using System.Xml;
-using Windows.AI.MachineLearning;
 using CnE2PLC.Properties;
-using System.Xml.Linq;
 using System.Reflection;
-using System.Data;
-using System.Windows.Forms;
-using Microsoft.VisualBasic;
+
 
 namespace CnE2PLC
 {
@@ -61,61 +52,8 @@ namespace CnE2PLC
 
         private void TagsDataView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) 
         {
-            try
-            {
-                object obj = TagsDataView.Rows[e.RowIndex].DataBoundItem;
-
-                PropertyInfo[] props = obj.GetType().GetProperties();
-                //string s;
-
-                foreach (var prop in props)
-                {
-                    if (prop.Name == "References")
-                    {
-                        if ((int)prop.GetValue(obj) == 0) e.CellStyle.BackColor = Color.Yellow;
-                        if ((int)prop.GetValue(obj) == 1) e.CellStyle.BackColor = Color.YellowGreen;
-                        //e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
-                    }
-
-                    if (prop.Name == "Sim")
-                    {
-                        if ((bool)prop.GetValue(obj))
-                        {
-                            e.CellStyle.BackColor = Color.Red;
-                            e.CellStyle.ForeColor = Color.White;
-                            //e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
-                        }
-                    }
-
-                    if (prop.Name == "InUse")
-                    {
-                        if (!(bool)prop.GetValue(obj)) e.CellStyle.BackColor = Color.LightGray;
-                        //e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
-                    }
-
-                    //if (prop.Name == "Description" )
-                    //{
-                    //    s = (string)prop.GetValue(obj);
-                    //    if (s == "No Tag Description Found") e.CellStyle.ForeColor = Color.Red;
-                        
-                    //}
-                    //if (prop.Name == "Cfg_EquipDesc" )
-                    //{
-                    //    s = (string)prop.GetValue(obj);
-                    //    if (s == "No Equipment Description Found") e.CellStyle.ForeColor = Color.Red;
-
-                    //}
-
-
-
-                }
-            }
-            catch (Exception)
-            {
-
-            }
-            
-
+            PLCTag tag = (PLCTag)TagsDataView.Rows[e.RowIndex].DataBoundItem; 
+            tag.CellFormatting(sender, e);
         }
 
         private void quitToolStripMenuItem_Click(object sender, EventArgs e) { System.Windows.Forms.Application.Exit(); }
@@ -276,10 +214,15 @@ namespace CnE2PLC
 
                     foreach (XmlNode node in Programs) PLCPrograms.Add(new PLC_Program(node));
                     foreach (XTO_AOI tag in XTO_AOI.ProcessL5XTags(XMLTags)) Tags_DGV_Source.Add(tag);
-                    foreach (XTO_AOI tag in Tags_DGV_Source) foreach (PLC_Program program in PLCPrograms) foreach (var item in program.Routines)
+                    foreach (XTO_AOI tag in Tags_DGV_Source) foreach (PLC_Program program in PLCPrograms)
                             {
-                                tag.References += item.TagCount($"{tag.Name}.");
-                                tag.AOICalls += item.TagCount($"{tag.Name}");
+                                int c, r;
+                                c = program.TagCount($"{tag.AOI_Name}({tag.Name},");
+                                r = program.TagCount($"{tag.Name}");
+                                tag.AOICalls += c;
+                                tag.References += r - c;
+
+
                             }
 
                     if (Settings.Default.Debug) foreach (PLC_Program program in PLCPrograms) foreach (Routine item in program.Routines) LogText.AppendText(item.ToText());
@@ -288,7 +231,7 @@ namespace CnE2PLC
                 }
                 catch (Exception ex)
                 {
-                    var r = MessageBox.Show($"Error: {ex.Message}", "Import L5K Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    var r = MessageBox.Show($"Error: {ex.Message}", "Import L5X Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 Application.DoEvents();
             }

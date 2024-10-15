@@ -18,10 +18,14 @@ namespace CnE2PLC
     public class TwoPositionValveV2 : Valve
     {
 
-        public TwoPositionValveV2() { }
+        public TwoPositionValveV2() 
+        {
+            AOI_Name = "TwoPositionValveV2";
+        }
 
         public TwoPositionValveV2(XmlNode node)
         {
+            AOI_Name = "TwoPositionValveV2";
             Import(node);
             if (L5K_strings.Count > 1)
             {
@@ -152,10 +156,14 @@ namespace CnE2PLC
     public class TwoPositionValve : TwoPositionValveV2
     {
 
-        public TwoPositionValve() { }
+        public TwoPositionValve() 
+        {
+            AOI_Name = "TwoPositionValve";
+        }
 
         public TwoPositionValve(XmlNode node)
         {
+            AOI_Name = "TwoPositionValve";
             Import(node);
             if (L5K_strings.Count > 1) // found a version with no strings at Maverick.
             {
@@ -186,9 +194,13 @@ namespace CnE2PLC
 
     public class ValveAnalog : Valve
     {
-        public ValveAnalog() { }
+        public ValveAnalog() 
+        {
+            AOI_Name = "ValveAnalog";
+        }
         public ValveAnalog(XmlNode node)
-        { 
+        {
+            AOI_Name = "ValveAnalog";
             Import(node);
             if (L5K_strings.Count > 1)
             {

@@ -226,6 +226,8 @@ namespace CnE2PLC
 
         }
 
+        public virtual void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { }
+
     }
 
     /// <summary>
@@ -237,7 +239,6 @@ namespace CnE2PLC
         public XTO_AOI() { }
         public XTO_AOI(XmlNode node)
         {
-            IOs.Add("Not Found");
             Import(node);
         }
 
@@ -270,17 +271,40 @@ namespace CnE2PLC
             }
         }
 
-
-
+        /// <summary>
+        /// all AOIs have this bit.
+        /// </summary>
         public bool? EnableIn { get; set; }
+        
+        /// <summary>
+        /// all AOIs have this bit.
+        /// </summary>
         public bool? EnableOut { get; set; }
+
+        /// <summary>
+        /// used to indicate if a device is installed.
+        /// </summary>
         public bool? InUse { get; set; }
 
+        /// <summary>
+        /// displayed on the HMI.
+        /// </summary>
         [DisplayName("Equipment ID")]
         public string? Cfg_EquipID { get; set; }
+        
+        /// <summary>
+        /// used to select the control displayed on the HMI. (normally blank)
+        /// </summary>
         public string? Cfg_Faceplate { get; set; }
+
+        /// <summary>
+        /// displayed on the HMI.
+        /// </summary>
         public string? Cfg_Detail { get; set; }
 
+        /// <summary>
+        /// string of connected IO points.
+        /// </summary>
         [DisplayName("Connected IO")]
         public string IO
         {
@@ -316,23 +340,39 @@ namespace CnE2PLC
             }
         }
 
+        /// <summary>
+        /// list of connected IO points.
+        /// </summary>
         public List<string> IOs { get; set; } = new();
 
+        /// <summary>
+        /// AOI is called in code.
+        /// </summary>
         [DisplayName("AOI Called")]
         public bool AOICalled { get; set; } = false;
 
+        /// <summary>
+        /// how many times the AOI is called in code.
+        /// </summary>
         public int AOICalls { get; set; } = 0;
 
-        public static string AOI_Name = string.Empty;
+        /// <summary>
+        /// the name of the AOI.
+        /// </summary>
+        public string AOI_Name = string.Empty;
 
         #endregion
 
         #region Private Values
-        private string Cfg_EquipDescValue = string.Empty;
+        protected string Cfg_EquipDescValue = string.Empty;
         protected List<string> L5K_strings = new List<string>();
         #endregion
 
-
+        /// <summary>
+        /// converts XML to a list of Tags.
+        /// </summary>
+        /// <param name="XMLTags"></param>
+        /// <returns></returns>
         public static List<XTO_AOI> ProcessL5XTags(XmlNodeList XMLTags)
         {
             List<XTO_AOI> Tags = new List<XTO_AOI>();
@@ -414,8 +454,10 @@ namespace CnE2PLC
             }
         }
 
-
-
+        /// <summary>
+        /// uses reflection to fill out the properties of the object
+        /// </summary>
+        /// <param name="node"></param>
         public void Import(XmlNode node)
         {
             try
@@ -484,22 +526,17 @@ namespace CnE2PLC
                 {
                     if (!s1.Contains("'")) continue;
                     string L = s1.Split(",")[0];
-                    string D = s1.Split(",")[1];
-                    D = D.Substring(1, D.Length - 1);
-                    D = D.Substring(0, D.Length - 2);
                     string O = string.Empty;
                     int len = 0;
                     int.TryParse(L, out len);
                     if (len != 0)
                     {
-                        D = D.Replace("$00", "");
-                        D = D.Replace("$24", "$");
-                        D = D.Replace("$27", "'");
-                        D = D.Replace("\t", " ");
-                        D = D.Replace("\r", "");
-                        D = D.Replace("\n", "");
+                        string D = s1.Split(",")[1].Split("'")[1];
+                        //D = D.Substring(1, D.Length - 1);
+                        //D = D.Substring(0, D.Length - 2);
+                        //if (D.EndsWith('\'')) D = D.Substring(0, D.Length - 1);
+                        D = ReplaceDollar(D);
                         D = D.Trim();
-                        if (D.EndsWith('\'')) D = D.Substring(0, D.Length - 1);
                         O = D;
                     }
                     L5K_strings.Add(O);
@@ -510,17 +547,33 @@ namespace CnE2PLC
                 var r = MessageBox.Show($"Error: {ex.Message}\nNode: {this.Name}", "L5K Strings Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            string ReplaceDollar(string str)
+            {
+                for (int i = 0; i < str.Length; i++)
+                {
+                    if (str[i] == '$')
+                    {
+                        char c = CodeToChar(str.Substring(i + 1, 2));
+                        string s1 = str.Substring(0, i);
+                        string s2 = str.Substring(i + 3);
+                        str = $"{s1}{c}{s2}";
+                    }
+                }
+                str = str.Replace('\t', ' ');
+                str = str.Replace('\r', ' ');
+                str = str.Replace('\n', ' ');
+                return str;
+            }
 
-            int CodeToChar(string code)
+                char CodeToChar(string code)
             {
                 int c = 0;
                 int.TryParse(code, out c);
-                if (c == 9) return '\t';
-                if (c == 13) return ' ';
-                if (c < 32) return '\0';
-                if (c > 126) return '\0';
-                char r = (char)c;
-                return c;
+                if (c == 0) return ' ';
+                if (c == '\r') return ' ';
+                if (c == '\n') return ' ';
+                if (c == '\t') return ' ';
+                return (char)c;
             }
 
         }
@@ -665,15 +718,12 @@ namespace CnE2PLC
                             default:
                                 break;
                         }
-                        Application.DoEvents();
                     }
                     catch (Exception ex)
                     {
                         var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ",$"Tag Exception",MessageBoxButtons.OK);
                     }
                     
-
-                    Application.DoEvents();
                 }
 
                 // clean up for filtering.

@@ -42,7 +42,7 @@ namespace CnE2PLC
             foreach (Rung rung in Rungs)
             {
                 if (!rung.Text.Contains(tag)) continue;
-                count += Regex.Matches(rung.Text, tag).Count;
+                count += Regex.Matches(rung.Text, Regex.Escape(tag)).Count;
             }
             return count;
         }

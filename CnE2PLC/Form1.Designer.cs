@@ -60,6 +60,7 @@
             pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            AOICalls = new DataGridViewTextBoxColumn();
             References = new DataGridViewTextBoxColumn();
             descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
@@ -172,7 +173,7 @@
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             TagsDataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             TagsDataView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, References, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
+            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, AOICalls, References, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
             TagsDataView.DataSource = Tags_DGV_Source;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
@@ -345,6 +346,12 @@
             nameDataGridViewTextBoxColumn.HeaderText = "Tag Name";
             nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
             // 
+            // AOICalls
+            // 
+            AOICalls.DataPropertyName = "AOICalls";
+            AOICalls.HeaderText = "AOICalls";
+            AOICalls.Name = "AOICalls";
+            // 
             // References
             // 
             References.DataPropertyName = "References";
@@ -487,6 +494,7 @@
         private DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn dataTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn AOICalls;
         private DataGridViewTextBoxColumn References;
         private DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;

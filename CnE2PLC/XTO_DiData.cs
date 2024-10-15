@@ -5,10 +5,14 @@ namespace CnE2PLC
 {
     public class DiData : XTO_AOI
     {
-        public DiData() { }
+        public DiData() 
+        {
+            AOI_Name = "DIData";
+        }
 
         public DiData(XmlNode node)
         {
+            AOI_Name = "DIData";
             Import(node);
             if (L5K_strings.Count > 1)
             {
@@ -16,9 +20,6 @@ namespace CnE2PLC
                 Cfg_EquipDesc = L5K_strings[1];
             }
         }
-
-
-        public static new string AOI_Name = "DiData";
 
         public void ToValueRow(Excel.Range row, int TagCount = -1)
         {
@@ -121,8 +122,43 @@ namespace CnE2PLC
 
         }
 
+        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (this.Sim == true)
+            {
+                e.CellStyle.BackColor = Color.Red;
+                e.CellStyle.ForeColor = Color.White;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                return;
+            }
+
+            if (InUse != true)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+            }
+
+            if (AOICalls == 0)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+
+            }
+
+            if (References == 0)
+            {
+                e.CellStyle.ForeColor = Color.DarkCyan;
+            }
+        }
+
         //Parameters
+
+        /// <summary>
+        /// the raw value being processed.
+        /// </summary>
         public bool? Raw { get; set; }
+        /// <summary>
+        /// the processed output value.
+        /// </summary>
         public bool? Value { get; set; }
         public int? AlmState { get; set; }
         public bool? Sim { get; set; }

@@ -105,7 +105,6 @@ namespace CnE2PLC
             return r;
         }
 
-
     }
 
     public class Routine : INotifyPropertyChanged
@@ -132,8 +131,6 @@ namespace CnE2PLC
         {
             if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
-
-
 
         public virtual int TagCount(string tag) { return 0; }
 

@@ -28,7 +28,7 @@ namespace CnE2PLC
 
         public List<Sheet> Sheets { get; set; } = new();
 
-        public int TagCount(string tag)
+        public override int TagCount(string tag)
         {
             int r = 0;
             foreach (Sheet sheet in Sheets) r += sheet.TagCount(tag);
@@ -187,7 +187,7 @@ namespace CnE2PLC
         public string? Operand { get; set; }
         public bool? HideDesc { get; set; }
 
-        public override int TagCount(string tag) { return Regex.Matches(Operand, tag).Count;}
+        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
     }
@@ -214,7 +214,7 @@ namespace CnE2PLC
         public string? Operand { get; set; }
         public bool? HideDesc { get; set; }
 
-        public override int TagCount(string tag) { return Regex.Matches(Operand, tag).Count; }
+        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0;}
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
     }
@@ -244,7 +244,7 @@ namespace CnE2PLC
         public string? VisiblePins { get; set; }
         public bool? HideDesc { get; set; }
 
-        public override int TagCount(string tag) { return Regex.Matches(Operand, tag).Count; }
+        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Type: {Type}"; }
     }
@@ -321,7 +321,7 @@ namespace CnE2PLC
         public string? Operand { get; set; }
         public string? VisiblePins { get; set; }
 
-        public override int TagCount(string tag) { return Regex.Matches(Operand, tag).Count; }
+        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
     }
