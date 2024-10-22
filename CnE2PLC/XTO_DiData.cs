@@ -10,15 +10,27 @@ namespace CnE2PLC
             AOI_Name = "DIData";
         }
 
-        public DiData(XmlNode node)
+        public DiData(XmlNode node) : base (node) 
         {
             AOI_Name = "DIData";
-            Import(node);
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[2];
                 Cfg_EquipDesc = L5K_strings[1];
             }
+        }
+
+        public int SD_Count { get; set; } = 0;
+
+        private string RowComment 
+        { 
+            get 
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC DataType: {DataType}\n";
+                if (Sim == true) c += "Input is Simmed.\n";
+                return c;
+            } 
         }
 
         public void ToValueRow(Excel.Range row, int TagCount = -1)
@@ -55,10 +67,8 @@ namespace CnE2PLC
             }
 
             // comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC DataType:\n{DataType}\n";
-            if (Sim == true) c += "Input is Simmed.\n";
-            row.Cells[1, 3].AddComment(c);
+
+            row.Cells[1, 3].AddComment(RowComment);
 
 
         }
@@ -68,13 +78,14 @@ namespace CnE2PLC
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
             row.Cells[1, 3].Value = Name;
-            row.Cells[1, 4].Value = string.Format("{0}.Alarm", Name);
+            row.Cells[1, 4].Value = $"{Name}.Alarm";
             row.Cells[1, 5].Value = "AOI Output";
             row.Cells[1, 6].Value = (AlmEnable == true & InUse == true) ? "Standard IO" : "Not In Use";
             row.Cells[1, 7].Value = "";
             row.Cells[1, 8].Value = "Bool";
-            row.Cells[1, 9].Value = string.Format("{0} Sec.", Cfg_AlmOnTmr);
-            row.Cells[1, 10].Value = string.Format("{0} Sec.", Cfg_AlmOffTmr);
+            row.Cells[1, 9].Value = $"{Cfg_AlmOnTmr} Sec.";
+            row.Cells[1, 9].AddComment($"Delay: {Cfg_AlmDlyTmr} secs.");
+            row.Cells[1, 10].Value = $"{Cfg_AlmOffTmr} Sec.";
             row.Cells[1, 11].Value = "";
             row.Cells[1, 12].Value = "";
             row.Cells[1, 13].Value = "";
@@ -97,13 +108,13 @@ namespace CnE2PLC
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
             row.Cells[1, 3].Value = Name;
-            row.Cells[1, 4].Value = string.Format("{0}.Shutdown", Name);
+            row.Cells[1, 4].Value = $"{Name}.Shutdown";
             row.Cells[1, 5].Value = "AOI Output";
             row.Cells[1, 6].Value = "Not In Use";
             row.Cells[1, 6].Value = (AlmEnable == true & InUse == true) ? "Standard IO" : "Not In Use";
             row.Cells[1, 7].Value = "";
             row.Cells[1, 8].Value = "Bool";
-            row.Cells[1, 9].Value = string.Format("{0} Sec.", Cfg_SDDlyTmr);
+            row.Cells[1, 9].Value = $"{Cfg_SDDlyTmr} Sec.";
             row.Cells[1, 10].Value = "";
             row.Cells[1, 11].Value = "";
             row.Cells[1, 12].Value = "";

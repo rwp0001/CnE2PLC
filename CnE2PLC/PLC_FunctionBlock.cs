@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using libplctag;
 using System.Xml;
 
 namespace CnE2PLC
@@ -9,12 +9,10 @@ namespace CnE2PLC
     public class FBD_Routine : Routine
     {
         FBD_Routine() { }
-        public FBD_Routine(XmlNode node)
+        public FBD_Routine(XmlNode node) : base(node)
         {
             try
             {
-                Name = node.Attributes.GetNamedItem("Name").Value;
-                Type = node.Attributes.GetNamedItem("Type").Value;
                 foreach (XmlNode node2 in node.SelectNodes("FBDContent"))
                 {
                     foreach (XmlNode sheet in node2.ChildNodes) Sheets.Add(new Sheet(sheet));
@@ -33,6 +31,13 @@ namespace CnE2PLC
             int r = 0;
             foreach (Sheet sheet in Sheets) r += sheet.TagCount(tag);
             return r;
+        }
+
+        public override string ToText()
+        {
+            string s = string.Empty;
+            foreach (Sheet sheet in Sheets) s += sheet.ToString();
+            return s;
         }
 
         public override string ToString() { return $"Name:{Name} Sheets: {Sheets.Count}"; }
@@ -104,7 +109,7 @@ namespace CnE2PLC
 
         }
 
-        public int? Number { get; set; }
+        public int? Number { get; set; }        
         public string? Description { get; set; }
 
         public List<SheetElement> Elements { get; set; } = new();
@@ -158,13 +163,16 @@ namespace CnE2PLC
             }
 
         }
-        public int? ID { get; set; } = 0;
-        public int? X { get; set; } = 0;
-        public int? Y { get; set; } = 0;
 
-        public virtual int TagCount(string tag) { return 0; }
+        #region Public Propreties
+        public int ID { get; set; } = 0;
+        public int X { get; set; } = 0;
+        public int Y { get; set; } = 0;
+        #endregion
 
+        public virtual int TagCount(string tag) { throw new NotImplementedException(); }
         public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
+
     }
 
     public class IRef : SheetElement
@@ -214,7 +222,7 @@ namespace CnE2PLC
         public string? Operand { get; set; }
         public bool? HideDesc { get; set; }
 
-        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0;}
+        public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
     }
@@ -251,11 +259,12 @@ namespace CnE2PLC
 
     public class Wire : SheetElement
     {
-        public Wire(XmlNode node)
+        public Wire(XmlNode node) : base(node)
         {
             try
             {
                 string? s;
+
                 s = node.Attributes.GetNamedItem("ToID").Value;
                 if (s != null)
                 {
@@ -271,6 +280,7 @@ namespace CnE2PLC
                     int.TryParse(s, out n);
                     FromID = n;
                 }
+
                 try { ToParam = node.Attributes.GetNamedItem("ToParam").Value; } catch (Exception ex ){ }
 
                 try { FromParam = node.Attributes.GetNamedItem("FromParam").Value; } catch (Exception ex) { }
@@ -326,9 +336,9 @@ namespace CnE2PLC
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
     }
 
-    public class TextBox : SheetElement
+    public class FBD_TextBox : SheetElement
     {
-        public TextBox(XmlNode node) : base(node)
+        public FBD_TextBox(XmlNode node) : base(node)
         {
             try
             {
@@ -395,19 +405,6 @@ namespace CnE2PLC
             s += ToID == null ? "" : $" To: {ToID}";
             return s;
         }
-    }
-
-
-    // SFC classes
-    public class SFC_Routine : Routine
-    {
-        public SFC_Routine() { }
-        public SFC_Routine(XmlNode node) { }
-
-        internal class Step { }
-        internal class Transition { }
-        internal class Branch { }
-        internal class DirectedLink { }
     }
 
 }

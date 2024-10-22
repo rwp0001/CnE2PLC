@@ -1,6 +1,5 @@
 ﻿using CnE2PLC.Properties;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using Excel = Microsoft.Office.Interop.Excel;
 
@@ -9,7 +8,7 @@ namespace CnE2PLC
     /// <summary>
     /// Base class for a Logix Tag.
     /// </summary>
-    public class PLCTag : INotifyPropertyChanged
+    public class PLCTag
     {
         public PLCTag() { }
 
@@ -77,18 +76,8 @@ namespace CnE2PLC
         /// Tag Name from PLC Program
         /// </summary>
         [DisplayName("Tag Name")]
-        public string Name
-        {
-            get
-            {
-                return NameValue;
-            }
-            set
-            {
-                NameValue = value;
-                NotifyPropertyChanged();
-            }
-        }
+        public string Name { get; set; }
+
 
         [DisplayName("Tag Scope")]
         public string Path
@@ -101,23 +90,12 @@ namespace CnE2PLC
             set
             {
                 PathValue = value;
-                NotifyPropertyChanged();
             }
         }
 
         [DisplayName("Tag Data Type")]
-        public string DataType
-        {
-            get
-            {
-                return DataTypeValue;
-            }
-            set
-            {
-                DataTypeValue = value;
-                NotifyPropertyChanged();
-            }
-        }
+        public string DataType { get; set; }
+
 
         /// <summary>
         /// PLC Program Tag Comment 
@@ -138,7 +116,6 @@ namespace CnE2PLC
                 if (value.Length > 1)
                 {
                     DescriptionValue = value;
-                    NotifyPropertyChanged();
                 }
             }
         }
@@ -147,12 +124,9 @@ namespace CnE2PLC
         /// How many time is the Tag used in the program.
         /// </summary>
         [DisplayName("References")]
-        
         public int References { get; set; } = 0;
 
-        public override string ToString() { return string.Format("{0} {1} {2}", Name, DataType, Description); }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public override string ToString() { return $"{Name}, {DataType}, {Description}"; }
 
         #endregion
 
@@ -163,11 +137,6 @@ namespace CnE2PLC
         protected string DescriptionValue = string.Empty;
         protected string L5K = string.Empty;
         #endregion
-
-        protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         /// <summary>
         /// Used to set the property of class without cast to the class.
@@ -226,7 +195,7 @@ namespace CnE2PLC
 
         }
 
-        public virtual void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { }
+        public virtual void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { throw new NotImplementedException(); }
 
     }
 
@@ -239,7 +208,58 @@ namespace CnE2PLC
         public XTO_AOI() { }
         public XTO_AOI(XmlNode node)
         {
-            Import(node);
+            try
+            {
+                Name = node.Attributes.GetNamedItem("Name").Value;
+                DataType = node.Attributes.GetNamedItem("DataType").Value;
+
+                foreach (XmlNode item in node.ChildNodes)
+                {
+                    if (item.Name == "Description")
+                    {
+                        Description = item.InnerText;
+                        continue;
+                    }
+
+                    if (item.Name == "Data")
+                    {
+                        try
+                        {
+
+
+                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
+                            {
+                                foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
+                                {
+                                    SetProperty(
+                                        DataValueMember.Attributes.GetNamedItem("Name").Value.Trim(),
+                                        DataValueMember.Attributes.GetNamedItem("DataType").Value.Trim(),
+                                        DataValueMember.Attributes.GetNamedItem("Value").Value.Trim()
+                                        );
+                                }
+                                continue;
+                            }
+
+                            if (item.Attributes.GetNamedItem("Format").Value == "L5K")
+                            {
+                                L5K = item.InnerText;
+                                DecodeL5K();
+                                continue;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}", "Import Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         #region Public Properties
@@ -335,7 +355,6 @@ namespace CnE2PLC
                 if (value.Length > 1)
                 {
                     Cfg_EquipDescValue = value;
-                    NotifyPropertyChanged();
                 }
             }
         }
@@ -349,7 +368,13 @@ namespace CnE2PLC
         /// AOI is called in code.
         /// </summary>
         [DisplayName("AOI Called")]
-        public bool AOICalled { get; set; } = false;
+        public bool AOICalled {
+            get 
+            { 
+                if(AOICalls == 0 ) return false;
+                return true;
+            }
+        } 
 
         /// <summary>
         /// how many times the AOI is called in code.
@@ -455,66 +480,6 @@ namespace CnE2PLC
         }
 
         /// <summary>
-        /// uses reflection to fill out the properties of the object
-        /// </summary>
-        /// <param name="node"></param>
-        public void Import(XmlNode node)
-        {
-            try
-            {
-                Name = node.Attributes.GetNamedItem("Name").Value;
-                DataType = node.Attributes.GetNamedItem("DataType").Value;
-
-                foreach (XmlNode item in node.ChildNodes)
-                {
-                    if (item.Name == "Description")
-                    {
-                        Description = item.InnerText;
-                        continue;
-                    }
-
-                    if (item.Name == "Data")
-                    {
-                        try
-                        {
-
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
-                            {
-                                foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
-                                {
-                                    SetProperty(
-                                        DataValueMember.Attributes.GetNamedItem("Name").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("DataType").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("Value").Value.Trim()
-                                        );
-                                }
-                                continue;
-                            }
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "L5K")
-                            {
-                                L5K = item.InnerText;
-                                DecodeL5K();
-                                continue;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-
-
-                }
-            }
-            catch (Exception ex)
-            {
-                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}", "Import Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
         /// Finds strings inside of L5K and exports them to the L5K_strings array.
         /// </summary>
         private void DecodeL5K()
@@ -532,9 +497,6 @@ namespace CnE2PLC
                     if (len != 0)
                     {
                         string D = s1.Split(",")[1].Split("'")[1];
-                        //D = D.Substring(1, D.Length - 1);
-                        //D = D.Substring(0, D.Length - 2);
-                        //if (D.EndsWith('\'')) D = D.Substring(0, D.Length - 1);
                         D = ReplaceDollar(D);
                         D = D.Trim();
                         O = D;
@@ -547,6 +509,7 @@ namespace CnE2PLC
                 var r = MessageBox.Show($"Error: {ex.Message}\nNode: {this.Name}", "L5K Strings Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+            /// I hate AB strings...
             string ReplaceDollar(string str)
             {
                 for (int i = 0; i < str.Length; i++)
@@ -565,7 +528,7 @@ namespace CnE2PLC
                 return str;
             }
 
-                char CodeToChar(string code)
+            char CodeToChar(string code)
             {
                 int c = 0;
                 int.TryParse(code, out c);
@@ -617,10 +580,13 @@ namespace CnE2PLC
                 int RowOffset = 17; // first row to use.
                 int ColumnOffset = 19;
 
-                foreach (PLCTag tag in Tags)
+                foreach (XTO_AOI tag in Tags)
                 {
                     try
                     {
+                        if (!tag.AOICalled) continue;
+                        if (tag.InUse != true) continue;
+
                         switch (tag.DataType.ToLower())
                         {
                             case "dodata":
@@ -648,12 +614,15 @@ namespace CnE2PLC
                                 if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
                                 InsertRow(CnE_Sheet, RowOffset);
                                 DiTag.ToValueRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Value"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                DiTag.ToAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Alarm"));
-                                if (DiTag.Shutdown != null)
+                                if (DiTag.AlmEnable == true)
                                 {
                                     InsertRow(CnE_Sheet, RowOffset);
-                                    DiTag.ToShutdownRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Shutdown"));
+                                    DiTag.ToAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Alarm"));
+                                    if (DiTag.Shutdown != null)
+                                    {
+                                        InsertRow(CnE_Sheet, RowOffset);
+                                        DiTag.ToShutdownRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Shutdown"));
+                                    }
                                 }
                                 break;
 
@@ -662,56 +631,79 @@ namespace CnE2PLC
                                 if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
                                 InsertRow(CnE_Sheet, RowOffset);
                                 AiTag.ToPVRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Value"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToHSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HSD"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToHiHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiHiAlarm"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiAlarm"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoAlarm"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToLoLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoLoAlarm"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToLSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LSD"));
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToBadPVAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.BadPVAlarm"));
+
+                                if (AiTag.HiHiEnable == true)
+                                {
+                                    
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToHSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HSD"));
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToHiHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiHiAlarm"));
+                                }
+                                if (AiTag.HiEnable == true)
+                                {
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiAlarm"));
+                                }
+                                if (AiTag.LoEnable == true)
+                                {
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoAlarm"));
+                                }
+                                if (AiTag.LoLoEnable == true)
+                                {
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToLoLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoLoAlarm"));
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToLSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LSD"));
+                                }
+                                if (AiTag.BadPVEnable == true)
+                                {
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    AiTag.ToBadPVAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.BadPVAlarm"));
+                                }
                                 break;
 
                             case "twopositionvalve":
                             case "twopositionvalvev2":
                                 TwoPositionValveV2 TPV2Tag = (TwoPositionValveV2)tag;
-                                if(Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToCloseRow(CnE_Sheet.Rows[RowOffset++]);
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToFailedToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToFailedToCloseRow(CnE_Sheet.Rows[RowOffset++]);
                                 if (Settings.Default.Debug) CnE_Sheet.Cells[1, ColumnOffset].Activate();
                                 InsertCol(CnE_Sheet, ColumnOffset);
                                 TPV2Tag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
                                 Excel.Range r3 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
                                 MergeAndCenter(r3);
                                 ColumnOffset++;
+                                if (TPV2Tag.DisableFB != true)
+                                {
+                                    if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    TPV2Tag.ToOpenRow(CnE_Sheet.Rows[RowOffset++]);
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    TPV2Tag.ToCloseRow(CnE_Sheet.Rows[RowOffset++]);
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    TPV2Tag.ToFailedToOpenRow(CnE_Sheet.Rows[RowOffset++]);
+                                    InsertRow(CnE_Sheet, RowOffset);
+                                    TPV2Tag.ToFailedToCloseRow(CnE_Sheet.Rows[RowOffset++]);
+                                }
+
+                                
                                 break;
 
                             case "valveanalog":
                                 ValveAnalog AAVTag = (ValveAnalog)tag;
-                                if(AAVTag.DisableFB != true)
+                                CnE_Sheet.Columns[ColumnOffset].Insert();
+                                AAVTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
+                                Excel.Range r4 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
+                                MergeAndCenter(r4);
+                                ColumnOffset++;
+
+                                if (AAVTag.DisableFB != true)
                                 {
                                     CnE_Sheet.Rows[RowOffset].Insert();
                                     AAVTag.ToPosRow(CnE_Sheet.Rows[RowOffset++]);
                                     CnE_Sheet.Rows[RowOffset].Insert();
                                     AAVTag.ToPosFailRow(CnE_Sheet.Rows[RowOffset++]);
                                 }
-                                CnE_Sheet.Columns[ColumnOffset].Insert();
-                                AAVTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                                Excel.Range r4 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                                MergeAndCenter(r4);
-                                ColumnOffset++;
                                 break;
 
 
@@ -989,6 +981,9 @@ namespace CnE2PLC
             }
         }
 
+        /// <summary>
+        /// This class used to sort tags.
+        /// </summary>
         public class TagComparer : IComparer<XTO_AOI>
         {
             public int Compare(XTO_AOI first, XTO_AOI second)

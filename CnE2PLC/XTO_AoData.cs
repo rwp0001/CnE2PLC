@@ -10,12 +10,11 @@ namespace CnE2PLC
             AOI_Name = "AOData";
         }
 
-        public AoData(XmlNode node) {
+        public AoData(XmlNode node) : base(node) {
 
-            Import(node);
+            AOI_Name = "AOData";
             if (L5K_strings.Count > 2)
             {
-                AOI_Name = "AOData";
                 Cfg_EquipID = L5K_strings[1];
                 Cfg_EquipDesc = L5K_strings[0];
                 Cfg_EU = L5K_strings[2];
@@ -40,6 +39,19 @@ namespace CnE2PLC
         public string? Cfg_EU { get; set; }
         public bool? SIM_ONS { get; set; }
 
+        private string ColComment
+        {
+            get
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC Tag DataType: {DataType}\n";
+                c += $"Max EU: {MaxEU} {Cfg_EU}, Min EU: {MinEU} {Cfg_EU}\n";
+                c += $"Max Raw: {MaxRaw}, Min Raw: {MinRaw}\n";
+                if (Sim == true) c += "Output is Simmed.\n";
+                return c;
+            }
+        }
+
         public void ToColumn(Excel.Range col)
         {
             col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -52,15 +64,7 @@ namespace CnE2PLC
                 col.Cells[14, 1].Font.Color = ColorTranslator.ToOle(Color.White);
             }
 
-            //comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC Tag DataType: {DataType}\n";
-            c += $"Max EU:  {MaxEU} {Cfg_EU}\n";
-            c += $"Min EU:  {MinEU} {Cfg_EU}\n";
-            c += $"Max Raw:  {MaxRaw}\n";
-            c += $"Min Raw:  {MinRaw}\n";
-            if (Sim == true) c += "Output is Simmed.\n";
-            col.Cells[14, 1].AddComment(c);
+            col.Cells[14, 1].AddComment(ColComment);
 
         }
 

@@ -9,15 +9,24 @@ namespace CnE2PLC
         {
             AOI_Name = "DOData";
         }
-        public DoData(XmlNode node)
+        public DoData(XmlNode node) : base(node) 
         {
-            Import(node);
+            AOI_Name = "DOData";
             if (L5K_strings.Count > 1)
             {
-                AOI_Name = "DOData";
                 Cfg_EquipID = L5K_strings[1];
                 Cfg_EquipDesc = L5K_strings[0];
             }
+        }
+
+        private string ColComment { 
+            get 
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC Tag DataType: {DataType}\n";
+                if (Sim == true) c += "Output is Simmed.\n";
+                return c;
+            } 
         }
 
         //Parameters
@@ -25,9 +34,6 @@ namespace CnE2PLC
         public bool? Raw { get; set; }
         public bool? Sim { get; set; }
         public int? SimVal { get; set; }
-
-
-        //Local Tags
 
         public void ToColumn(Excel.Range col, int TagCount = -1)
         {
@@ -49,11 +55,7 @@ namespace CnE2PLC
                 col.Cells[14, 1].Font.Color = ColorTranslator.ToOle(Color.White);
             }
 
-            //comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC Tag DataType: {DataType}\n";
-            if (Sim == true) c += "Output is Simmed.\n";
-            col.Cells[14, 1].AddComment(c);
+            col.Cells[14, 1].AddComment(ColComment);
         }
 
         public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)

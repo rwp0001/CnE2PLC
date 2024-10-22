@@ -7,16 +7,14 @@ namespace CnE2PLC
 {
 
     // Stuctured Text classes
-    internal class ST_Routine : Routine
+    public class ST_Routine : Routine
     {
         ST_Routine() { }
 
-        public ST_Routine(XmlNode node)
+        public ST_Routine(XmlNode node) : base(node)
         {
             try
             {
-                Name = node.Attributes.GetNamedItem("Name").Value;
-                Type = node.Attributes.GetNamedItem("Type").Value;
                 foreach (XmlNode node2 in node.SelectNodes("STContent"))
                 {
                     foreach (XmlNode line in node2.ChildNodes) Lines.Add(new Line(line));
@@ -31,11 +29,7 @@ namespace CnE2PLC
         public override int TagCount(string tag)
         {
             int count = 0;
-            foreach (Line line in Lines)
-            {
-                if (!line.Text.Contains(tag)) continue;
-                count += Regex.Matches(line.Text, Regex.Escape(tag)).Count;
-            }
+            foreach (Line line in Lines) count += line.TagCount(tag);
             return count;
         }
 
@@ -51,7 +45,7 @@ namespace CnE2PLC
         public override string ToString() { return $"Name:{Name} Rungs: {Lines.Count}"; }
 
     }
-    internal class Line : INotifyPropertyChanged
+    public class Line
     {
         public Line() { }
         public Line(XmlNode node)
@@ -74,16 +68,11 @@ namespace CnE2PLC
 
         }
 
-        public int? Number { get; set; } = -1;
+        public int Number { get; set; } = -1;
 
         public string Text { get; set; } = string.Empty;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public int TagCount(string tag) { return Regex.Matches(Text, Regex.Escape(tag)).Count; }
 
         public override string ToString() { return $"{Number}\t{Text}"; }
 

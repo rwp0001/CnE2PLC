@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Xml;
 using CnE2PLC.Properties;
 using System.Reflection;
+using libplctag;
 
 
 namespace CnE2PLC
@@ -212,22 +213,50 @@ namespace CnE2PLC
                     Tags_DGV_Source.Clear();
                     PLCPrograms = new();
 
-                    foreach (XmlNode node in Programs) PLCPrograms.Add(new PLC_Program(node));
+                    foreach (XmlNode node in Programs)
+                    {
+                        PLC_Program P = new PLC_Program(node);
+
+                        // Add Local Tags
+                        foreach (XTO_AOI T in P.LocalTags)
+                        {
+                            T.Path = P.Name;
+                            Tags_DGV_Source.Add(T);
+                        }
+                        PLCPrograms.Add(new PLC_Program(node));
+                    }
+
                     foreach (XTO_AOI tag in XTO_AOI.ProcessL5XTags(XMLTags)) Tags_DGV_Source.Add(tag);
+
                     foreach (XTO_AOI tag in Tags_DGV_Source) foreach (PLC_Program program in PLCPrograms)
+                    {
+                        int c, r;
+                        c = program.TagCount($"{tag.AOI_Name}({tag.Name},");
+                        r = program.TagCount($"{tag.Name}");
+                        tag.AOICalls += c;
+                        tag.References += r - c;
+
+                            if (tag.DataType == "AIData")
                             {
-                                int c, r;
-                                c = program.TagCount($"{tag.AOI_Name}({tag.Name},");
-                                r = program.TagCount($"{tag.Name}");
-                                tag.AOICalls += c;
-                                tag.References += r - c;
-
-
+                                AiData AI = (AiData)tag;
+                                AI.HSD_Count = program.TagCount($"{tag.Name}.HSD");
+                                AI.LSD_Count = program.TagCount($"{tag.Name}.LSD");
+                            }
+                            if (tag.DataType == "DIData")
+                            {
+                                DiData DI = (DiData)tag;
+                                DI.SD_Count = program.TagCount($"{tag.Name}.Shutdown");
                             }
 
+
+                            Application.DoEvents();
+
+                    }
+
                     if (Settings.Default.Debug) foreach (PLC_Program program in PLCPrograms) foreach (Routine item in program.Routines) LogText.AppendText(item.ToText());
+
                     toolStripTagCount.Text = $"Tags: {Tags_DGV_Source.Count}";
-                    Application.DoEvents();
+
                 }
                 catch (Exception ex)
                 {

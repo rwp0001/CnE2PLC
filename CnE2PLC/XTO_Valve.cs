@@ -6,12 +6,40 @@ namespace CnE2PLC
 
     public class Valve : XTO_AOI
     {
+        public Valve() { }
+
+        public Valve(XmlNode node) : base(node) { }
         public bool? AutoReq { get; set; }
         public bool? ManualReq { get; set; }
         public bool? Intlck_AUTO { get; set; }
         public bool? Intlck_MANUAL { get; set; }
         public bool? Mode_AUTO { get; set; }
         public bool? Mode_MANUAL { get; set; }
+
+
+        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+
+            if (InUse != true)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+            }
+
+            if (AOICalls == 0)
+            {
+                e.CellStyle.BackColor = Color.LightGray;
+                e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+
+            }
+
+            if (References == 0)
+            {
+                e.CellStyle.ForeColor = Color.DarkCyan;
+            }
+        }
+
+
+
 
     }
 
@@ -23,14 +51,13 @@ namespace CnE2PLC
             AOI_Name = "TwoPositionValveV2";
         }
 
-        public TwoPositionValveV2(XmlNode node)
+        public TwoPositionValveV2(XmlNode node) : base(node)
         {
             AOI_Name = "TwoPositionValveV2";
-            Import(node);
             if (L5K_strings.Count > 1)
             {
-                Cfg_EquipID = L5K_strings[2];
-                Cfg_EquipDesc = L5K_strings[1];
+                Cfg_EquipID = L5K_strings[1];
+                Cfg_EquipDesc = L5K_strings[2];
             }
         }
 
@@ -60,6 +87,8 @@ namespace CnE2PLC
             //comments
             string c = $"PLC Tag Description:\n{Description}\n";
             c += $"PLC Tag DataType: {DataType}\n";
+            if (DisableFB == true) c += "No Feedback.\n";
+            if (FBInv == true) c += "Feedback Inverted.\n";
             col.Cells[14, 1].AddComment(c);
 
         }
@@ -161,10 +190,9 @@ namespace CnE2PLC
             AOI_Name = "TwoPositionValve";
         }
 
-        public TwoPositionValve(XmlNode node)
+        public TwoPositionValve(XmlNode node) : base(node)
         {
             AOI_Name = "TwoPositionValve";
-            Import(node);
             if (L5K_strings.Count > 1) // found a version with no strings at Maverick.
             {
                 Cfg_EquipID = L5K_strings[2];
@@ -198,10 +226,9 @@ namespace CnE2PLC
         {
             AOI_Name = "ValveAnalog";
         }
-        public ValveAnalog(XmlNode node)
+        public ValveAnalog(XmlNode node) : base(node)
         {
             AOI_Name = "ValveAnalog";
-            Import(node);
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[1];
@@ -222,17 +249,35 @@ namespace CnE2PLC
         public float? Pos { get; set; }
         #endregion
 
+        private string ColComment { 
+            get
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC Tag DataType: {DataType}\n";
+                if (DisableFB == true) c += "No Feedback.\n";
+                if (Cmd_Invert == true) c += "Command Inverted.\n";
+                if (FBInv == true) c += "Feedback Inverted.\n";
+                return c;
+            } 
+        }
+
+        private string RowComment
+        {
+            get
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC Data Type: {DataType}\n";
+                return c;
+            }
+        }
+
         public void ToColumn(Excel.Range col)
         {
             col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
             col.Cells[13, 1].Value = InUse == true ? "Yes" : "No";
             col.Cells[14, 1].Value = Name;
 
-            //comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC Tag DataType: {DataType}\n";
-            if(DisableFB==true) c += "No Feedback.\n";
-            col.Cells[14, 1].AddComment(c);
+            col.Cells[14, 1].AddComment(ColComment);
 
         }
 
@@ -255,10 +300,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
-            // comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC Data Type:\n{DataType}\n";
-            row.Cells[1, 3].AddComment(c);
+            row.Cells[1, 3].AddComment(RowComment);
         }
 
         public void ToPosFailRow(Excel.Range row)

@@ -4,7 +4,7 @@ using System.Xml;
 
 namespace CnE2PLC
 {
-    public class PLC_Program : INotifyPropertyChanged
+    public class PLC_Program
     {
         public PLC_Program() { }
 
@@ -89,13 +89,6 @@ namespace CnE2PLC
 
         #endregion
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public override string ToString() { return $"{Name} Routines: {Routines.Count} Tags: {LocalTags.Count}"; }
 
         public int TagCount(string tag)
@@ -107,36 +100,11 @@ namespace CnE2PLC
 
     }
 
-    public class Routine : INotifyPropertyChanged
+    public class Routine
     {
         public Routine() { }
 
         public Routine(XmlNode node) 
-        {
-            Import(node);
-        }
-
-        #region Public Properties
-        public string Name {  get; set; } = string.Empty;
-
-        public string Type { get; set; } = string.Empty;
-
-        #endregion
-
-        public override string ToString() { return $"Name: {Name} Type: {Type}"; }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public virtual int TagCount(string tag) { return 0; }
-
-        public virtual string ToText() { return string.Empty; }
-
-        public void Import(XmlNode node)
         {
             try
             {
@@ -147,8 +115,18 @@ namespace CnE2PLC
             {
                 var r = MessageBox.Show($"Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}", "Import Routine Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
+
+        #region Public Properties
+        public string Name {  get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        #endregion
+
+        public override string ToString() { return $"Name: {Name} Type: {Type}"; }
+
+        public virtual int TagCount(string tag) { throw new NotImplementedException(); }
+
+        public virtual string ToText() { throw new NotImplementedException(); }
 
     }
 

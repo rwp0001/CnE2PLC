@@ -60,7 +60,7 @@ namespace CnE2PLC
     /// <summary>
     /// Rung Class
     /// </summary>
-    internal class Rung : INotifyPropertyChanged
+    internal class Rung
     {
         public Rung() { }
         public Rung(XmlNode node)
@@ -92,14 +92,6 @@ namespace CnE2PLC
         public string Comment { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
         #endregion
-
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
-        {
-            if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public override string ToString() { return $"{Number}\t{Text}"; }
 

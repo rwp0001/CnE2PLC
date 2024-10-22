@@ -13,12 +13,26 @@ namespace CnE2PLC
         public AiData(XmlNode node) : base(node)
         {
             AOI_Name = "AIData";
-            Import(node);
             if (L5K_strings.Count > 2)
             {
                 Cfg_EquipID = L5K_strings[2];
                 Cfg_EquipDesc = L5K_strings[1];
                 Cfg_EU = L5K_strings[3];
+            }
+        }
+
+        public int HSD_Count { get; set; } = 0;
+        public int LSD_Count { get; set; } = 0;
+
+        private string RowComment
+        {
+            get
+            {
+                string c = $"PLC Tag Description: {Description}\n";
+                c += $"PLC DataType: {DataType}\n";
+                c += $"Max EU:  {MaxEU} {Cfg_EU}, Min EU:  {MinEU} {Cfg_EU}\nMax Raw:  {MaxRaw}, Min Raw:  {MinRaw}\n";
+                if (Sim == true) c += "Input is Simmed.\n";
+                return c;
             }
         }
 
@@ -56,12 +70,7 @@ namespace CnE2PLC
                 row.Cells[1, 3].Font.Color = ColorTranslator.ToOle(Color.White);
             }
 
-            //comments
-            string c = $"PLC Tag Description:\n{Description}\n";
-            c += $"PLC DataType:\n{DataType}\n";
-            c += $"Max EU:  {MaxEU} {Cfg_EU}\nMin EU:  {MinEU} {Cfg_EU}\nMax Raw:  {MaxRaw}\nMin Raw:  {MinRaw}\n";
-            if (Sim == true) c += "Input is Simmed.\n";
-            row.Cells[1, 3].AddComment(c);
+            row.Cells[1, 3].AddComment(RowComment);
         }
 
         public void ToHSDRow(Excel.Range row, int TagCount = -1)
@@ -132,8 +141,8 @@ namespace CnE2PLC
             row.Cells[1, 6].Value = (HiHiEnable == true & InUse == true)? "Standard IO" : "Not In Use";
             row.Cells[1, 7].Value = HiHiSP;
             row.Cells[1, 8].Value = Cfg_EU;
-            row.Cells[1, 9].Value = string.Format("{0} Sec.", Cfg_HiHiOnTmr);
-            row.Cells[1, 10].Value = string.Format("{0} Sec.", Cfg_HiHiOffTmr);
+            row.Cells[1, 9].Value = $"{Cfg_HiHiOnTmr} Sec.";
+            row.Cells[1, 10].Value = $"{Cfg_HiHiOffTmr} Sec.";
             row.Cells[1, 11].Value = "";
             row.Cells[1, 12].Value = "";
             row.Cells[1, 13].Value = "";
@@ -159,13 +168,13 @@ namespace CnE2PLC
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
             row.Cells[1, 3].Value = Name;
-            row.Cells[1, 4].Value = string.Format("{0}.HiAlarm", Name);
+            row.Cells[1, 4].Value = $"{Name}.HiAlarm";
             row.Cells[1, 5].Value = "AOI Output";
             row.Cells[1, 6].Value = (HiEnable == true & InUse == true) ? "Standard IO" : "Not In Use";
             row.Cells[1, 7].Value = HiSP;
             row.Cells[1, 8].Value = Cfg_EU;
-            row.Cells[1, 9].Value = string.Format("{0} Sec.", Cfg_HiOnTmr);
-            row.Cells[1, 10].Value = string.Format("{0} Sec.", Cfg_HiOffTmr);
+            row.Cells[1, 9].Value = $"{Cfg_HiOnTmr} Sec.";
+            row.Cells[1, 10].Value = $"{Cfg_HiOffTmr} Sec.";
             row.Cells[1, 11].Value = "";
             row.Cells[1, 12].Value = "";
             row.Cells[1, 13].Value = "";
@@ -372,7 +381,9 @@ namespace CnE2PLC
         public int? FaultCode { get; set; }
         public bool? SimReset { get; set; }
 
-        public string? Cfg_EU { get; set; }
+        public string Cfg_EU { get; set; } = string.Empty;
+
+
 
     }
 }
