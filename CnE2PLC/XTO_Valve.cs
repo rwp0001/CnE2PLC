@@ -38,7 +38,7 @@ namespace CnE2PLC
             }
         }
 
-
+        public override void ClearCounts() { }
 
 
     }
@@ -46,14 +46,10 @@ namespace CnE2PLC
     public class TwoPositionValveV2 : Valve
     {
 
-        public TwoPositionValveV2() 
-        {
-            AOI_Name = "TwoPositionValveV2";
-        }
+        public TwoPositionValveV2() { }
 
         public TwoPositionValveV2(XmlNode node) : base(node)
         {
-            AOI_Name = "TwoPositionValveV2";
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[1];
@@ -76,8 +72,13 @@ namespace CnE2PLC
         public bool? FailedToOpen { get; set; }
         public bool? FailedToClose { get; set; }
 
-        // Local Tags
+        // tag counts
+        public int Open_Count { get; set; } = 0;
+        public int Close_Count { get; set; } = 0;
+        public int FTO_Count { get; set; } = 0;
+        public int FTC_Count { get; set; } = 0;
 
+        #region CnE Outputs
         public void ToColumn(Excel.Range col)
         {
             col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -112,6 +113,14 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
+            if (Open_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
+
             // comments
             string c = $"PLC Tag Description:\n{Description}\n";
             c += $"PLC Data Type:\n{DataType}\n";
@@ -136,6 +145,15 @@ namespace CnE2PLC
             row.Cells[1, 14].Value = "";
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
+
+            if (Close_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
+
         }
 
         public void ToFailedToOpenRow(Excel.Range row)
@@ -156,6 +174,14 @@ namespace CnE2PLC
             row.Cells[1, 14].Value = "";
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
+
+            if (FTO_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
         }
 
         public void ToFailedToCloseRow(Excel.Range row)
@@ -176,8 +202,16 @@ namespace CnE2PLC
             row.Cells[1, 14].Value = "";
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
-        }
 
+            if (FTC_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
+        }
+        #endregion
 
 
     }
@@ -185,14 +219,10 @@ namespace CnE2PLC
     public class TwoPositionValve : TwoPositionValveV2
     {
 
-        public TwoPositionValve() 
-        {
-            AOI_Name = "TwoPositionValve";
-        }
+        public TwoPositionValve() { }
 
         public TwoPositionValve(XmlNode node) : base(node)
         {
-            AOI_Name = "TwoPositionValve";
             if (L5K_strings.Count > 1) // found a version with no strings at Maverick.
             {
                 Cfg_EquipID = L5K_strings[2];
@@ -222,13 +252,9 @@ namespace CnE2PLC
 
     public class ValveAnalog : Valve
     {
-        public ValveAnalog() 
-        {
-            AOI_Name = "ValveAnalog";
-        }
+        public ValveAnalog() { }
         public ValveAnalog(XmlNode node) : base(node)
         {
-            AOI_Name = "ValveAnalog";
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[1];
@@ -249,6 +275,11 @@ namespace CnE2PLC
         public float? Pos { get; set; }
         #endregion
 
+        // Tag Counts
+        public int Pos_Count { get; set; } = 0;
+        public int PosFail_Count { get; set; } = 0;
+
+        #region CnE Outputs
         private string ColComment { 
             get
             {
@@ -300,6 +331,14 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
+            if (Pos_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
+
             row.Cells[1, 3].AddComment(RowComment);
         }
 
@@ -321,8 +360,17 @@ namespace CnE2PLC
             row.Cells[1, 14].Value = "";
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
-        }
 
+            if (PosFail_Count == 0)
+            {
+                {
+                    row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
+                    row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
+                }
+            }
+
+        }
+        #endregion
 
 
     }

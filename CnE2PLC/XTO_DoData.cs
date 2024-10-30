@@ -3,15 +3,11 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
-    public class DoData : XTO_AOI
+    public class DOData : XTO_AOI
     {
-        public DoData() 
+        public DOData() { }
+        public DOData(XmlNode node) : base(node) 
         {
-            AOI_Name = "DOData";
-        }
-        public DoData(XmlNode node) : base(node) 
-        {
-            AOI_Name = "DOData";
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[1];
@@ -34,6 +30,48 @@ namespace CnE2PLC
         public bool? Raw { get; set; }
         public bool? Sim { get; set; }
         public int? SimVal { get; set; }
+
+
+        #region Data Outputs
+        public static void ToHeaderRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = "Scope";
+            row.Cells[1, i++].Value = "Tag Name";
+            row.Cells[1, i++].Value = "IO";
+            row.Cells[1, i++].Value = "Tag Description";
+            row.Cells[1, i++].Value = "HMI EquipID";
+            row.Cells[1, i++].Value = "HMI EquipDesc";
+            row.Cells[1, i++].Value = "AOI Calls";
+            row.Cells[1, i++].Value = "Tag References";
+            row.Cells[1, i++].Value = "InUse";
+            row.Cells[1, i++].Value = "Raw";
+            row.Cells[1, i++].Value = "Value";
+            row.Cells[1, i++].Value = "Sim";
+            row.Cells[1, i++].Value = "Sim Value";
+
+        }
+        public void ToDataRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = Path;
+            row.Cells[1, i++].Value = Name;
+            row.Cells[1, i++].Value = IO;
+            row.Cells[1, i++].Value = Description;
+            row.Cells[1, i++].Value = Cfg_EquipID;
+            row.Cells[1, i++].Value = Cfg_EquipDesc;
+            row.Cells[1, i++].Value = AOICalls;
+            row.Cells[1, i++].Value = References;
+            row.Cells[1, i++].Value = InUse == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = Raw;
+            row.Cells[1, i++].Value = Value;
+            row.Cells[1, i++].Value = Sim == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = SimVal;
+
+        }
+        #endregion
+
+
 
         public void ToColumn(Excel.Range col, int TagCount = -1)
         {
@@ -85,5 +123,7 @@ namespace CnE2PLC
                 e.CellStyle.ForeColor = Color.DarkCyan;
             }
         }
+
+        public override void ClearCounts() { }
     }
 }

@@ -8,6 +8,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	  <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
 	  <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+	  <Title>CnE Toolbox</Title>
+	  <Description>A set of tools used for working with CnE files and PLC code.</Description>
+	  <PackageProjectUrl>https://github.com/rwp0001/CnE2PLC</PackageProjectUrl>
+	  <Copyright>Copyright 2024 Robert Phillips</Copyright>
+	  <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

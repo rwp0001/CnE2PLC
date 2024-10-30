@@ -3,16 +3,11 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
-    public class AoData : XTO_AOI
+    public class AOData : XTO_AOI
     {
-        public AoData() 
-        {
-            AOI_Name = "AOData";
-        }
+        public AOData() { }
 
-        public AoData(XmlNode node) : base(node) {
-
-            AOI_Name = "AOData";
+        public AOData(XmlNode node) : base(node) {
             if (L5K_strings.Count > 2)
             {
                 Cfg_EquipID = L5K_strings[1];
@@ -38,6 +33,59 @@ namespace CnE2PLC
         // Local Tags
         public string? Cfg_EU { get; set; }
         public bool? SIM_ONS { get; set; }
+
+
+
+        #region Data Outputs
+        public static void ToHeaderRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = "Scope";
+            row.Cells[1, i++].Value = "Tag Name";
+            row.Cells[1, i++].Value = "IO";
+            row.Cells[1, i++].Value = "Tag Description";
+            row.Cells[1, i++].Value = "HMI EquipID";
+            row.Cells[1, i++].Value = "HMI EquipDesc";
+            row.Cells[1, i++].Value = "HMI EU";
+            row.Cells[1, i++].Value = "AOI Calls";
+            row.Cells[1, i++].Value = "Tag References";
+            row.Cells[1, i++].Value = "InUse";
+            row.Cells[1, i++].Value = "Raw";
+            row.Cells[1, i++].Value = "Min Raw";
+            row.Cells[1, i++].Value = "Max Raw";
+            row.Cells[1, i++].Value = "Min EU";
+            row.Cells[1, i++].Value = "Max EU";
+            row.Cells[1, i++].Value = "CV";
+            row.Cells[1, i++].Value = "Inc To Close";
+            row.Cells[1, i++].Value = "Sim";
+            row.Cells[1, i++].Value = "Sim CV";
+
+        }
+        public void ToDataRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = Path;
+            row.Cells[1, i++].Value = Name;
+            row.Cells[1, i++].Value = IO;
+            row.Cells[1, i++].Value = Description;
+            row.Cells[1, i++].Value = Cfg_EquipID;
+            row.Cells[1, i++].Value = Cfg_EquipDesc;
+            row.Cells[1, i++].Value = Cfg_EU;
+            row.Cells[1, i++].Value = AOICalls;
+            row.Cells[1, i++].Value = References;
+            row.Cells[1, i++].Value = InUse == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = Raw;
+            row.Cells[1, i++].Value = MinRaw;
+            row.Cells[1, i++].Value = MaxRaw;
+            row.Cells[1, i++].Value = MinEU;
+            row.Cells[1, i++].Value = MaxEU;
+            row.Cells[1, i++].Value = CV;
+            row.Cells[1, i++].Value = Cfg_IncToClose == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = Sim == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = SimCV;
+
+        }
+        #endregion
 
         private string ColComment
         {
@@ -95,5 +143,7 @@ namespace CnE2PLC
                 e.CellStyle.ForeColor = Color.DarkCyan;
             }
         }
+
+        public override void ClearCounts() {}
     }
 }

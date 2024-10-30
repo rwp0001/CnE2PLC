@@ -29,7 +29,7 @@ namespace CnE2PLC
                     switch (node2.Name)
                     {
                         case "Tags":
-                            foreach (XTO_AOI tag in XTO_AOI.ProcessL5XTags(node2.ChildNodes))
+                            foreach (XTO_AOI tag in Controller.ProcessTags(node2))
                             {
                                 tag.Path = Name;
                                 LocalTags.Add(tag);
@@ -98,13 +98,28 @@ namespace CnE2PLC
             return r;
         }
 
+        public int AOICount(string type,string tag)
+        {
+            int r = 0;
+            foreach (Routine routine in Routines) r += routine.AOICount(type,tag);
+            return r;
+        }
+
+        public List<string> GetIO(string type,string tag)
+        {
+            List<string> r = new();
+            foreach (Routine routine in Routines) foreach (string s in routine.GetIO(type, tag)) if(!r.Contains(s)) r.Add(s);
+            return r;
+        }
+
+
     }
 
     public class Routine
     {
         public Routine() { }
 
-        public Routine(XmlNode node) 
+        public Routine(XmlNode node)
         {
             try
             {
@@ -118,13 +133,26 @@ namespace CnE2PLC
         }
 
         #region Public Properties
-        public string Name {  get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         #endregion
 
         public override string ToString() { return $"Name: {Name} Type: {Type}"; }
 
+        /// <summary>
+        /// Used to find the number of times a tag is used in the program.
+        /// </summary>
+        /// <param name="tag">Tag name to count.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
         public virtual int TagCount(string tag) { throw new NotImplementedException(); }
+
+        public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
+
+        public virtual List<string> GetIO(string type, string tag) {
+            return new List<string>();
+            //throw new NotImplementedException(); 
+        }
 
         public virtual string ToText() { throw new NotImplementedException(); }
 

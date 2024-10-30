@@ -3,16 +3,12 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
-    public class AiData : XTO_AOI
+    public class AIData : XTO_AOI
     {
-        public AiData() 
-        {
-            AOI_Name = "AIData";
-        }
+        public AIData() { }
 
-        public AiData(XmlNode node) : base(node)
+        public AIData(XmlNode node) : base(node)
         {
-            AOI_Name = "AIData";
             if (L5K_strings.Count > 2)
             {
                 Cfg_EquipID = L5K_strings[2];
@@ -21,8 +17,20 @@ namespace CnE2PLC
             }
         }
 
+        // tag counts
+        public int PV_Count { get; set; } = 0;
         public int HSD_Count { get; set; } = 0;
         public int LSD_Count { get; set; } = 0;
+        public int HiHi_Count { get; set; } = 0;
+        public int Hi_Count { get; set; } = 0;
+        public int Lo_Count { get; set; } = 0;
+        public int LoLo_Count { get; set; } = 0;
+        public int BadPV_Count { get; set; } = 0;
+        public int SUHH_Count { get; set; } = 0;
+        public int SUH_Count { get; set; } = 0;
+        public int SUL_Count { get; set; } = 0;
+        public int SULL_Count { get; set; } = 0;
+
 
         private string RowComment
         {
@@ -30,12 +38,13 @@ namespace CnE2PLC
             {
                 string c = $"PLC Tag Description: {Description}\n";
                 c += $"PLC DataType: {DataType}\n";
-                c += $"Max EU:  {MaxEU} {Cfg_EU}, Min EU:  {MinEU} {Cfg_EU}\nMax Raw:  {MaxRaw}, Min Raw:  {MinRaw}\n";
+                c += $"Max EU: {MaxEU} {Cfg_EU}, Min EU: {MinEU} {Cfg_EU}\nMax Raw: {MaxRaw}, Min Raw: {MinRaw}\n";
                 if (Sim == true) c += "Input is Simmed.\n";
                 return c;
             }
         }
 
+        #region CnE Outputs
         public void ToPVRow(Excel.Range row, int TagCount = -1)
         {
             row.Cells[1, 1].Value = Cfg_EquipID;
@@ -92,7 +101,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (HSD_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -121,7 +130,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (LSD_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -150,7 +159,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = HiHiAutoAck==true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (HiHi_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -182,7 +191,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = HiAutoAck == true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (Hi_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -213,7 +222,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = LoAutoAck == true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (Lo_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -245,7 +254,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = LoLoAutoAck == true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (LoLo_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -279,7 +288,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = BadPVAutoAck == true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (BadPV_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -288,6 +297,147 @@ namespace CnE2PLC
             }
 
         }
+        #endregion
+
+        #region Data Outputs
+        public static void ToHeaderRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = "Scope";
+            row.Cells[1, i++].Value = "Tag Name";
+            row.Cells[1, i++].Value = "IO";
+            row.Cells[1, i++].Value = "Tag Description";
+            row.Cells[1, i++].Value = "HMI EquipID";
+            row.Cells[1, i++].Value = "HMI EquipDesc";
+            row.Cells[1, i++].Value = "HMI EU";
+            row.Cells[1, i++].Value = "AOI Calls";
+            row.Cells[1, i++].Value = "Tag References";
+            row.Cells[1, i++].Value = "InUse";
+            row.Cells[1, i++].Value = "Raw";
+            row.Cells[1, i++].Value = "Min Raw";
+            row.Cells[1, i++].Value = "Max Raw";
+            row.Cells[1, i++].Value = "Min EU";
+            row.Cells[1, i++].Value = "Max EU";
+            row.Cells[1, i++].Value = "PV";
+            row.Cells[1, i++].Value = "HiHi Enable";
+            row.Cells[1, i++].Value = "HiHi Auto Ack";
+            row.Cells[1, i++].Value = "HiHi SP Limit";
+            row.Cells[1, i++].Value = "HiHi SP";
+            row.Cells[1, i++].Value = "HiHi On Time";
+            row.Cells[1, i++].Value = "HiHi Off Time";
+            row.Cells[1, i++].Value = "HiHi Dly Time";
+            row.Cells[1, i++].Value = "HiHi SD Time";
+            row.Cells[1, i++].Value = "HiHi Alarm";
+            row.Cells[1, i++].Value = "HiHi Count";
+            row.Cells[1, i++].Value = "HSD Count";
+            row.Cells[1, i++].Value = "Hi Enable";
+            row.Cells[1, i++].Value = "Hi Auto Ack";
+            row.Cells[1, i++].Value = "Hi SP";
+            row.Cells[1, i++].Value = "Hi On Time";
+            row.Cells[1, i++].Value = "Hi Off Time";
+            row.Cells[1, i++].Value = "Hi Dly Time";
+            row.Cells[1, i++].Value = "Hi Alarm";
+            row.Cells[1, i++].Value = "Hi Count";
+            row.Cells[1, i++].Value = "Lo Enable";
+            row.Cells[1, i++].Value = "Lo Auto Ack";
+            row.Cells[1, i++].Value = "Lo SP";
+            row.Cells[1, i++].Value = "Lo On Time";
+            row.Cells[1, i++].Value = "Lo Off Time";
+            row.Cells[1, i++].Value = "Lo Dly Time";
+            row.Cells[1, i++].Value = "Lo Alarm";
+            row.Cells[1, i++].Value = "Lo Count";
+            row.Cells[1, i++].Value = "LoLo Enable";
+            row.Cells[1, i++].Value = "LoLo Auto Ack";
+            row.Cells[1, i++].Value = "LoLo SP Limit";
+            row.Cells[1, i++].Value = "LoLo SP";
+            row.Cells[1, i++].Value = "LoLo On Time";
+            row.Cells[1, i++].Value = "LoLo Off Time";
+            row.Cells[1, i++].Value = "LoLo Dly Time";
+            row.Cells[1, i++].Value = "LoLo SD Time";
+            row.Cells[1, i++].Value = "LoLo Alarm";
+            row.Cells[1, i++].Value = "LoLo Count";
+            row.Cells[1, i++].Value = "LSD Count";
+            row.Cells[1, i++].Value = "Sim";
+            row.Cells[1, i++].Value = "Sim PV";
+            row.Cells[1, i++].Value = "Bad PV Enable";
+            row.Cells[1, i++].Value = "Bad PV Auto Ack";
+            row.Cells[1, i++].Value = "Bad PV Alarm";
+        }
+        public void ToDataRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = Path;
+            row.Cells[1, i++].Value = Name;
+            row.Cells[1, i++].Value = IO;
+            row.Cells[1, i++].Value = Description;
+
+            row.Cells[1, i++].Value = Cfg_EquipID;
+            row.Cells[1, i++].Value = Cfg_EquipDesc;
+            row.Cells[1, i++].Value = Cfg_EU;
+
+            row.Cells[1, i++].Value = AOICalls;
+            row.Cells[1, i++].Value = References;
+
+            row.Cells[1, i++].Value = InUse == true ? "Yes" : "No";
+
+            row.Cells[1, i++].Value = Raw;
+            row.Cells[1, i++].Value = MinRaw;
+            row.Cells[1, i++].Value = MaxRaw;
+            row.Cells[1, i++].Value = MinEU;
+            row.Cells[1, i++].Value = MaxEU;
+            row.Cells[1, i++].Value = PV;
+
+            row.Cells[1, i++].Value = HiHiEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = HiHiAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = HiHiSPLimit;
+            row.Cells[1, i++].Value = HiHiSP;
+            row.Cells[1, i++].Value = Cfg_HiHiOnTmr;
+            row.Cells[1, i++].Value = Cfg_HiHiOffTmr;
+            row.Cells[1, i++].Value = Cfg_HiHiDlyTmr;
+            row.Cells[1, i++].Value = Cfg_HiHiSDTmr;
+            row.Cells[1, i++].Value = HiHiAlarm == true ? "Alarm" : "Ok";
+            row.Cells[1, i++].Value = HiHi_Count;
+            row.Cells[1, i++].Value = HSD_Count;
+
+            row.Cells[1, i++].Value = HiEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = HiAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = HiSP;
+            row.Cells[1, i++].Value = Cfg_HiOnTmr;
+            row.Cells[1, i++].Value = Cfg_HiOffTmr;
+            row.Cells[1, i++].Value = Cfg_HiDlyTmr;
+            row.Cells[1, i++].Value = HiAlarm == true ? "Alarm" : "Ok";
+            row.Cells[1, i++].Value = Hi_Count;
+
+            row.Cells[1, i++].Value = LoEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = LoAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = LoSP;
+            row.Cells[1, i++].Value = Cfg_LoOnTmr;
+            row.Cells[1, i++].Value = Cfg_LoOffTmr;
+            row.Cells[1, i++].Value = Cfg_LoDlyTmr;
+            row.Cells[1, i++].Value = LoAlarm == true ? "Alarm" : "Ok";
+            row.Cells[1, i++].Value = Lo_Count;
+
+            row.Cells[1, i++].Value = LoLoEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = LoLoAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = LoLoSPLimit;
+            row.Cells[1, i++].Value = LoLoSP;
+            row.Cells[1, i++].Value = Cfg_LoLoOnTmr;
+            row.Cells[1, i++].Value = Cfg_LoLoOffTmr;
+            row.Cells[1, i++].Value = Cfg_LoLoDlyTmr;
+            row.Cells[1, i++].Value = Cfg_LoLoSDTmr;
+            row.Cells[1, i++].Value = LoLoAlarm == true ? "Alarm" : "Ok";
+            row.Cells[1, i++].Value = LoLo_Count;
+            row.Cells[1, i++].Value = LSD_Count;
+
+            row.Cells[1, i++].Value = Sim == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = SimPV;
+
+            row.Cells[1, i++].Value = BadPVEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = BadPVAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = BadPVAlarm == true ? "Alarm" : "Ok";
+
+        }
+        #endregion
 
         public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
@@ -298,6 +448,15 @@ namespace CnE2PLC
                 e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
                 return;
             }
+
+            if (this.BadPVAlarm == true)
+            {
+                e.CellStyle.BackColor = Color.Red;
+                e.CellStyle.ForeColor = Color.Cyan;
+                //e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                return;
+            }
+
 
             if (InUse != true)
             {
@@ -315,8 +474,33 @@ namespace CnE2PLC
             {
                 e.CellStyle.ForeColor = Color.DarkCyan;
             }
+
+            if (HiAlarm == true || LoAlarm == true)
+            {
+                e.CellStyle.ForeColor = Color.DarkOrange;
+            }
+
+            if (HiHiAlarm == true || LoLoAlarm == true)
+            {
+                e.CellStyle.ForeColor = Color.Red;
+            }
         }
 
+        public override void ClearCounts()
+        {
+            PV_Count  = 0;
+            HSD_Count = 0;
+            LSD_Count = 0;
+            HiHi_Count  = 0;
+            Hi_Count = 0;
+            Lo_Count = 0;
+            LoLo_Count  = 0;
+            BadPV_Count  = 0;
+            SUHH_Count  = 0;
+            SUH_Count  = 0;
+            SUL_Count  = 0;
+            SULL_Count  = 0;
+        }
 
         public float? Raw { get; set; }
         public float? MinRaw { get; set; }
@@ -382,8 +566,6 @@ namespace CnE2PLC
         public bool? SimReset { get; set; }
 
         public string Cfg_EU { get; set; } = string.Empty;
-
-
 
     }
 }

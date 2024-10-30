@@ -1,8 +1,7 @@
-using System.ComponentModel;
+using System.Diagnostics;
+using System.Reflection;
 using System.Xml;
 using CnE2PLC.Properties;
-using System.Reflection;
-using libplctag;
 
 
 namespace CnE2PLC
@@ -10,29 +9,29 @@ namespace CnE2PLC
 
     public partial class Form1 : Form
     {
-        List<PLC_Program> PLCPrograms;
+        /// <summary>
+        /// Main datastore
+        /// </summary>
+        Controller PLC = new();
 
         public Form1()
         {
 
             InitializeComponent();
-            TagsDataView.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.TagsDataView_CellFormatting);
+            TagsDataView.CellFormatting += new DataGridViewCellFormattingEventHandler(this.TagsDataView_CellFormatting);
 
             LogText.Text = string.Format("Startup at time: {0}\n", DateTime.Now);
 
             //TagsDataView.AutoGenerateColumns = true;
-            TagsDataView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            //TagsDataView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
 
-            if (Properties.Settings.Default.WindowPos != Point.Empty)
+            if (Settings.Default.WindowPos != Point.Empty)
             {
-                if (isPointVisibleOnAScreen(Properties.Settings.Default.WindowPos)) this.Location = Properties.Settings.Default.WindowPos;
-                this.Location = Properties.Settings.Default.WindowPos;
+                if (isPointVisibleOnAScreen(Settings.Default.WindowPos)) this.Location = Settings.Default.WindowPos;
+                this.Location = Settings.Default.WindowPos;
             }
-            if (Properties.Settings.Default.WindowSize != Size.Empty) this.Size = Properties.Settings.Default.WindowSize;
-
-            PLCPrograms = new();
-
+            if (Settings.Default.WindowSize != Size.Empty) this.Size = Settings.Default.WindowSize;
             if (Settings.Default.Debug) statusStrip1.BackColor = Color.Yellow;
         }
 
@@ -51,9 +50,9 @@ namespace CnE2PLC
             return isPointVisibleOnAScreen(new Point(f.Left, f.Top)) && isPointVisibleOnAScreen(new Point(f.Right, f.Top)) && isPointVisibleOnAScreen(new Point(f.Left, f.Bottom)) && isPointVisibleOnAScreen(new Point(f.Right, f.Bottom));
         }
 
-        private void TagsDataView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) 
+        private void TagsDataView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            PLCTag tag = (PLCTag)TagsDataView.Rows[e.RowIndex].DataBoundItem; 
+            PLCTag tag = (PLCTag)TagsDataView.Rows[e.RowIndex].DataBoundItem;
             tag.CellFormatting(sender, e);
         }
 
@@ -74,7 +73,7 @@ namespace CnE2PLC
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                //CnE_Device.ProcessCnEFile(openFileDialog1.FileName, out CnE_Devices);
+                //PLC.ProcessCnEFile(openFileDialog1.FileName, out CnE_Devices);
             }
         }
 
@@ -147,9 +146,9 @@ namespace CnE2PLC
 
         private void FormIsClosing(object sender, FormClosingEventArgs e)
         {
-            Properties.Settings.Default.WindowPos = this.Location;
-            Properties.Settings.Default.WindowSize = this.Size;
-            Properties.Settings.Default.Save();
+            Settings.Default.WindowPos = this.Location;
+            Settings.Default.WindowSize = this.Size;
+            Settings.Default.Save();
 
         }
 
@@ -181,7 +180,7 @@ namespace CnE2PLC
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                XTO_AOI.CreateCnE(openFileDialog1.FileName, (BindingList<XTO_AOI>)Tags_DGV_Source.List, PLCPrograms );
+                //XTO_AOI.CreateCnE(openFileDialog1.FileName, (BindingList<XTO_AOI>)Tags_DGV_Source.List, PLCPrograms);
             }
         }
 
@@ -204,68 +203,50 @@ namespace CnE2PLC
                     string FileData = File.ReadAllText(openFileDialog1.FileName);
                     XmlDocument XmlDoc = new XmlDocument();
                     XmlDoc.LoadXml(FileData);
-                    XmlNodeList XMLTags = XmlDoc.SelectNodes("/RSLogix5000Content/Controller/Tags")[0].ChildNodes;
-                    XmlNodeList Programs = XmlDoc.SelectNodes("/RSLogix5000Content/Controller/Programs")[0].ChildNodes;
-                    string Target = XmlDoc.SelectNodes("/RSLogix5000Content")[0].Attributes.GetNamedItem("TargetName").Value;
-                    string Verison = XmlDoc.SelectNodes("/RSLogix5000Content")[0].Attributes.GetNamedItem("SoftwareRevision").Value;
-                    this.Text = $"CnE2PLC - {Target} - {Verison}";
-
-                    Tags_DGV_Source.Clear();
-                    PLCPrograms = new();
-
-                    foreach (XmlNode node in Programs)
-                    {
-                        PLC_Program P = new PLC_Program(node);
-
-                        // Add Local Tags
-                        foreach (XTO_AOI T in P.LocalTags)
-                        {
-                            T.Path = P.Name;
-                            Tags_DGV_Source.Add(T);
-                        }
-                        PLCPrograms.Add(new PLC_Program(node));
-                    }
-
-                    foreach (XTO_AOI tag in XTO_AOI.ProcessL5XTags(XMLTags)) Tags_DGV_Source.Add(tag);
-
-                    foreach (XTO_AOI tag in Tags_DGV_Source) foreach (PLC_Program program in PLCPrograms)
-                    {
-                        int c, r;
-                        c = program.TagCount($"{tag.AOI_Name}({tag.Name},");
-                        r = program.TagCount($"{tag.Name}");
-                        tag.AOICalls += c;
-                        tag.References += r - c;
-
-                            if (tag.DataType == "AIData")
-                            {
-                                AiData AI = (AiData)tag;
-                                AI.HSD_Count = program.TagCount($"{tag.Name}.HSD");
-                                AI.LSD_Count = program.TagCount($"{tag.Name}.LSD");
-                            }
-                            if (tag.DataType == "DIData")
-                            {
-                                DiData DI = (DiData)tag;
-                                DI.SD_Count = program.TagCount($"{tag.Name}.Shutdown");
-                            }
-
-
-                            Application.DoEvents();
-
-                    }
-
-                    if (Settings.Default.Debug) foreach (PLC_Program program in PLCPrograms) foreach (Routine item in program.Routines) LogText.AppendText(item.ToText());
-
-                    toolStripTagCount.Text = $"Tags: {Tags_DGV_Source.Count}";
+                    XmlNode ControllerNode = XmlDoc.SelectNodes("/RSLogix5000Content/Controller")[0];
+                    PLC = new(ControllerNode);
+                    TagsDataView.DataSource = PLC.AllTags;
+                    this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
+                    toolStripTagCount.Text = $"Tags: {PLC.AllTags.Count}";
 
                 }
                 catch (Exception ex)
                 {
                     var r = MessageBox.Show($"Error: {ex.Message}", "Import L5X Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                Application.DoEvents();
+
+
             }
+        }
+
+        private void About_MenuItem_Click(object sender, EventArgs e)
+        {
+            Form AboutBox = new AboutBox1();
+            AboutBox.ShowDialog();
+        }
+
+        private void Tags_DGV_Source_CurrentChanged(object sender, EventArgs e)
+        {
 
         }
+
+        [DebuggerStepThrough]
+        private string AssemblyTitle()
+        {
+            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+            if (attributes.Length > 0)
+            {
+                AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
+                if (titleAttribute.Title != "") return titleAttribute.Title;
+            }
+            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+        }
+
+        private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PLC.CreateIOReport();
+        }
+
 
     }
 

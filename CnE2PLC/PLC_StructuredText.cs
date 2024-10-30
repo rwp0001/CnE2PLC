@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -30,6 +31,13 @@ namespace CnE2PLC
         {
             int count = 0;
             foreach (Line line in Lines) count += line.TagCount(tag);
+            return count;
+        }
+
+        public override int AOICount(string type, string tag)
+        {
+            int count = 0;
+            foreach (Line line in Lines) count += line.AOICount(type,tag);
             return count;
         }
 
@@ -73,6 +81,28 @@ namespace CnE2PLC
         public string Text { get; set; } = string.Empty;
 
         public int TagCount(string tag) { return Regex.Matches(Text, Regex.Escape(tag)).Count; }
+
+        public int AOICount(string type, string tag) {
+            try
+            {
+                string s = $"{type}({tag}";
+                if (!Text.Contains(s)) return 0;
+                int count = 0;
+                string[] rs = Text.Split(s);
+                foreach (string r in rs)
+                {
+                    if (r.Length == 0) continue;
+                    if (r[0] == ')' || r[0] == ',') count += 1;
+                }
+                return count;
+            }
+            catch (Exception ex )
+            {
+
+                throw;
+            }
+            
+        }
 
         public override string ToString() { return $"{Number}\t{Text}"; }
 

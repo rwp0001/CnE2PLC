@@ -39,15 +39,6 @@
             toolStripDeviceCount = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
             TagsDataView = new DataGridView();
-            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            AOICalls = new DataGridViewTextBoxColumn();
-            References = new DataGridViewTextBoxColumn();
-            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             Tags_DGV_Source = new BindingSource(components);
             LogText = new RichTextBox();
             contextMenuStrip_LogText = new ContextMenuStrip(components);
@@ -65,6 +56,19 @@
             outputToolStripMenuItem = new ToolStripMenuItem();
             updateCnEToolStripMenuItem = new ToolStripMenuItem();
             exportTagsToolStripMenuItem = new ToolStripMenuItem();
+            aiReportToolStripMenuItem = new ToolStripMenuItem();
+            helpToolStripMenuItem = new ToolStripMenuItem();
+            About_MenuItem = new ToolStripMenuItem();
+            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            AOICalls = new DataGridViewTextBoxColumn();
+            References = new DataGridViewTextBoxColumn();
+            IO = new DataGridViewTextBoxColumn();
+            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -173,7 +177,7 @@
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             TagsDataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             TagsDataView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, AOICalls, References, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
+            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, AOICalls, References, IO, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
             TagsDataView.DataSource = Tags_DGV_Source;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
@@ -193,65 +197,10 @@
             TagsDataView.TabIndex = 1;
             TagsDataView.CellClick += DevicesDataView_CellContentClick;
             // 
-            // equipNumDataGridViewTextBoxColumn
-            // 
-            equipNumDataGridViewTextBoxColumn.DataPropertyName = "EquipNum";
-            equipNumDataGridViewTextBoxColumn.HeaderText = "Equipment Number";
-            equipNumDataGridViewTextBoxColumn.Name = "equipNumDataGridViewTextBoxColumn";
-            equipNumDataGridViewTextBoxColumn.ReadOnly = true;
-            equipNumDataGridViewTextBoxColumn.Visible = false;
-            // 
-            // pathDataGridViewTextBoxColumn
-            // 
-            pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
-            pathDataGridViewTextBoxColumn.HeaderText = "Tag Scope";
-            pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
-            // 
-            // dataTypeDataGridViewTextBoxColumn
-            // 
-            dataTypeDataGridViewTextBoxColumn.DataPropertyName = "DataType";
-            dataTypeDataGridViewTextBoxColumn.HeaderText = "Tag Data Type";
-            dataTypeDataGridViewTextBoxColumn.Name = "dataTypeDataGridViewTextBoxColumn";
-            // 
-            // nameDataGridViewTextBoxColumn
-            // 
-            nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
-            nameDataGridViewTextBoxColumn.HeaderText = "Tag Name";
-            nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
-            // 
-            // AOICalls
-            // 
-            AOICalls.DataPropertyName = "AOICalls";
-            AOICalls.HeaderText = "AOICalls";
-            AOICalls.Name = "AOICalls";
-            // 
-            // References
-            // 
-            References.DataPropertyName = "References";
-            References.HeaderText = "References";
-            References.Name = "References";
-            // 
-            // descriptionDataGridViewTextBoxColumn
-            // 
-            descriptionDataGridViewTextBoxColumn.DataPropertyName = "Description";
-            descriptionDataGridViewTextBoxColumn.HeaderText = "Tag Description";
-            descriptionDataGridViewTextBoxColumn.Name = "descriptionDataGridViewTextBoxColumn";
-            // 
-            // cfgEquipIDDataGridViewTextBoxColumn
-            // 
-            cfgEquipIDDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipID";
-            cfgEquipIDDataGridViewTextBoxColumn.HeaderText = "Equipment ID";
-            cfgEquipIDDataGridViewTextBoxColumn.Name = "cfgEquipIDDataGridViewTextBoxColumn";
-            // 
-            // cfgEquipDescDataGridViewTextBoxColumn
-            // 
-            cfgEquipDescDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipDesc";
-            cfgEquipDescDataGridViewTextBoxColumn.HeaderText = "Equipment Description";
-            cfgEquipDescDataGridViewTextBoxColumn.Name = "cfgEquipDescDataGridViewTextBoxColumn";
-            // 
             // Tags_DGV_Source
             // 
             Tags_DGV_Source.DataSource = typeof(XTO_AOI);
+            Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
             // 
             // LogText
             // 
@@ -290,7 +239,7 @@
             // 
             menuStrip1.Dock = DockStyle.None;
             menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, pLCToolStripMenuItem, outputToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, pLCToolStripMenuItem, outputToolStripMenuItem, helpToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(575, 24);
@@ -357,7 +306,7 @@
             // 
             // outputToolStripMenuItem
             // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem });
+            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem });
             outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             outputToolStripMenuItem.Size = new Size(57, 20);
             outputToolStripMenuItem.Text = "Output";
@@ -376,6 +325,90 @@
             exportTagsToolStripMenuItem.Size = new Size(136, 22);
             exportTagsToolStripMenuItem.Text = "Export Tags";
             exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
+            // 
+            // aiReportToolStripMenuItem
+            // 
+            aiReportToolStripMenuItem.Name = "aiReportToolStripMenuItem";
+            aiReportToolStripMenuItem.Size = new Size(136, 22);
+            aiReportToolStripMenuItem.Text = "IO Report";
+            aiReportToolStripMenuItem.Click += aiReportToolStripMenuItem_Click;
+            // 
+            // helpToolStripMenuItem
+            // 
+            helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { About_MenuItem });
+            helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            helpToolStripMenuItem.Size = new Size(44, 20);
+            helpToolStripMenuItem.Text = "Help";
+            // 
+            // About_MenuItem
+            // 
+            About_MenuItem.Name = "About_MenuItem";
+            About_MenuItem.Size = new Size(107, 22);
+            About_MenuItem.Text = "About";
+            About_MenuItem.Click += About_MenuItem_Click;
+            // 
+            // equipNumDataGridViewTextBoxColumn
+            // 
+            equipNumDataGridViewTextBoxColumn.DataPropertyName = "EquipNum";
+            equipNumDataGridViewTextBoxColumn.HeaderText = "Equipment Number";
+            equipNumDataGridViewTextBoxColumn.Name = "equipNumDataGridViewTextBoxColumn";
+            equipNumDataGridViewTextBoxColumn.ReadOnly = true;
+            equipNumDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // pathDataGridViewTextBoxColumn
+            // 
+            pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
+            pathDataGridViewTextBoxColumn.HeaderText = "Tag Scope";
+            pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
+            // 
+            // dataTypeDataGridViewTextBoxColumn
+            // 
+            dataTypeDataGridViewTextBoxColumn.DataPropertyName = "DataType";
+            dataTypeDataGridViewTextBoxColumn.HeaderText = "Tag Data Type";
+            dataTypeDataGridViewTextBoxColumn.Name = "dataTypeDataGridViewTextBoxColumn";
+            // 
+            // nameDataGridViewTextBoxColumn
+            // 
+            nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
+            nameDataGridViewTextBoxColumn.HeaderText = "Tag Name";
+            nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
+            // 
+            // AOICalls
+            // 
+            AOICalls.DataPropertyName = "AOICalls";
+            AOICalls.HeaderText = "AOICalls";
+            AOICalls.Name = "AOICalls";
+            // 
+            // References
+            // 
+            References.DataPropertyName = "References";
+            References.HeaderText = "References";
+            References.Name = "References";
+            // 
+            // IO
+            // 
+            IO.DataPropertyName = "IO";
+            IO.HeaderText = "IO";
+            IO.Name = "IO";
+            IO.ReadOnly = true;
+            // 
+            // descriptionDataGridViewTextBoxColumn
+            // 
+            descriptionDataGridViewTextBoxColumn.DataPropertyName = "Description";
+            descriptionDataGridViewTextBoxColumn.HeaderText = "Tag Description";
+            descriptionDataGridViewTextBoxColumn.Name = "descriptionDataGridViewTextBoxColumn";
+            // 
+            // cfgEquipIDDataGridViewTextBoxColumn
+            // 
+            cfgEquipIDDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipID";
+            cfgEquipIDDataGridViewTextBoxColumn.HeaderText = "Equipment ID";
+            cfgEquipIDDataGridViewTextBoxColumn.Name = "cfgEquipIDDataGridViewTextBoxColumn";
+            // 
+            // cfgEquipDescDataGridViewTextBoxColumn
+            // 
+            cfgEquipDescDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipDesc";
+            cfgEquipDescDataGridViewTextBoxColumn.HeaderText = "Equipment Description";
+            cfgEquipDescDataGridViewTextBoxColumn.Name = "cfgEquipDescDataGridViewTextBoxColumn";
             // 
             // Form1
             // 
@@ -491,12 +524,16 @@
         private ToolStripMenuItem exportTagsToolStripMenuItem;
         public DataGridView TagsDataView;
         public BindingSource Tags_DGV_Source;
+        private ToolStripMenuItem helpToolStripMenuItem;
+        private ToolStripMenuItem About_MenuItem;
+        private ToolStripMenuItem aiReportToolStripMenuItem;
         private DataGridViewTextBoxColumn equipNumDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn dataTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn AOICalls;
         private DataGridViewTextBoxColumn References;
+        private DataGridViewTextBoxColumn IO;
         private DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipDescDataGridViewTextBoxColumn;

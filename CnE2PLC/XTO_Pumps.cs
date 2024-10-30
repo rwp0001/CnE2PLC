@@ -6,6 +6,8 @@ namespace CnE2PLC
     {
         public Pump() { }
         public Pump(XmlNode node) : base(node) { }
+
+        public override void ClearCounts() { }
     }
 
     public class P_PF753 : Pump 

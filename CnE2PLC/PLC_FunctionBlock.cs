@@ -33,6 +33,13 @@ namespace CnE2PLC
             return r;
         }
 
+        public override int AOICount(string type, string tag)
+        {
+            int r = 0;
+            foreach (Sheet sheet in Sheets) r += sheet.AOICount(type,tag);
+            return r;
+        }
+
         public override string ToText()
         {
             string s = string.Empty;
@@ -120,6 +127,13 @@ namespace CnE2PLC
             return r;
         }
 
+        public int AOICount(string type,string tag)
+        {
+            int r = 0;
+            foreach (SheetElement element in Elements) r += element.AOICount(type,tag);
+            return r;
+        }
+
         public string? Name { get; set; }
 
         public override string ToString() { return $"Sheet Number:{Number} Element: {Elements.Count} Desc: {Description}"; }
@@ -171,6 +185,7 @@ namespace CnE2PLC
         #endregion
 
         public virtual int TagCount(string tag) { throw new NotImplementedException(); }
+        public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
         public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
 
     }
@@ -196,6 +211,7 @@ namespace CnE2PLC
         public bool? HideDesc { get; set; }
 
         public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+        public override int AOICount(string type, string tag) { return 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
     }
@@ -223,6 +239,8 @@ namespace CnE2PLC
         public bool? HideDesc { get; set; }
 
         public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+
+        public override int AOICount(string type, string tag) { return 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
     }
@@ -253,6 +271,8 @@ namespace CnE2PLC
         public bool? HideDesc { get; set; }
 
         public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+
+        public override int AOICount(string type, string tag) { return 0; }
 
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Type: {Type}"; }
     }
@@ -299,6 +319,9 @@ namespace CnE2PLC
         public string? ToParam { get; set; }
         public string? FromParam { get; set; }
 
+        public override int TagCount(string tag) { return 0; }
+        public override int AOICount(string type, string tag) { return 0; }
+
         public override string ToString()
         {
             string s = base.ToString();
@@ -333,6 +356,11 @@ namespace CnE2PLC
 
         public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
 
+        public override int AOICount(string type, string tag) { 
+            if( Name != type ) return 0;
+            return Operand.Contains(tag) ? 1 : 0; 
+        }
+
         public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
     }
 
@@ -361,6 +389,9 @@ namespace CnE2PLC
 
         public int? Width { get; set; }
         public string? Text { get; set; }
+
+        public override int TagCount(string tag) { return 0; }
+        public override int AOICount(string type, string tag) { return 0; }
 
         public override string ToString() { return $"{base.ToString()} - Text: {Text}"; }
 
@@ -398,6 +429,9 @@ namespace CnE2PLC
 
         public int? ToID { get; set; }
         public int? FromID { get; set; }
+        public override int TagCount(string tag) { return 0; }
+        public override int AOICount(string type, string tag) { return 0; }
+
         public override string ToString()
         {
             string s = base.ToString();

@@ -3,16 +3,12 @@ using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
-    public class DiData : XTO_AOI
+    public class DIData : XTO_AOI
     {
-        public DiData() 
-        {
-            AOI_Name = "DIData";
-        }
+        public DIData() { }
 
-        public DiData(XmlNode node) : base (node) 
+        public DIData(XmlNode node) : base (node) 
         {
-            AOI_Name = "DIData";
             if (L5K_strings.Count > 1)
             {
                 Cfg_EquipID = L5K_strings[2];
@@ -20,7 +16,11 @@ namespace CnE2PLC
             }
         }
 
+        // tag counts
         public int SD_Count { get; set; } = 0;
+        public int Val_Count { get; set; } = 0;
+        public int Alm_Count { get; set; } = 0;
+
 
         private string RowComment 
         { 
@@ -33,7 +33,7 @@ namespace CnE2PLC
             } 
         }
 
-        public void ToValueRow(Excel.Range row, int TagCount = -1)
+        public void ToValueRow(Excel.Range row)
         {
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -52,7 +52,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if ( Val_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -73,7 +73,7 @@ namespace CnE2PLC
 
         }
 
-        public void ToAlarmRow(Excel.Range row, int TagCount = -1)
+        public void ToAlarmRow(Excel.Range row)
         {
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -93,7 +93,7 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = AlmAutoAck == true ? "Y" : "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (Alm_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
@@ -103,7 +103,7 @@ namespace CnE2PLC
 
         }
 
-        public void ToShutdownRow(Excel.Range row, int TagCount = -1)
+        public void ToShutdownRow(Excel.Range row)
         {
             row.Cells[1, 1].Value = Cfg_EquipID;
             row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -123,13 +123,77 @@ namespace CnE2PLC
             row.Cells[1, 15].Value = "";
             row.Cells[1, 16].Value = "";
 
-            if (TagCount == 0)
+            if (SD_Count == 0)
             {
                 {
                     row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
                     row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
                 }
             }
+
+        }
+
+        public static void ToHeaderRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = "Scope";
+            row.Cells[1, i++].Value = "Tag Name";
+            row.Cells[1, i++].Value = "IO";
+            row.Cells[1, i++].Value = "Tag Description";
+            row.Cells[1, i++].Value = "HMI EquipID";
+            row.Cells[1, i++].Value = "HMI EquipDesc";
+            row.Cells[1, i++].Value = "AOI Calls";
+            row.Cells[1, i++].Value = "Tag References";
+            row.Cells[1, i++].Value = "InUse";
+            row.Cells[1, i++].Value = "Raw";
+            row.Cells[1, i++].Value = "Value";
+            row.Cells[1, i++].Value = "Alarm Enable";
+            row.Cells[1, i++].Value = "Alarm Auto Ack";
+            row.Cells[1, i++].Value = "Alarm State";
+            row.Cells[1, i++].Value = "Alarm On Time";
+            row.Cells[1, i++].Value = "Alarm Off Time";
+            row.Cells[1, i++].Value = "Alarm Dly Time";
+            row.Cells[1, i++].Value = "Alarm SD Time";
+            row.Cells[1, i++].Value = "Alarm";
+            row.Cells[1, i++].Value = "Alarm Count";
+            row.Cells[1, i++].Value = "SD Count";
+            row.Cells[1, i++].Value = "Sim";
+            row.Cells[1, i++].Value = "Sim Value";
+        }
+
+        public void ToDataRow(Excel.Range row)
+        {
+            int i = 1;
+            row.Cells[1, i++].Value = Path;
+            row.Cells[1, i++].Value = Name;
+            row.Cells[1, i++].Value = IO;
+            row.Cells[1, i++].Value = Description;
+
+            row.Cells[1, i++].Value = Cfg_EquipID;
+            row.Cells[1, i++].Value = Cfg_EquipDesc;
+
+            row.Cells[1, i++].Value = AOICalls;
+            row.Cells[1, i++].Value = References;
+
+            row.Cells[1, i++].Value = InUse == true ? "Yes" : "No";
+
+            row.Cells[1, i++].Value = Raw == true ? "On" : "Off";
+            row.Cells[1, i++].Value = Value == true ? "On" : "Off";
+
+            row.Cells[1, i++].Value = AlmEnable == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = AlmAutoAck == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = AlmState == 1 ? "On" : "Off";
+            row.Cells[1, i++].Value = Cfg_AlmOnTmr;
+            row.Cells[1, i++].Value = Cfg_AlmOffTmr;
+            row.Cells[1, i++].Value = Cfg_AlmDlyTmr;
+            row.Cells[1, i++].Value = Cfg_SDDlyTmr;
+            row.Cells[1, i++].Value = Alarm == true ? "Alarm" : "Ok";
+            row.Cells[1, i++].Value = Alm_Count;
+            row.Cells[1, i++].Value = SD_Count;
+
+            row.Cells[1, i++].Value = Sim == true ? "Yes" : "No";
+            row.Cells[1, i++].Value = SimValue == true ? "On" : "Off";
+
 
         }
 
@@ -159,6 +223,12 @@ namespace CnE2PLC
             {
                 e.CellStyle.ForeColor = Color.DarkCyan;
             }
+
+            if(Alarm == true)
+            {
+                e.CellStyle.ForeColor = Color.Red;
+            }
+
         }
 
         //Parameters
@@ -191,7 +261,12 @@ namespace CnE2PLC
         public bool? AckResetAll { get; set; }
         public int? AlmCode { get; set; }
 
-        //Local Tags
+        public override void ClearCounts() 
+        {
+            SD_Count  = 0;
+            Val_Count = 0;
+            Alm_Count = 0;
+        }
 
     }
 }

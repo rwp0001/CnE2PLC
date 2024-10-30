@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,20 @@ namespace CnE2PLC
             int r = 0;
             foreach (ChartElement element in Elements) r += element.TagCount(tag);
             return r;
+        }
+
+        public override int AOICount(string type,string tag)
+        {
+            int r = 0;
+            foreach (ChartElement element in Elements) r += element.AOICount(type,tag);
+            return r;
+        }
+
+        public override string ToText()
+        {
+            string s = string.Empty;
+            foreach (ChartElement element in Elements) s += element.ToString();
+            return s;
         }
 
         public override string ToString() { return $"Chart Name:{Name} Elements: {Elements.Count} Desc: {Description}"; }
@@ -69,6 +84,7 @@ namespace CnE2PLC
         public int? Y { get; set; } = 0;
 
         public virtual int TagCount(string tag) { throw new NotImplementedException(); }
+        public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
 
         public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
     }
@@ -144,7 +160,8 @@ namespace CnE2PLC
         public bool? LimitLowUsesExpr { get; set; }
         public bool? ShowActions { get; set; }
 
-
+        public virtual int TagCount(string tag) { throw new NotImplementedException(); }
+        public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
 
     }
     public class Transition : ChartElement 
@@ -210,6 +227,8 @@ namespace CnE2PLC
             return count;
         }
 
+        public override int AOICount(string type, string tag) { return 0; }
+
     }
 
 
@@ -244,6 +263,9 @@ namespace CnE2PLC
 
         public int? Width { get; set; }
         public string? Text { get; set; }
+
+        public override int TagCount(string tag) { return 0; }
+        public override int AOICount(string type, string tag) { return 0; }
 
         public override string ToString() { return $"{base.ToString()} - Text: {Text}"; }
 

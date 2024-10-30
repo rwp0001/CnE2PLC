@@ -1,7 +1,7 @@
-﻿using CnE2PLC.Properties;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Xml;
-using Excel = Microsoft.Office.Interop.Excel;
+
 
 namespace CnE2PLC
 {
@@ -10,57 +10,26 @@ namespace CnE2PLC
     /// </summary>
     public class PLCTag
     {
+        [DebuggerStepThrough]
         public PLCTag() { }
 
+        [DebuggerStepThrough]
         public PLCTag(XmlNode node)
         {
             try
             {
-                Name = node.Attributes.GetNamedItem("Name").Value;
-                DataType = node.Attributes.GetNamedItem("DataType").Value;
+                XmlNode? n;
+                n = node.Attributes.GetNamedItem("Name");
+                if(n != null) Name = n.InnerText;
+
+                n = node.Attributes.GetNamedItem("DataType");
+                if (n != null) DataType = n.InnerText;
 
                 foreach (XmlNode item in node.ChildNodes)
                 {
-                    if (item.Name == "Description")
-                    {
-                        Description = item.InnerText;
-                        continue;
-                    }
-
-                    if (item.Name == "Data")
-                    {
-                        try
-                        {
-
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
-                            {
-                                foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
-                                {
-                                    SetProperty(
-                                        DataValueMember.Attributes.GetNamedItem("Name").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("DataType").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("Value").Value.Trim()
-                                        );
-                                }
-                                continue;
-                            }
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "L5K")
-                            {
-                                // need to add processing the L5K to get the local strings.
-                                L5K = item.InnerText;
-                                //DecodeL5K();
-                                continue;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-
-
+                    if (item.Name == "Description") Description = item.InnerText;
+                    n = item.Attributes.GetNamedItem("Format");
+                    if (n != null ) if(n.InnerText == "L5K") L5K = item.InnerText; 
                 }
             }
             catch (Exception ex)
@@ -84,7 +53,7 @@ namespace CnE2PLC
         {
             get
             {
-                if(PathValue == string.Empty) return "Controller";
+                if (PathValue == string.Empty) return "Controller";
                 return PathValue;
             }
             set
@@ -119,7 +88,7 @@ namespace CnE2PLC
                 }
             }
         }
-        
+
         /// <summary>
         /// How many time is the Tag used in the program.
         /// </summary>
@@ -145,6 +114,7 @@ namespace CnE2PLC
         /// <param name="DLM_DataType">Property Data Type</param>
         /// <param name="DLM_Value">Property Value</param>
         /// <exception cref="Exception"></exception>
+        [DebuggerStepThrough]
         protected void SetProperty(string DLM_Name, string DLM_DataType, string DLM_Value)
         {
             try
@@ -195,7 +165,43 @@ namespace CnE2PLC
 
         }
 
+        [DebuggerStepThrough]
         public virtual void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { throw new NotImplementedException(); }
+
+        /// <summary>
+        /// This class used to sort tags.
+        /// </summary>
+        [DebuggerStepThrough]
+        public class TagComparer : IComparer<PLCTag>
+        {
+            public int Compare(PLCTag first, PLCTag second)
+            {
+                if (first != null && second != null)
+                {
+                    // next check the scope
+                    int r = first.Path.CompareTo(second.Path);
+                    if (r != 0) return r;
+
+                    // check the name
+                    return first.Name.CompareTo(second.Name);
+                }
+
+                if (first == null && second == null)
+                {
+                    // We can't compare any properties, so they are essentially equal.
+                    return 0;
+                }
+
+                if (first != null)
+                {
+                    // Only the first instance is not null, so prefer that.
+                    return -1;
+                }
+
+                // Only the second instance is not null, so prefer that.
+                return 1;
+            }
+        }
 
     }
 
@@ -204,46 +210,33 @@ namespace CnE2PLC
     /// </summary>
     public class XTO_AOI : PLCTag
     {
-
+        [DebuggerStepThrough]
         public XTO_AOI() { }
-        public XTO_AOI(XmlNode node)
+
+        [DebuggerStepThrough]
+        public XTO_AOI(XmlNode node) : base(node)
         {
             try
             {
-                Name = node.Attributes.GetNamedItem("Name").Value;
-                DataType = node.Attributes.GetNamedItem("DataType").Value;
+                DecodeL5K();
 
                 foreach (XmlNode item in node.ChildNodes)
                 {
-                    if (item.Name == "Description")
-                    {
-                        Description = item.InnerText;
-                        continue;
-                    }
-
                     if (item.Name == "Data")
                     {
                         try
                         {
-
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
+                            XmlNode n1 = item.Attributes.GetNamedItem("Format");
+                            if (n1 != null) if (n1.InnerText == "Decorated")
                             {
                                 foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
                                 {
-                                    SetProperty(
-                                        DataValueMember.Attributes.GetNamedItem("Name").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("DataType").Value.Trim(),
-                                        DataValueMember.Attributes.GetNamedItem("Value").Value.Trim()
-                                        );
+                                    var n = DataValueMember.Attributes.GetNamedItem("Name");
+                                    var d = DataValueMember.Attributes.GetNamedItem("DataType");
+                                    var v = DataValueMember.Attributes.GetNamedItem("Value");
+                                    if (n == null || d == null || v == null) continue;
+                                    SetProperty(n.InnerText, d.InnerText, v.InnerText);
                                 }
-                                continue;
-                            }
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "L5K")
-                            {
-                                L5K = item.InnerText;
-                                DecodeL5K();
                                 continue;
                             }
                         }
@@ -331,7 +324,8 @@ namespace CnE2PLC
             get
             {
                 string s = string.Empty;
-                foreach (string s2 in IOs) s += $"{s2} ";
+                foreach (string s2 in IOs) s += $"{s2}, ";
+                if( s.Length > 3 ) s = s.Substring(0, s.Length - 2);
                 return s;
             }
         }
@@ -381,11 +375,6 @@ namespace CnE2PLC
         /// </summary>
         public int AOICalls { get; set; } = 0;
 
-        /// <summary>
-        /// the name of the AOI.
-        /// </summary>
-        public string AOI_Name = string.Empty;
-
         #endregion
 
         #region Private Values
@@ -430,19 +419,19 @@ namespace CnE2PLC
                         switch (DataType)
                         {
                             case "AIData":
-                                Tags.Add(new AiData(item));
+                                Tags.Add(new AIData(item));
                                 break;
 
                             case "AOData":
-                                Tags.Add(new AoData(item));
+                                Tags.Add(new AOData(item));
                                 break;
 
                             case "DIData":
-                                Tags.Add(new DiData(item));
+                                Tags.Add(new DIData(item));
                                 break;
 
                             case "DOData":
-                                Tags.Add(new DoData(item));
+                                Tags.Add(new DOData(item));
                                 break;
 
                             case "TwoPositionValveV2":
@@ -455,6 +444,14 @@ namespace CnE2PLC
 
                             case "ValveAnalog":
                                 Tags.Add(new ValveAnalog(item));
+                                break;
+
+                            case "Intlk_8":
+                                Tags.Add(new Intlk_8(item));
+                                break;
+
+                            case "Intlk_16":
+                                Tags.Add(new Intlk_16(item));
                                 break;
 
                             default:
@@ -482,6 +479,7 @@ namespace CnE2PLC
         /// <summary>
         /// Finds strings inside of L5K and exports them to the L5K_strings array.
         /// </summary>
+        [DebuggerStepThrough]
         private void DecodeL5K()
         {
             L5K_strings = new List<string>();
@@ -541,449 +539,13 @@ namespace CnE2PLC
 
         }
 
-
-        /// <summary>
-        /// Exports the Tags to a Excel Templete.
-        /// </summary>
-        /// <param name="FileName">File name of the template.</param>
-        /// <param name="Tags">The tage to export.</param>
-        public static void CreateCnE(string FileName, BindingList<XTO_AOI> Tags, List<PLC_Program> Programs)
-        {
-            Excel.Application? excelApp = null;
-            try
-            {
-
-                excelApp = new Excel.Application();
-                excelApp.Visible = false;
-                excelApp.ScreenUpdating = false;
-
-                if (Settings.Default.Debug)
-                {
-                    excelApp.Visible = true;
-                    excelApp.ScreenUpdating = true;
-                    excelApp.Top = 0;
-                    excelApp.Left = 0;
-                    excelApp.Height = Screen.PrimaryScreen.WorkingArea.Height;
-                    excelApp.Width = Screen.PrimaryScreen.WorkingArea.Width;
-                }
-
-                Excel.Workbook? CnE_Workbook = null;
-                Excel.Worksheet? CnE_Sheet = null;
-
-                // open the file as readonly.
-                excelApp.Workbooks.Open(FileName, false, true);
-                CnE_Workbook = excelApp.ActiveWorkbook;
-                CnE_Sheet = CnE_Workbook.ActiveSheet;
-                Excel.Range range = CnE_Sheet.Cells;
-                excelApp.Calculation = Excel.XlCalculation.xlCalculationManual;
-
-                int RowOffset = 17; // first row to use.
-                int ColumnOffset = 19;
-
-                foreach (XTO_AOI tag in Tags)
-                {
-                    try
-                    {
-                        if (!tag.AOICalled) continue;
-                        if (tag.InUse != true) continue;
-
-                        switch (tag.DataType.ToLower())
-                        {
-                            case "dodata":
-                                DoData DoTag = (DoData)tag;
-                                if (Settings.Default.Debug) CnE_Sheet.Cells[1, ColumnOffset].Activate();
-                                InsertCol(CnE_Sheet, ColumnOffset);
-                                DoTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                                Excel.Range r1 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                                MergeAndCenter(r1);
-                                ColumnOffset++;
-                                break;
-
-                            case "aodata":
-                                AoData AoTag = (AoData)tag;
-                                if (Settings.Default.Debug) CnE_Sheet.Cells[1, ColumnOffset].Activate();
-                                InsertCol(CnE_Sheet, ColumnOffset);
-                                AoTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                                Excel.Range r2 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                                MergeAndCenter(r2);
-                                ColumnOffset++;
-                                break;
-
-                            case "didata":
-                                DiData DiTag = (DiData)tag;
-                                if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
-                                InsertRow(CnE_Sheet, RowOffset);
-                                DiTag.ToValueRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Value"));
-                                if (DiTag.AlmEnable == true)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    DiTag.ToAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Alarm"));
-                                    if (DiTag.Shutdown != null)
-                                    {
-                                        InsertRow(CnE_Sheet, RowOffset);
-                                        DiTag.ToShutdownRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Shutdown"));
-                                    }
-                                }
-                                break;
-
-                            case "aidata":
-                                AiData AiTag = (AiData)tag;
-                                if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
-                                InsertRow(CnE_Sheet, RowOffset);
-                                AiTag.ToPVRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.Value"));
-
-                                if (AiTag.HiHiEnable == true)
-                                {
-                                    
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToHSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HSD"));
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToHiHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiHiAlarm"));
-                                }
-                                if (AiTag.HiEnable == true)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToHiAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.HiAlarm"));
-                                }
-                                if (AiTag.LoEnable == true)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoAlarm"));
-                                }
-                                if (AiTag.LoLoEnable == true)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToLoLoAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LoLoAlarm"));
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToLSDRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.LSD"));
-                                }
-                                if (AiTag.BadPVEnable == true)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    AiTag.ToBadPVAlarmRow(CnE_Sheet.Rows[RowOffset++], TagCount($"{tag.Name}.BadPVAlarm"));
-                                }
-                                break;
-
-                            case "twopositionvalve":
-                            case "twopositionvalvev2":
-                                TwoPositionValveV2 TPV2Tag = (TwoPositionValveV2)tag;
-                                if (Settings.Default.Debug) CnE_Sheet.Cells[1, ColumnOffset].Activate();
-                                InsertCol(CnE_Sheet, ColumnOffset);
-                                TPV2Tag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                                Excel.Range r3 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                                MergeAndCenter(r3);
-                                ColumnOffset++;
-                                if (TPV2Tag.DisableFB != true)
-                                {
-                                    if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    TPV2Tag.ToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    TPV2Tag.ToCloseRow(CnE_Sheet.Rows[RowOffset++]);
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    TPV2Tag.ToFailedToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    TPV2Tag.ToFailedToCloseRow(CnE_Sheet.Rows[RowOffset++]);
-                                }
-
-                                
-                                break;
-
-                            case "valveanalog":
-                                ValveAnalog AAVTag = (ValveAnalog)tag;
-                                CnE_Sheet.Columns[ColumnOffset].Insert();
-                                AAVTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                                Excel.Range r4 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                                MergeAndCenter(r4);
-                                ColumnOffset++;
-
-                                if (AAVTag.DisableFB != true)
-                                {
-                                    CnE_Sheet.Rows[RowOffset].Insert();
-                                    AAVTag.ToPosRow(CnE_Sheet.Rows[RowOffset++]);
-                                    CnE_Sheet.Rows[RowOffset].Insert();
-                                    AAVTag.ToPosFailRow(CnE_Sheet.Rows[RowOffset++]);
-                                }
-                                break;
-
-
-                            default:
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ",$"Tag Exception",MessageBoxButtons.OK);
-                    }
-                    
-                }
-
-                // clean up for filtering.
-                CnE_Sheet.Rows[16].Delete();
-                CnE_Sheet.Columns[18].Delete();
-
-                excelApp.Visible = true;
-                excelApp.ScreenUpdating = true;
-                excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-
-            }
-            catch (Exception e)
-            {
-                if (excelApp != null)
-                {
-                    excelApp.Visible = true;
-                    excelApp.ScreenUpdating = true;
-                    excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-                }
-                var result = MessageBox.Show(e.Message, "Exception",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Error);
-                if (result == DialogResult.OK) return;
-
-            }
-
-
-            /// <summary>
-            /// Helper function to merge and format cells in Excel.
-            /// </summary>
-            /// <param name="MergeRange">The range to merge.</param>
-            static void MergeAndCenter(Excel.Range MergeRange)
-            {
-                MergeRange.Select();
-                MergeRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                MergeRange.VerticalAlignment = Excel.XlVAlign.xlVAlignBottom;
-                MergeRange.WrapText = false;
-                MergeRange.Orientation = 90;
-                MergeRange.AddIndent = false;
-                MergeRange.IndentLevel = 0;
-                MergeRange.ShrinkToFit = false;
-                MergeRange.ReadingOrder = (int)(Excel.Constants.xlContext);
-                MergeRange.MergeCells = false;
-                MergeRange.Merge(System.Type.Missing);
-            }
-
-            static void InsertRow(Excel.Worksheet ws,int offset)
-            {
-                ws.Rows[offset].Insert();
-                ws.Cells[offset, 3].Interior.Color = ws.Cells[16,3].Interior.Color;
-                ws.Cells[offset, 3].Font.Color = ws.Cells[16, 3].Font.Color;
-                ws.Cells[offset, 4].Interior.Color = ws.Cells[16, 3].Interior.Color;
-                ws.Cells[offset, 4].Font.Color = ws.Cells[16, 3].Font.Color;
-            }
-
-            static void InsertCol(Excel.Worksheet ws, int offset)
-            {
-                ws.Columns[offset].Insert();
-                ws.Cells[14, offset].Interior.Color = ws.Cells[14, 18].Interior.Color;
-                ws.Cells[14, offset].Font.Color = ws.Cells[14, 18].Font.Color;
-            }
-
-            int TagCount(string tag)
-            {
-                int r = 0;
-                foreach (PLC_Program program in Programs)  r += program.TagCount(tag);
-                return r;
-            }
-
-        }
-
-
-        public static void UpdateCnE(string FileName, BindingList<PLCTag> Tags)
-        {
-            Excel.Application? excelApp = null;
-
-            try
-            {
-                excelApp = new Excel.Application();
-                excelApp.Visible = !Properties.Settings.Default.HideExcel;
-
-                Excel.Workbook? CnE_Workbook = null;
-                Excel.Worksheet? CnE_Sheet = null;
-
-                // open the file as readonly.
-                excelApp.Workbooks.Open(FileName, false, true);
-                CnE_Workbook = excelApp.ActiveWorkbook;
-
-                // select the sheet
-                foreach (Excel.Worksheet ws in CnE_Workbook.Worksheets)
-                {
-                    try
-                    {
-                        // Find the last real row
-                        int lastUsedRow = ws.Cells.Find("*", System.Reflection.Missing.Value,
-                                                       System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-                                                       Excel.XlSearchOrder.xlByRows, Excel.XlSearchDirection.xlPrevious,
-                                                       false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Row;
-
-                        // Find the last real column
-                        int lastUsedColumn = ws.Cells.Find("*", System.Reflection.Missing.Value,
-                                                       System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-                                                       Excel.XlSearchOrder.xlByColumns, Excel.XlSearchDirection.xlPrevious,
-                                                       false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Column;
-
-                        //search for the correct sheet
-                        //if (lastUsedColumn != 23) continue;
-                        //if (lastUsedRow < 15) continue;
-                        //if (ws.Cells[1, 1].Value.ToString() != "COLOR LEGEND") continue;
-                        //if (ws.Cells[1, 2].Value.ToString() != "CALLOUT CODES") continue;
-                        //if (ws.Cells[1, 11].Value.ToString() != "C&E ACRONYM LEGEND") continue;
-                        Excel.Range range = ws.Cells;
-
-                        int count = 0;
-
-                        for (int i = 16; i < lastUsedRow; i++)
-                        {
-
-                            // tage name is 3
-                            // full tagname is 4
-                            // IO Details is 5
-                            // setpoint is 7
-                            // alarm on time is 8
-                            // alarm off time is 10
-                            // Auto Ack is 15
-                            // Status / Not in use is 6
-
-                            Excel.Range row = range.Rows[i];
-                            row.Cells[1, 4].Activate();
-
-                            // check for tag name
-                            if (row.Cells[1, 4].Value == null) continue;
-
-                            // get the tag name
-                            string BaseTag = row.Cells[1, 4].Value;
-                            string Element = string.Empty;
-                            if (BaseTag.Contains(".")) Element = BaseTag.Split('.')[1];
-                            BaseTag = BaseTag.Split('.')[0];
-
-                            var Tag = Tags.SingleOrDefault(tag => tag.Name == BaseTag);
-                            if (Tag == null) continue;
-
-                            switch (Tag.DataType.ToLower())
-                            {
-                                case "didata":
-                                    if (Element == string.Empty) continue;
-                                    DiData DiTag = (DiData)Tag;
-
-
-
-                                    row.Cells[1, 6].Value = "Not In Use";
-                                    row.Cells[1, 15].Value = "";
-
-                                    switch (Element.ToLower())
-                                    {
-                                        case "valve":
-                                            //if (DiTag.InUse == true) row.Cells[1, 6].Value = "Standard IO";
-                                            DiTag.ToValueRow(row);
-                                            break;
-
-                                        case "alarm":
-                                            //if (DiTag.InUse == true) row.Cells[1, 6].Value = "Soft IO";
-                                            //row.Cells[1, 9].Value = string.Format("{0} Sec.", DiTag.Cfg_AlmOnTmr);
-                                            //row.Cells[1, 10].Value = string.Format("{0} Sec.", DiTag.Cfg_AlmOffTmr);
-                                            //if (DiTag.AlmAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            DiTag.ToAlarmRow(row);
-                                            break;
-
-                                        default:
-                                            break;
-                                    }
-
-
-                                    break;
-
-                                case "aidata":
-                                    if (Element == string.Empty) continue;
-                                    AiData AiTag = (AiData)Tag;
-
-                                    row.Cells[1, 6].Value = "Not In Use";
-                                    row.Cells[1, 15].Value = "";
-
-                                    switch (Element.ToLower())
-                                    {
-                                        case "pv":
-                                            if (AiTag.InUse == true) { row.Cells[1, 6].Value = "Standard IO"; }
-                                            row.Cells[1, 5].Value = "Analog Input";
-                                            break;
-
-                                        case "hihialarm":
-                                            if (AiTag.HiHiEnable == true) row.Cells[1, 6].Value = "Standard IO";
-                                            row.Cells[1, 5].Value = "Soft IO";
-                                            row.Cells[1, 7].Value = AiTag.HiHiSP;
-                                            row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_HiHiOnTmr);
-                                            row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_HiHiOffTmr);
-                                            if (AiTag.HiHiAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            break;
-
-                                        case "hialarm":
-                                            if (AiTag.HiEnable == true) row.Cells[1, 6].Value = "Standard IO";
-                                            row.Cells[1, 5].Value = "Soft IO";
-                                            row.Cells[1, 7].Value = AiTag.HiSP;
-                                            row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_HiOnTmr);
-                                            row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_HiOffTmr);
-                                            if (AiTag.HiAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            break;
-
-                                        case "loalarm":
-                                            if (AiTag.LoEnable == true) row.Cells[1, 6].Value = "Standard IO";
-                                            row.Cells[1, 5].Value = "Soft IO";
-                                            row.Cells[1, 7].Value = AiTag.LoSP;
-                                            row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_LoOnTmr);
-                                            row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_LoOffTmr);
-                                            if (AiTag.LoAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            break;
-
-                                        case "loloalarm":
-                                            if (AiTag.LoLoEnable == true) row.Cells[1, 6].Value = "Standard IO";
-                                            row.Cells[1, 5].Value = "Soft IO";
-                                            row.Cells[1, 7].Value = AiTag.LoLoSP;
-                                            row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_LoLoOnTmr);
-                                            row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_LoLoOffTmr);
-                                            if (AiTag.LoLoAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            break;
-
-                                        case "badpvalarm":
-                                            if (AiTag.BadPVEnable == true) row.Cells[1, 6].Value = "Standard IO";
-                                            row.Cells[1, 5].Value = "Soft IO";
-                                            if (AiTag.BadPVAutoAck == true) row.Cells[1, 15].Value = "Y";
-                                            break;
-
-
-
-                                        default:
-                                            break;
-                                    }
-
-                                    break;
-
-                                default:
-                                    break;
-                            }
-
-
-                            count++;
-                            //Application.DoEvents();
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-
-                    }
-
-                }
-
-                //excelApp.Quit();
-
-            }
-            catch (Exception e)
-            {
-
-            }
-        }
+        [DebuggerStepThrough]
+        public virtual void ClearCounts() { throw new NotImplementedException(); }
 
         /// <summary>
         /// This class used to sort tags.
         /// </summary>
+        [DebuggerStepThrough]
         public class TagComparer : IComparer<XTO_AOI>
         {
             public int Compare(XTO_AOI first, XTO_AOI second)
@@ -1019,18 +581,77 @@ namespace CnE2PLC
             }
         }
 
+        public override string ToString() { return base.ToString(); }
 
     }
 
+    public class PLC_Base : PLCTag
+    {
+        public PLC_Base() { }
+        public PLC_Base(XmlNode node) :base(node) {
+            try
+            {
+                foreach (XmlNode item in node.ChildNodes)
+                {
+                    if (item.Name == "Data")
+                    {
+                        try
+                        {
 
+                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
+                            {
+                                foreach (XmlNode DataValue in item.ChildNodes)
+                                {
+                                    SetProperty(
+                                        "Value",
+                                        DataValue.Attributes.GetNamedItem("DataType").Value.Trim(),
+                                        DataValue.Attributes.GetNamedItem("Value").Value.Trim()
+                                        );
+                                }
+                                continue;
+                            }
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-
-
-
-
-
-
-    public class ABTimer : PLCTag
+        [DebuggerStepThrough]
+        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) {  }
+    }
+    
+    public class PLC_Bool : PLC_Base
+    {
+        public PLC_Bool() { //DataType = "BOOL";
+                            }
+        public PLC_Bool(XmlNode node) : base(node) { //DataType = "BOOL";
+                                                     }
+        public bool? Value { get; set; }
+    }
+    public class PLC_Int : PLC_Base
+    {
+        public PLC_Int() { //DataType = "Int";
+                           }
+        public PLC_Int(XmlNode node) : base(node) { //DataType = "Int";
+                                                    }
+        public int? Value { get; set; }
+    }
+    public class PLC_Real : PLC_Base
+    {
+        public PLC_Real() { DataType = "REAL"; }
+        public PLC_Real(XmlNode node) : base(node) { DataType = "REAL"; }
+        public float? Value { get; set; }
+    }
+    public class ABTimer : PLC_Base
     {
         // Standard AB Timer Data Type
         // 12 bytes on PLC
@@ -1041,7 +662,7 @@ namespace CnE2PLC
         public bool DN;
 
     }
-    public class ABString : PLCTag
+    public class ABString : PLC_Base
     {
         private int Max_Length = 82;
         public Int32 LEN = 0;
@@ -1090,6 +711,8 @@ namespace CnE2PLC
         }
 
     }
+
+
 
     public class AlmData : PLCTag
     {
