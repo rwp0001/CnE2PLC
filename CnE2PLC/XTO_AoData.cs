@@ -16,6 +16,37 @@ namespace CnE2PLC
             }
         }
 
+        public string AlarmText
+        {
+            get
+            {
+                string c = string.Empty;
+                if (Cfg_IncToClose == true) c += "Output is Reversed.\n";
+                if (Sim == true) c += "Output is Simmed.\n";
+                if (InUse == false) c += "Not In Use.\n";
+                if (AOICalled == false) c += "AOI Not Called.\n";
+                if (AOICalls > 1) c += "AOI called more then once.\n";
+                if (References == 0) c += "Not used in Program. SCADA Tag.\n";
+                if (Placeholder == true) c += "Placeholder on IO.\n";
+                return c;
+            }
+        }
+
+        public override string ToString()
+        {
+            string c = $"Name: {Name}\n";
+            c += $"PLC Tag Description: {Description}\n";
+            c += $"PLC Tag DataType: {DataType}\n";
+            c += $"Min EU: {MinEU} {Cfg_EU}, Max EU: {MaxEU} {Cfg_EU}\n";
+            c += $"Min Raw: {MinRaw}, Max Raw: {MaxRaw}\n";
+            c += AlarmText;
+            if (IO.Length > 0)
+            {
+                c += "IO: ";
+                c += IO;
+            }
+            return c;
+        }
 
         // Parameters
         public float? CV { get; set; }
@@ -30,11 +61,28 @@ namespace CnE2PLC
         public bool? SimReset { get; set; }
         public bool? SimActive { get; set; }
 
+        public override bool NotInUse
+        {
+            get
+            {
+                if (InUse == false) return true;
+                //if (AOICalled == false) return true;
+                //if (Placeholder == true) return true;
+                return false;
+            }
+        }
+        public override bool Placeholder
+        {
+            get
+            {
+                if (IO.ToLower().Contains("placeholder")) return true;
+                if (IO.ToLower().Contains($"{Name}.Raw".ToLower())) return true;
+                return false;
+            }
+        }
+
         // Local Tags
         public string? Cfg_EU { get; set; }
-        public bool? SIM_ONS { get; set; }
-
-
 
         #region Data Outputs
         public static void ToHeaderRow(Excel.Range row)
@@ -61,6 +109,32 @@ namespace CnE2PLC
             row.Cells[1, i++].Value = "Sim CV";
 
         }
+        public static string[] ToHeaderCSVRow()
+        {
+            string[] row = new string[20];
+            int i = 0;
+            row[i++] = "Scope";
+            row[i++] = "Tag Name";
+            row[i++] = "IO";
+            row[i++] = "Tag Description";
+            row[i++] = "HMI EquipID";
+            row[i++] = "HMI EquipDesc";
+            row[i++] = "HMI EU";
+            row[i++] = "AOI Calls";
+            row[i++] = "Tag References";
+            row[i++] = "InUse";
+            row[i++] = "Raw";
+            row[i++] = "Min Raw";
+            row[i++] = "Max Raw";
+            row[i++] = "Min EU";
+            row[i++] = "Max EU";
+            row[i++] = "CV";
+            row[i++] = "Inc To Close";
+            row[i++] = "Sim";
+            row[i++] = "Sim CV";
+            return row;
+
+        }
         public void ToDataRow(Excel.Range row)
         {
             int i = 1;
@@ -85,20 +159,35 @@ namespace CnE2PLC
             row.Cells[1, i++].Value = SimCV;
 
         }
+        public string[] ToDataCSVRow()
+        {
+            string[] row = new string[20];
+            int i = 0;
+            row[i++] = Path;
+            row[i++] = Name;
+            row[i++] = IO;
+            row[i++] = Description;
+            row[i++] = Cfg_EquipID;
+            row[i++] = Cfg_EquipDesc;
+            row[i++] = Cfg_EU;
+            row[i++] = $"{AOICalls}";
+            row[i++] = $"{References}";
+            row[i++] = InUse == true ? "Yes" : "No";
+            row[i++] = $"{Raw}";
+            row[i++] = $"{MinRaw}";
+            row[i++] = $"{MaxRaw}";
+            row[i++] = $"{MinEU}";
+            row[i++] = $"{MaxEU}";
+            row[i++] = $"{CV}";
+            row[i++] = Cfg_IncToClose == true ? "Yes" : "No";
+            row[i++] = Sim == true ? "Yes" : "No";
+            row[i++] = $"{SimCV}";
+            return row;
+
+        }
         #endregion
 
-        private string ColComment
-        {
-            get
-            {
-                string c = $"PLC Tag Description: {Description}\n";
-                c += $"PLC Tag DataType: {DataType}\n";
-                c += $"Max EU: {MaxEU} {Cfg_EU}, Min EU: {MinEU} {Cfg_EU}\n";
-                c += $"Max Raw: {MaxRaw}, Min Raw: {MinRaw}\n";
-                if (Sim == true) c += "Output is Simmed.\n";
-                return c;
-            }
-        }
+
 
         public void ToColumn(Excel.Range col)
         {
@@ -112,7 +201,7 @@ namespace CnE2PLC
                 col.Cells[14, 1].Font.Color = ColorTranslator.ToOle(Color.White);
             }
 
-            col.Cells[14, 1].AddComment(ColComment);
+            col.Cells[14, 1].AddComment(ToString());
 
         }
 

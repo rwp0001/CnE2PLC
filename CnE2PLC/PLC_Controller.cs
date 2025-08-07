@@ -2,27 +2,16 @@
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Xml;
 using System.Diagnostics;
+using System.ComponentModel;
+using Microsoft.Office.Interop.Excel;
+using libplctag.DataTypes;
 using libplctag;
+using System.Xml.Linq;
 
 namespace CnE2PLC
 {
     public class Controller
     {
-        public string? Use { get; set; }
-        public string? Name { get; set; }
-        public string? ProcessorType { get; set; }
-        public string? CommPath { get; set; }
-        public int? MajorRev { get; set; }
-        public int? MinorRev { get; set; }
-        public int? TimeSlice { get; set; }
-        public int? ShareUnusedTimeSlice { get; set; }
-        public DateTime? ProjectCreationDate { get; set; }
-        public DateTime? LastModifiedDate { get; set; }
-
-        public List<XTO_AOI> Tags { get; set; } = new();
-        public List<PLC_Program> Programs { get; set; } = new();
-
-
         public Controller() { }
         public Controller(XmlNode node)
         {
@@ -82,6 +71,9 @@ namespace CnE2PLC
                 Tags = ProcessTags(node.SelectSingleNode("Tags"));
                 // i may change the program to add all tags later, but for now i'm only doing the aoi's i need.
 
+                // get all the task
+                foreach (XmlNode p_node in node.SelectSingleNode("Tasks").ChildNodes) Tasks.Add(new Task(p_node));
+
                 // get all the programs
                 foreach (XmlNode p_node in node.SelectSingleNode("Programs").ChildNodes) Programs.Add(new PLC_Program(p_node));
 
@@ -89,7 +81,11 @@ namespace CnE2PLC
             }
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Error: {ex.Message}", "Contoller Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Error: {ex.Message}",
+                    "Contoller Import Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
 
             [DebuggerStepThrough]
@@ -179,13 +175,69 @@ namespace CnE2PLC
             }
         }
 
-        public List<XTO_AOI> AllTags
+        #region L5X Properties
+        public string? Use { get; set; }
+        public string? Name { get; set; }
+        public string? ProcessorType { get; set; }
+        public string? CommPath { get; set; }
+        public int? MajorRev { get; set; }
+        public int? MinorRev { get; set; }
+        public int? TimeSlice { get; set; }
+        public int? ShareUnusedTimeSlice { get; set; }
+        public DateTime? ProjectCreationDate { get; set; }
+        public DateTime? LastModifiedDate { get; set; }
+        public string? Description { get; set; }
+
+        #endregion
+        public static string ControllerScopeName = "Controller Scope";
+
+        private List<PLCTag> Tags { get; set; } = new();
+
+        public List<Task> Tasks { get; set; } = new();
+
+        public List<PLC_Program> Programs { get; set; } = new();
+
+        public BindingList<PLCTag> AllTags
         {
             get {
-                List<XTO_AOI> list = new();
-                foreach (XTO_AOI tag in Tags) list.Add(tag);
-                foreach (PLC_Program program in Programs) foreach (XTO_AOI tag in program.LocalTags) list.Add(tag);
-                list.Sort(new XTO_AOI.TagComparer());
+                BindingList<PLCTag> list = new();
+                foreach (PLCTag tag in Tags) list.Add(tag);
+                foreach (PLC_Program program in Programs) foreach (PLCTag tag in program.LocalTags) list.Add(tag);
+                return list;
+            }
+        }
+
+        public BindingList <XTO_AOI> AOI_Tags
+        {
+            get
+            {
+                BindingList<XTO_AOI> list = new();
+
+                foreach (XTO_AOI tag in Tags)
+                {
+                    if ( Filter_Alarmed & !tag.Alarmed ) continue;
+                    if ( Filter_Bypassed & !tag.Bypassed ) continue;
+                    if ( Filter_Simmed & !tag.Simmed ) continue;
+                    if ( Filter_Placeholder & !tag.Placeholder ) continue;
+                    if ( Filter_NotInUse & !tag.NotInUse ) continue;
+                    list.Add(tag);
+                }
+
+                if (Filter_LocalTags) return list;
+
+                foreach (PLC_Program program in Programs)
+                {
+                    foreach (XTO_AOI tag in program.LocalTags)
+                    {
+                        if (Filter_Alarmed & !tag.Alarmed) continue;
+                        if (Filter_Bypassed & !tag.Bypassed) continue;
+                        if (Filter_Simmed & !tag.Simmed) continue;
+                        if (Filter_Placeholder & !tag.Placeholder) continue;
+                        if (Filter_NotInUse & !tag.NotInUse) continue;
+                        list.Add(tag);
+                    }
+                }
+
                 return list;
             }
         }
@@ -194,7 +246,256 @@ namespace CnE2PLC
 
         public override string ToString() { return $"{Name} - {Version} - {ProcessorType}"; }
 
+        /// <summary>
+        /// Takes an XML list of Tags and converts them to a list of the converted cleasses.
+        /// </summary>
+        /// <param name="XMLTags">XML node containing the tags.</param>
+        /// <returns>List of converted tags.</returns>
+        public static List<PLCTag> ProcessTags(XmlNode XMLTags)
+        {
+            List<PLCTag> Tags = new();
+            try
+            {
+                foreach (XmlNode item in XMLTags.ChildNodes)
+                {
+                    try
+                    {
+                        // Handle Arrays here.
+                        XmlNode n = item.Attributes.GetNamedItem("Dimensions");
+                        if ( n != null )
+                        {
+                            int.TryParse(n.InnerText, out int Dimensions);
+                            foreach (XmlNode node in item.ChildNodes) {
+                                n = node.Attributes.GetNamedItem("Format");
+                                if (n != null) if (n.InnerText != "Decorated") continue; // skip L5Ks
 
+                                if (node.Name == "Data") {
+                                    foreach (XmlNode node2 in node.ChildNodes) {
+                                        if (node2.Name == "Array") {
+                                            foreach (XmlNode node3 in node2.ChildNodes)
+                                            {
+                                                PLCTag? t = CreateTag(node.FirstChild);
+                                                if (t != null) Tags.Add(t);
+                                            }
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            PLCTag? t = CreateTag(item);
+                            if (t != null) Tags.Add(t);
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        var r = MessageBox.Show(
+                            $"Error Processing node.\nEroor: {ex.Message}\nName: {item.Name}\nNode:\n{item.InnerText}\n",
+                            "Tag Import Exception",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+                var r = MessageBox.Show(
+                    $"Error: {ex.Message}\nFrom: {XMLTags}",
+                    "Process Tags Exception",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+
+            return Tags;
+
+        }
+
+        /// <summary>
+        /// Maps the Datatype of a node to one of the classes we are looking for.
+        /// </summary>
+        /// <param name="node">XML node to be checked.</param>
+        /// <returns>Null if not a type we care about, or a converted tag.</returns>
+        static public PLCTag? CreateTag(XmlNode node)
+        {
+            string Name, TagType, DataType;
+            Name = string.Empty;
+            DataType = string.Empty;
+            TagType = string.Empty;
+            int Dimensions, i;
+
+            if (node.Attributes.Count != 0)
+            {
+                XmlNode n;
+
+                n = node.Attributes.GetNamedItem("Name");
+                if (n != null) Name = n.InnerText;
+                if (n == null) return null;
+
+                n = node.Attributes.GetNamedItem("TagType");
+                if (n != null) TagType = n.InnerText;
+                if (n == null) return null;
+
+                n = node.Attributes.GetNamedItem("DataType");
+                if (n != null) DataType = n.InnerText;
+                if (n == null) return null;
+
+                // handle differrent lenght strings
+                if (DataType.ToLower().Contains("string")) DataType = "String";
+
+                if (TagType == "Alias") DataType = TagType;
+
+                n = node.Attributes.GetNamedItem("Dimensions");
+                if (n != null)
+                {
+                    int.TryParse(n.InnerText, out i);
+                    Dimensions = i;
+                }
+
+                n = node.Attributes.GetNamedItem("Index");
+                if (n != null)
+                {
+                    Name += n.InnerText;
+                }
+            }
+
+            switch (DataType)
+            {
+
+                // Base tags
+                case "BOOL": return Settings.Default.BaseTypes ? new PLC_Bool(node) : null;
+                case "REAL": return Settings.Default.BaseTypes ? new PLC_Real(node) : null;
+                case "SINT": return Settings.Default.BaseTypes ? new PLC_Int(node) : null;
+                case "INT": return Settings.Default.BaseTypes ? new PLC_Int(node) : null;
+                case "DINT": return Settings.Default.BaseTypes ? new PLC_Int(node) : null;
+                case "String": return Settings.Default.BaseTypes ? new ABString(node) : null;
+
+                // Basic IO AIO
+                case "AIData": return new AIData(node);
+                case "AOData": return new AOData(node);
+                case "DIData": return new DIData(node);
+                case "DOData": return new DOData(node);
+
+                // FIMS
+                case "AIData_FIMS": return new AIData_FIMS(node);
+                case "DIData_FIMS": return new DIData_FIMS(node);
+
+                // Valves
+                case "TwoPositionValveV2": return new TwoPositionValveV2(node);
+                case "TwoPositionValve": return new TwoPositionValve(node);
+                case "ValveAnalog": return new ValveAnalog(node);
+
+                // Motors and Pumps
+                case "Motor_VFD": return new Motor_VFD(node);
+
+                // Interlocks
+                case "Intlk_8": return new Intlk_8(node);
+                case "Intlk_16": return new Intlk_16(node);
+                case "Intlk_64V3": return new Intlk_64V3(node);
+                case "Intlk_64V2": return new Intlk_64V2(node);
+                case "Intlk_64": return new Intlk_64(node);
+                /*    
+                case "IntlkESD": return new IntlkESD(node);
+                 */
+                default: return null;
+            }
+        }
+
+        public void UpdateCounts()
+        {
+            foreach (Task task in Tasks)
+            {
+
+            }
+
+
+            // count the number of time a tag is used.
+            foreach (XTO_AOI tag in AOI_Tags)
+            {
+                try
+                {
+                    tag.ClearCounts();
+                    tag.IOs.Clear();
+
+                    foreach (PLC_Program program in Programs)
+                    {
+                        if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
+
+                        int c, r;
+                        c = program.AOICount(tag.DataType, tag.Name);
+                        r = program.TagCount($"{tag.Name}");
+                        tag.AOICalls += c;
+                        tag.References += r - c;
+
+                        // record the io points found.
+                        if (c != 0) tag.IOs.AddRange(program.GetIO(tag.DataType, tag.Name));
+
+                        if (tag.DataType == "AIData" || tag.DataType == "AIData_FIMS")
+                        {
+                            AIData AI = (AIData)tag;
+                            AI.HSD_Count += program.TagCount($"{tag.Name}.HSD");
+                            AI.LSD_Count += program.TagCount($"{tag.Name}.LSD");
+                            AI.HiHi_Count += program.TagCount($"{tag.Name}.HiHiAlarm");
+                            AI.Hi_Count += program.TagCount($"{tag.Name}.HiAlarm");
+                            AI.Lo_Count += program.TagCount($"{tag.Name}.LoAlarm");
+                            AI.LoLo_Count += program.TagCount($"{tag.Name}.LoLoAlarm");
+                            AI.PV_Count += program.TagCount($"{tag.Name}.PV");
+                            AI.BadPV_Count += program.TagCount($"{tag.Name}.BadPVAlarm");
+                            AI.Raw_Count += program.TagCount($"{tag.Name}.Raw");
+                        }
+
+                        if (tag.DataType == "DIData" || tag.DataType == "DIData_FIMS")
+                        {
+                            DIData DI = (DIData)tag;
+                            DI.SD_Count += program.TagCount($"{tag.Name}.Shutdown");
+                            DI.Val_Count += program.TagCount($"{tag.Name}.Value");
+                            DI.Alm_Count += program.TagCount($"{tag.Name}.Alarm");
+                            DI.Raw_Count += program.TagCount($"{tag.Name}.Raw");
+                        }
+
+                        if (tag.DataType == "TwoPositionValveV2" || tag.DataType == "TwoPositionValve")
+                        {
+                            TwoPositionValveV2 TPV2 = (TwoPositionValveV2)tag;
+                            TPV2.Open_Count += program.TagCount($"{tag.Name}.Open");
+                            TPV2.Close_Count += program.TagCount($"{tag.Name}.Close");
+                            TPV2.FTO_Count += program.TagCount($"{tag.Name}.FailedToOpen");
+                            TPV2.FTC_Count += program.TagCount($"{tag.Name}.FailedToClose");
+                        }
+
+                        if (tag.DataType == "ValveAnalog")
+                        {
+                            ValveAnalog AV = (ValveAnalog)tag;
+                            AV.Pos_Count += program.TagCount($"{tag.Name}.Pos");
+                            AV.PosFail_Count += program.TagCount($"{tag.Name}.PosFail");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    var r = MessageBox.Show(
+                        $"Error: {ex.Message}\nFrom: {tag.Name}",
+                        "Update Counts Exception",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+
+        }
+
+        public bool Filter_NotInUse { get; set; }
+        public bool Filter_Alarmed { get; set; }
+        public bool Filter_Bypassed { get; set; }
+        public bool Filter_Simmed { get; set; }
+        public bool Filter_Placeholder { get; set; }
+        public bool Filter_LocalTags { get; set; }
+
+        #region Report Functions
         /// <summary>
         /// Exports the Tags to a Excel Templete.
         /// </summary>
@@ -206,17 +507,20 @@ namespace CnE2PLC
             {
 
                 excelApp = new Excel.Application();
-                excelApp.Visible = false;
-                excelApp.ScreenUpdating = false;
+
 
                 if (Settings.Default.Debug)
                 {
                     excelApp.Visible = true;
                     excelApp.ScreenUpdating = true;
-                    excelApp.Top = 0;
-                    excelApp.Left = 0;
-                    excelApp.Height = Screen.PrimaryScreen.WorkingArea.Height;
-                    excelApp.Width = Screen.PrimaryScreen.WorkingArea.Width;
+                    //excelApp.Top = 0;
+                    //excelApp.Left = 0;
+                    //excelApp.Height = Screen.PrimaryScreen.WorkingArea.Height;
+                    //excelApp.Width = Screen.PrimaryScreen.WorkingArea.Width;
+                } else
+                {
+                    excelApp.Visible = false;
+                    excelApp.ScreenUpdating = false;
                 }
 
                 Excel.Workbook? CnE_Workbook = null;
@@ -229,6 +533,8 @@ namespace CnE2PLC
                 Excel.Range range = CnE_Sheet.Cells;
                 excelApp.Calculation = Excel.XlCalculation.xlCalculationManual;
 
+                CnE_Sheet.Name = Name;
+
                 int RowOffset = 17; // first row to use.
                 int ColumnOffset = 19;
 
@@ -236,8 +542,8 @@ namespace CnE2PLC
                 {
                     try
                     {
-                        if (!tag.AOICalled) continue;
-                        if (tag.InUse != true) continue;
+                        //if (!tag.AOICalled) continue;
+                        //if (tag.InUse != true) continue;
 
                         switch (tag.DataType.ToLower())
                         {
@@ -262,6 +568,7 @@ namespace CnE2PLC
                                 break;
 
                             case "didata":
+                            case "didata_fims":
                                 DIData DiTag = (DIData)tag;
                                 if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
                                 InsertRow(CnE_Sheet, RowOffset);
@@ -281,6 +588,7 @@ namespace CnE2PLC
                                 break;
 
                             case "aidata":
+                            case "aidata_fims":
                                 AIData AiTag = (AIData)tag;
                                 if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
                                 InsertRow(CnE_Sheet, RowOffset);
@@ -340,25 +648,25 @@ namespace CnE2PLC
                                 {
                                     if (Settings.Default.Debug) CnE_Sheet.Cells[RowOffset, 1].Activate();
 
-                                    if (TPV2Tag.Open_Count != 0)
+                                    //if (TPV2Tag.Open_Count != 0)
                                     {
                                         InsertRow(CnE_Sheet, RowOffset);
                                         TPV2Tag.ToOpenRow(CnE_Sheet.Rows[RowOffset++]);
                                     }
 
-                                    if (TPV2Tag.Close_Count != 0)
+                                    //if (TPV2Tag.Close_Count != 0)
                                     {
                                         InsertRow(CnE_Sheet, RowOffset);
                                         TPV2Tag.ToCloseRow(CnE_Sheet.Rows[RowOffset++]);
                                     }
 
-                                    if (TPV2Tag.FTO_Count != 0)
+                                    //if (TPV2Tag.FTO_Count != 0)
                                     {
                                         InsertRow(CnE_Sheet, RowOffset);
                                         TPV2Tag.ToFailedToOpenRow(CnE_Sheet.Rows[RowOffset++]);
                                     }
 
-                                    if (TPV2Tag.FTO_Count != 0)
+                                    //if (TPV2Tag.FTO_Count != 0)
                                     {
                                         InsertRow(CnE_Sheet, RowOffset);
                                         TPV2Tag.ToFailedToCloseRow(CnE_Sheet.Rows[RowOffset++]);
@@ -378,17 +686,24 @@ namespace CnE2PLC
 
                                 if (AAVTag.DisableFB != true)
                                 {
-                                    if (AAVTag.Pos_Count != 0)
+                                    //if (AAVTag.Pos_Count != 0)
                                     {
                                         CnE_Sheet.Rows[RowOffset].Insert();
                                         AAVTag.ToPosRow(CnE_Sheet.Rows[RowOffset++]);
                                     }
-                                    if (AAVTag.PosFail_Count != 0)
+                                    //if (AAVTag.PosFail_Count != 0)
                                     {
                                         CnE_Sheet.Rows[RowOffset].Insert();
                                         AAVTag.ToPosFailRow(CnE_Sheet.Rows[RowOffset++]);
                                     }
                                 }
+                                break;
+
+                            case "motor_vfd":
+                                Motor_VFD motor_VFD = (Motor_VFD)tag;
+
+
+
                                 break;
 
 
@@ -418,7 +733,7 @@ namespace CnE2PLC
                 {
                     excelApp.Visible = true;
                     excelApp.ScreenUpdating = true;
-                    excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
+                    //excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
                 }
                 var result = MessageBox.Show(e.Message, "Exception",
                                 MessageBoxButtons.OK,
@@ -929,169 +1244,285 @@ namespace CnE2PLC
 
         }
 
-        public static List<XTO_AOI> ProcessTags(XmlNode XMLTags)
+        #endregion
+
+        #region Online Functions
+        // ----------------- Online Functions --------------------------------
+        private string ip = "192.168.1.10";
+        private string path = "1,0";
+        private PlcType plcType = PlcType.ControlLogix;
+        private Protocol protocol = Protocol.ab_eip;
+        private Tag<TagInfoPlcMapper, TagInfo[]>? onlinetags;
+        private IEnumerable<int>? uniqueUdtTypeIds;
+        private Dictionary<int, string>? udt_id_pairs;
+        private bool connected = false;
+        private static readonly ushort TYPE_IS_STRUCT = 0x8000;
+        private static readonly ushort TYPE_IS_SYSTEM = 0x1000;
+        private static readonly ushort TYPE_UDT_ID_MASK = 0x0FFF;
+
+        static bool TagIsUdt(TagInfo tag) { return ((tag.Type & TYPE_IS_STRUCT) != 0) && !((tag.Type & TYPE_IS_SYSTEM) != 0); }
+
+        static int GetUdtId(TagInfo tag) { return tag.Type & TYPE_UDT_ID_MASK; }
+
+        static bool TagIsSystem(TagInfo tag) { return (tag.Type & TYPE_IS_SYSTEM) != 0; }
+
+        static bool TagIsProgram(TagInfo tag, out string prefix)
         {
-            List<XTO_AOI> Tags = new();
+            if (tag.Name.StartsWith("Program:"))
+            {
+                prefix = tag.Name;
+                return true;
+            }
+            else
+            {
+                prefix = string.Empty;
+                return false;
+            }
+        }
+
+        public string GetUDTName(int id) {
+            string s;
+            UDT_ID_Pairs.TryGetValue(id, out s);
+            return s?? $"{id} Not Found.";
+        }
+
+        public string GetUDTName(TagInfo tag)
+        {
+            int id = GetUdtId(tag);
+            return GetUDTName(id);
+        }
+
+        public int? GetUDTid(string name)
+        {
+            if (UDT_ID_Pairs.ContainsValue(name))
+            {
+                var key = UDT_ID_Pairs.Where(pair => pair.Value == name)
+                    .Select(pair => pair.Key)
+                    .FirstOrDefault();
+                return key;
+            }
+            return null;
+        }
+
+        public Tag<TagInfoPlcMapper, TagInfo[]> OnlineTags
+        {
+            get
+            {
+                if (onlinetags == null)
+                {
+                    onlinetags = new Tag<TagInfoPlcMapper, TagInfo[]>()
+                    {
+                        Gateway = this.ip,
+                        Path = this.path,
+                        PlcType = this.plcType,
+                        Protocol = this.protocol,
+                        Name = "@tags"
+                    };
+                    onlinetags.Read();
+                    if (onlinetags.GetStatus() != Status.Ok)
+                    {
+                        connected = false;
+                        throw new Exception(($"PLC did not respond."));
+                    }
+                    connected = true;
+                }
+
+                Tag<TagInfoPlcMapper, TagInfo[]> returnvalue = new();
+                foreach (var tag in onlinetags.Value)
+                {
+                    if (tag.Name.Contains("__DEFVAL_")) continue;
+                    if (TagIsSystem(tag)) continue;
+                    if (!TagIsUdt(tag)) continue;
+
+                }
+
+                return returnvalue;
+            }
+        }
+
+        public IEnumerable<int> UniqueUdtTypeIds
+        {
+            get
+            {
+                if (uniqueUdtTypeIds == null)
+                {
+                    uniqueUdtTypeIds = OnlineTags.Value
+                   .Where(tagInfo => TagIsUdt(tagInfo))
+                   .Select(tagInfo => GetUdtId(tagInfo))
+                   .Distinct();
+                }
+                return uniqueUdtTypeIds;
+            }
+        }
+
+        public Dictionary<int, string> UDT_ID_Pairs
+        {
+            get
+            {
+                if (udt_id_pairs == null)
+                {
+                    udt_id_pairs = new Dictionary<int, string>();
+                    foreach (var udtId in UniqueUdtTypeIds)
+                    {
+                        var udtTag = new Tag<UdtInfoPlcMapper, UdtInfo>()
+                        {
+                            Gateway = this.ip,
+                            Path = this.path,
+                            PlcType = this.plcType,
+                            Protocol = this.protocol,
+                            Name = $"@udt/{udtId}",
+                        };
+
+                        udtTag.Read();
+
+                        if (udtTag.GetStatus() != Status.Ok)
+                        {
+                            connected = false;
+                            throw new Exception(($"PLC did not respond."));
+                        }
+
+                        UdtInfo udt = udtTag.Value;
+                        udt_id_pairs.Add(udtId, udt.Name);
+                    }
+                    connected = true;
+                }
+                return udt_id_pairs;
+            }
+        }
+
+        private void ClearCaches()
+        {
+            connected = false;
+            onlinetags = null;
+            uniqueUdtTypeIds = null;
+            udt_id_pairs = null;
+        }
+
+        public string PrintTags()
+        {
+            string s = "";
+            UDT_ID_Pairs.Count();
+            foreach (var f in OnlineTags.Value)
+            {
+                if(TagIsSystem(f)) continue;
+                s += $"Name: {f.Name} Type: {f.Type}";
+                if (TagIsUdt(f)) s += $" is UDT. ( {GetUdtId(f)} )";
+                s += "\n";
+            }
+            return s;
+        }
+
+        public string PrintUdtTags()
+        {
+            string s = "";
+            UDT_ID_Pairs.Count();
+            foreach (var f in OnlineTags.Value)
+            {
+                if (f.Name.Contains("__DEFVAL_")) continue;
+                if (TagIsSystem(f)) continue;
+                if (!TagIsUdt(f)) continue;
+                s += $"Name: {f.Name}  Type: {GetUDTName(f)}\n";
+            }
+            return s;
+        }
+
+        public string PrintUDTs()
+        {
+            string s = "";
+            foreach (var udtId in UniqueUdtTypeIds)
+            {
+                try
+                {
+                    var udtTag = new Tag<UdtInfoPlcMapper, UdtInfo>()
+                    {
+                        Gateway = this.ip,
+                        Path = this.path,
+                        PlcType = this.plcType,
+                        Protocol = this.protocol,
+                        Name = $"@udt/{udtId}",
+                    };
+                    udtTag.Read();
+                    UdtInfo udt = udtTag.Value;
+                    s += $"UDT Id: {udt.Id} Name: {udt.Name} NumFields: {udt.NumFields} Size: {udt.Size}\n";
+                    foreach (var f in udt.Fields) s += $"\tName: {f.Name} Offset: {f.Offset} Metadata: {f.Metadata} Type: {f.Type}\n";
+                }
+                catch (Exception e)
+                {
+                    s += ($"\n\tException: {e.Message}\n");
+                }
+            }
+            return s;
+        }
+
+        #endregion
+
+    }
+
+    public class Task { 
+        public Task() { }
+        public Task(XmlNode node) 
+        {
             try
             {
-                foreach (XmlNode item in XMLTags.ChildNodes)
+                int n;
+                XmlNode? s;
+
+                s = node.Attributes.GetNamedItem("Name");
+                if (s != null) Name = s.InnerText;
+
+                s = node.Attributes.GetNamedItem("Type");
+                if (s != null) Type = s.InnerText;
+
+                s = node.Attributes.GetNamedItem("Rate");
+                if (s != null)
                 {
-                    try
-                    {
-                        string Name, TagType, DataType;
-                        Name = string.Empty;
-                        DataType = string.Empty;
-                        TagType = string.Empty;
-
-                        if (item.Attributes.Count != 0)
-                        {
-                            XmlNode n;
-
-                            n = item.Attributes.GetNamedItem("Name");
-                            if(n!=null) Name = n.InnerText;
-
-                            n = item.Attributes.GetNamedItem("TagType");
-                            if (n != null) TagType = n.InnerText;
-
-                            n= item.Attributes.GetNamedItem("DataType");
-                            if (n != null) DataType = n.InnerText;
-
-                            if (TagType == "Alias") DataType = TagType;
-        
-                        }
-
-                        switch (DataType)
-                        {
-                            //case "BOOL":
-                            //    if(Settings.Default.BaseTypes) Tags.Add(new PLC_Bool(item));
-                            //    break;
-
-                            //case "REAL":
-                            //    if (Settings.Default.BaseTypes) Tags.Add(new PLC_Real(item));
-                            //    break;
-
-                            //case "INT":
-                            //case "DINT":
-                            //    if (Settings.Default.BaseTypes) Tags.Add(new PLC_Int(item));
-                            //    break;
-
-                            case "AIData":
-                                Tags.Add(new AIData(item));
-                                break;
-
-                            case "AOData":
-                                Tags.Add(new AOData(item));
-                                break;
-
-                            case "DIData":
-                                Tags.Add(new DIData(item));
-                                break;
-
-                            case "DOData":
-                                Tags.Add(new DOData(item));
-                                break;
-
-                            case "TwoPositionValveV2":
-                                Tags.Add(new TwoPositionValveV2(item));
-                                break;
-
-                            case "TwoPositionValve":
-                                Tags.Add(new TwoPositionValve(item));
-                                break;
-
-                            case "ValveAnalog":
-                                Tags.Add(new ValveAnalog(item));
-                                break;
-
-                            case "Intlk_8":
-                                Tags.Add(new Intlk_8(item));
-                                break;
-
-                            case "Intlk_16":
-                                Tags.Add(new Intlk_16(item));
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var r = MessageBox.Show($"Error Processing node.\nEroor: {ex.Message}\nName: {item.Name}\nNode:\n{item.InnerText}\n", "Tag Import Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
+                    int.TryParse(s.InnerText, out n);
+                    Rate = n;
                 }
 
-                Tags.Sort(new XTO_AOI.TagComparer());
+                s = node.Attributes.GetNamedItem("Priority");
+                if (s != null)
+                {
+                    int.TryParse(s.InnerText, out n);
+                    Priority = n;
+                }
 
-                return Tags;
+                s = node.Attributes.GetNamedItem("Watchdog");
+                if (s != null)
+                {
+                    int.TryParse(s.InnerText, out n);
+                    Watchdog = n;
+                }
+
+                s = node.Attributes.GetNamedItem("Description");
+                if (s != null) Description = s.InnerText;
+
+
+                // get all the program names
+                foreach (XmlNode p_node in node.SelectSingleNode("ScheduledPrograms").ChildNodes)
+                {
+                    XmlNode p = p_node.Attributes.GetNamedItem("Name");
+                    if ( p != null ) ScheduledPrograms.Add(p.InnerText);
+                }
             }
-
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Error: {ex.Message}", "Process Tags Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return Tags;
+                var r = MessageBox.Show($"Error: {ex.Message}", "Contoller Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        public void UpdateCounts()
-        {
-            foreach (XTO_AOI tag in Tags)
-            {
-                tag.ClearCounts();
-                tag.IOs.Clear();
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public int? Rate { get; set; }
+        public int? Priority { get; set; }
+        public int? Watchdog { get; set; }
+        public bool? DisableUpdateOutputs { get; set; }
+        public bool? InhibitTask { get; set; }
+        public string? Description { get; set; }
+        public List<string> ScheduledPrograms { get; set; } = new();
 
-                foreach (PLC_Program program in Programs)
-                {
-                    if (tag.Path != "Controller" & tag.Path != program.Name) continue;
+        public override string ToString() { return $"{Name} {Description} Count:{ScheduledPrograms.Count}"; }
 
-                    int c, r;
-                    c = program.AOICount(tag.DataType, tag.Name);
-                    r = program.TagCount($"{tag.Name}");
-                    tag.AOICalls += c;
-                    tag.References += r - c;
-
-                    if (c != 0) tag.IOs.AddRange(program.GetIO(tag.DataType, tag.Name));
-
-                    if (tag.DataType == "AIData")
-                    {
-                        AIData AI = (AIData)tag;
-                        AI.HSD_Count += program.TagCount($"{tag.Name}.HSD");
-                        AI.LSD_Count += program.TagCount($"{tag.Name}.LSD");
-                        AI.HiHi_Count += program.TagCount($"{tag.Name}.HiHiAlarm");
-                        AI.Hi_Count += program.TagCount($"{tag.Name}.HiAlarm");
-                        AI.Lo_Count += program.TagCount($"{tag.Name}.LoAlarm");
-                        AI.LoLo_Count += program.TagCount($"{tag.Name}.LoLoAlarm");
-                        AI.PV_Count += program.TagCount($"{tag.Name}.PV");
-                        AI.BadPV_Count += program.TagCount($"{tag.Name}.BadPVAlarm");
-                    }
-
-                    if (tag.DataType == "DIData")
-                    {
-                        DIData DI = (DIData)tag;
-                        DI.SD_Count += program.TagCount($"{tag.Name}.Shutdown");
-                        DI.Val_Count += program.TagCount($"{tag.Name}.Value");
-                        DI.Alm_Count += program.TagCount($"{tag.Name}.Alarm");
-                    }
-
-                    if (tag.DataType == "TwoPositionValveV2" | tag.DataType == "TwoPositionValve")
-                    {
-                        TwoPositionValveV2 TPV2 = (TwoPositionValveV2)tag;
-                        TPV2.Open_Count += program.TagCount($"{tag.Name}.Open");
-                        TPV2.Close_Count += program.TagCount($"{tag.Name}.Close");
-                        TPV2.FTO_Count += program.TagCount($"{tag.Name}.FailedToOpen");
-                        TPV2.FTC_Count += program.TagCount($"{tag.Name}.FailedToClose");
-                    }
-
-                    if (tag.DataType == "ValveAnalog")
-                    {
-                        ValveAnalog AV = (ValveAnalog)tag;
-                        AV.Pos_Count += program.TagCount($"{tag.Name}.Pos");
-                        AV.PosFail_Count += program.TagCount($"{tag.Name}.PosFail");
-                    }
-                }
-            }
-
-        }
     }
+
 }

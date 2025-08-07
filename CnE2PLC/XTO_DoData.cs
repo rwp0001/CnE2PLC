@@ -15,14 +15,30 @@ namespace CnE2PLC
             }
         }
 
-        private string ColComment { 
-            get 
-            {
-                string c = $"PLC Tag Description: {Description}\n";
-                c += $"PLC Tag DataType: {DataType}\n";
+        public string AlarmText { 
+            get {
+                string c = string.Empty;
                 if (Sim == true) c += "Output is Simmed.\n";
+                if (InUse == false) c += "Not In Use.\n";
+                if (AOICalled == false) c += "AOI Not Called.\n";
+                if (AOICalls > 1) c += "AOI called more then once.\n";
+                if (References == 0) c += "Not used in Program. SCADA Tag.\n";
+                if (Placeholder == true) c += "Placeholder on IO.\n";
                 return c;
             } 
+        }
+
+        public override string ToString()
+        {
+            string c = $"Name: {Name}\nPLC Tag Description: {Description}\n";
+            c += $"PLC Tag DataType: {DataType}\n";
+            c += AlarmText;
+            if (IO.Length > 0)
+            {
+                c += "IO: ";
+                c += IO;
+            }
+            return c;
         }
 
         //Parameters
@@ -30,6 +46,26 @@ namespace CnE2PLC
         public bool? Raw { get; set; }
         public bool? Sim { get; set; }
         public int? SimVal { get; set; }
+
+        public override bool NotInUse
+        {
+            get
+            {
+                if (InUse == false) return true;
+                //if (AOICalled == false) return true;
+                //if (Placeholder == true) return true;
+                return false;
+            }
+        }
+        public override bool Placeholder
+        {
+            get
+            {
+                if (IO.ToLower().Contains("placeholder")) return true;
+                if (IO.ToLower().Contains($"{Name}.Raw".ToLower())) return true;
+                return false;
+            }
+        }
 
 
         #region Data Outputs
@@ -71,8 +107,6 @@ namespace CnE2PLC
         }
         #endregion
 
-
-
         public void ToColumn(Excel.Range col, int TagCount = -1)
         {
             col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
@@ -93,7 +127,7 @@ namespace CnE2PLC
                 col.Cells[14, 1].Font.Color = ColorTranslator.ToOle(Color.White);
             }
 
-            col.Cells[14, 1].AddComment(ColComment);
+            col.Cells[14, 1].AddComment(ToString());
         }
 
         public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)

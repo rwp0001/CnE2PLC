@@ -39,6 +39,16 @@
             toolStripDeviceCount = new ToolStripStatusLabel();
             splitContainer1 = new SplitContainer();
             TagsDataView = new DataGridView();
+            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            AOICalls = new DataGridViewTextBoxColumn();
+            References = new DataGridViewTextBoxColumn();
+            IO = new DataGridViewTextBoxColumn();
+            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             Tags_DGV_Source = new BindingSource(components);
             LogText = new RichTextBox();
             contextMenuStrip_LogText = new ContextMenuStrip(components);
@@ -59,16 +69,12 @@
             aiReportToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             About_MenuItem = new ToolStripMenuItem();
-            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            AOICalls = new DataGridViewTextBoxColumn();
-            References = new DataGridViewTextBoxColumn();
-            IO = new DataGridViewTextBoxColumn();
-            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            filterToolStripMenuItem = new ToolStripMenuItem();
+            inUseToolStripMenuItem = new ToolStripMenuItem();
+            simmedToolStripMenuItem = new ToolStripMenuItem();
+            bypassedToolStripMenuItem = new ToolStripMenuItem();
+            alarmedToolStripMenuItem = new ToolStripMenuItem();
+            placeholderToolStripMenuItem = new ToolStripMenuItem();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -128,13 +134,13 @@
             // toolStripTagCount
             // 
             toolStripTagCount.Name = "toolStripTagCount";
-            toolStripTagCount.Size = new Size(49, 17);
+            toolStripTagCount.Size = new Size(50, 17);
             toolStripTagCount.Text = "No Tags";
             // 
             // toolStripUDTCount
             // 
             toolStripUDTCount.Name = "toolStripUDTCount";
-            toolStripUDTCount.Size = new Size(51, 17);
+            toolStripUDTCount.Size = new Size(52, 17);
             toolStripUDTCount.Text = "No UDTs";
             toolStripUDTCount.Click += toolStripStatusLabel1_Click;
             // 
@@ -181,7 +187,7 @@
             TagsDataView.DataSource = Tags_DGV_Source;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
@@ -196,156 +202,7 @@
             TagsDataView.Size = new Size(575, 191);
             TagsDataView.TabIndex = 1;
             TagsDataView.CellClick += DevicesDataView_CellContentClick;
-            // 
-            // Tags_DGV_Source
-            // 
-            Tags_DGV_Source.DataSource = typeof(XTO_AOI);
-            Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
-            // 
-            // LogText
-            // 
-            LogText.ContextMenuStrip = contextMenuStrip_LogText;
-            LogText.Dock = DockStyle.Fill;
-            LogText.Location = new Point(0, 0);
-            LogText.Margin = new Padding(2);
-            LogText.Name = "LogText";
-            LogText.ReadOnly = true;
-            LogText.Size = new Size(575, 63);
-            LogText.TabIndex = 0;
-            LogText.Text = "";
-            LogText.TextChanged += LogText_TextChanged;
-            // 
-            // contextMenuStrip_LogText
-            // 
-            contextMenuStrip_LogText.Items.AddRange(new ToolStripItem[] { copyToolStripMenuItem, clearLogToolStripMenuItem });
-            contextMenuStrip_LogText.Name = "contextMenuStrip1";
-            contextMenuStrip_LogText.Size = new Size(125, 48);
-            // 
-            // copyToolStripMenuItem
-            // 
-            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new Size(124, 22);
-            copyToolStripMenuItem.Text = "Copy";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
-            // 
-            // clearLogToolStripMenuItem
-            // 
-            clearLogToolStripMenuItem.Name = "clearLogToolStripMenuItem";
-            clearLogToolStripMenuItem.Size = new Size(124, 22);
-            clearLogToolStripMenuItem.Text = "Clear Log";
-            clearLogToolStripMenuItem.Click += clearLogToolStripMenuItem_Click;
-            // 
-            // menuStrip1
-            // 
-            menuStrip1.Dock = DockStyle.None;
-            menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, pLCToolStripMenuItem, outputToolStripMenuItem, helpToolStripMenuItem });
-            menuStrip1.Location = new Point(0, 0);
-            menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(575, 24);
-            menuStrip1.TabIndex = 0;
-            menuStrip1.Text = "menuStrip1";
-            // 
-            // fileToolStripMenuItem
-            // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem_CnE, openFileToolStripMenuItem_L5X, quitToolStripMenuItem });
-            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new Size(37, 20);
-            fileToolStripMenuItem.Text = "File";
-            // 
-            // toolStripMenuItem_CnE
-            // 
-            toolStripMenuItem_CnE.Enabled = false;
-            toolStripMenuItem_CnE.Name = "toolStripMenuItem_CnE";
-            toolStripMenuItem_CnE.Size = new Size(148, 22);
-            toolStripMenuItem_CnE.Text = "Open CnE File";
-            toolStripMenuItem_CnE.Click += toolStripMenuItem_CnE_Click;
-            // 
-            // openFileToolStripMenuItem_L5X
-            // 
-            openFileToolStripMenuItem_L5X.Name = "openFileToolStripMenuItem_L5X";
-            openFileToolStripMenuItem_L5X.Size = new Size(148, 22);
-            openFileToolStripMenuItem_L5X.Text = "Open L5X File";
-            openFileToolStripMenuItem_L5X.Click += openFileToolStripMenuItem_Click;
-            // 
-            // quitToolStripMenuItem
-            // 
-            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            quitToolStripMenuItem.Size = new Size(148, 22);
-            quitToolStripMenuItem.Text = "Quit";
-            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
-            // 
-            // pLCToolStripMenuItem
-            // 
-            pLCToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { getUDTsToolStripMenuItem, getTagsToolStripMenuItem, connectToPLCToolStripMenuItem });
-            pLCToolStripMenuItem.Enabled = false;
-            pLCToolStripMenuItem.Name = "pLCToolStripMenuItem";
-            pLCToolStripMenuItem.Size = new Size(40, 20);
-            pLCToolStripMenuItem.Text = "PLC";
-            // 
-            // getUDTsToolStripMenuItem
-            // 
-            getUDTsToolStripMenuItem.Name = "getUDTsToolStripMenuItem";
-            getUDTsToolStripMenuItem.Size = new Size(157, 22);
-            getUDTsToolStripMenuItem.Text = "Get UDTs";
-            getUDTsToolStripMenuItem.Click += getUDTsToolStripMenuItem_Click;
-            // 
-            // getTagsToolStripMenuItem
-            // 
-            getTagsToolStripMenuItem.Name = "getTagsToolStripMenuItem";
-            getTagsToolStripMenuItem.Size = new Size(157, 22);
-            getTagsToolStripMenuItem.Text = "Get Tags";
-            getTagsToolStripMenuItem.Click += getTagsToolStripMenuItem_Click;
-            // 
-            // connectToPLCToolStripMenuItem
-            // 
-            connectToPLCToolStripMenuItem.Name = "connectToPLCToolStripMenuItem";
-            connectToPLCToolStripMenuItem.Size = new Size(157, 22);
-            connectToPLCToolStripMenuItem.Text = "Connect to PLC";
-            connectToPLCToolStripMenuItem.Click += connectToPLCToolStripMenuItem_Click;
-            // 
-            // outputToolStripMenuItem
-            // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem });
-            outputToolStripMenuItem.Name = "outputToolStripMenuItem";
-            outputToolStripMenuItem.Size = new Size(57, 20);
-            outputToolStripMenuItem.Text = "Output";
-            // 
-            // updateCnEToolStripMenuItem
-            // 
-            updateCnEToolStripMenuItem.Enabled = false;
-            updateCnEToolStripMenuItem.Name = "updateCnEToolStripMenuItem";
-            updateCnEToolStripMenuItem.Size = new Size(136, 22);
-            updateCnEToolStripMenuItem.Text = "Update CnE";
-            updateCnEToolStripMenuItem.Click += updateCnEToolStripMenuItem_Click;
-            // 
-            // exportTagsToolStripMenuItem
-            // 
-            exportTagsToolStripMenuItem.Name = "exportTagsToolStripMenuItem";
-            exportTagsToolStripMenuItem.Size = new Size(136, 22);
-            exportTagsToolStripMenuItem.Text = "Export Tags";
-            exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
-            // 
-            // aiReportToolStripMenuItem
-            // 
-            aiReportToolStripMenuItem.Name = "aiReportToolStripMenuItem";
-            aiReportToolStripMenuItem.Size = new Size(136, 22);
-            aiReportToolStripMenuItem.Text = "IO Report";
-            aiReportToolStripMenuItem.Click += aiReportToolStripMenuItem_Click;
-            // 
-            // helpToolStripMenuItem
-            // 
-            helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { About_MenuItem });
-            helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            helpToolStripMenuItem.Size = new Size(44, 20);
-            helpToolStripMenuItem.Text = "Help";
-            // 
-            // About_MenuItem
-            // 
-            About_MenuItem.Name = "About_MenuItem";
-            About_MenuItem.Size = new Size(107, 22);
-            About_MenuItem.Text = "About";
-            About_MenuItem.Click += About_MenuItem_Click;
+            TagsDataView.ColumnHeaderMouseClick += TagsDataView_ColumnHeaderMouseClick;
             // 
             // equipNumDataGridViewTextBoxColumn
             // 
@@ -409,6 +266,192 @@
             cfgEquipDescDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipDesc";
             cfgEquipDescDataGridViewTextBoxColumn.HeaderText = "Equipment Description";
             cfgEquipDescDataGridViewTextBoxColumn.Name = "cfgEquipDescDataGridViewTextBoxColumn";
+            // 
+            // Tags_DGV_Source
+            // 
+            Tags_DGV_Source.DataSource = typeof(XTO_AOI);
+            Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
+            // 
+            // LogText
+            // 
+            LogText.ContextMenuStrip = contextMenuStrip_LogText;
+            LogText.Dock = DockStyle.Fill;
+            LogText.Location = new Point(0, 0);
+            LogText.Margin = new Padding(2);
+            LogText.Name = "LogText";
+            LogText.ReadOnly = true;
+            LogText.Size = new Size(575, 63);
+            LogText.TabIndex = 0;
+            LogText.Text = "";
+            LogText.TextChanged += LogText_TextChanged;
+            // 
+            // contextMenuStrip_LogText
+            // 
+            contextMenuStrip_LogText.Items.AddRange(new ToolStripItem[] { copyToolStripMenuItem, clearLogToolStripMenuItem });
+            contextMenuStrip_LogText.Name = "contextMenuStrip1";
+            contextMenuStrip_LogText.Size = new Size(125, 48);
+            // 
+            // copyToolStripMenuItem
+            // 
+            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            copyToolStripMenuItem.Size = new Size(124, 22);
+            copyToolStripMenuItem.Text = "Copy";
+            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            // 
+            // clearLogToolStripMenuItem
+            // 
+            clearLogToolStripMenuItem.Name = "clearLogToolStripMenuItem";
+            clearLogToolStripMenuItem.Size = new Size(124, 22);
+            clearLogToolStripMenuItem.Text = "Clear Log";
+            clearLogToolStripMenuItem.Click += clearLogToolStripMenuItem_Click;
+            // 
+            // menuStrip1
+            // 
+            menuStrip1.Dock = DockStyle.None;
+            menuStrip1.ImageScalingSize = new Size(24, 24);
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, pLCToolStripMenuItem, outputToolStripMenuItem, helpToolStripMenuItem, filterToolStripMenuItem });
+            menuStrip1.Location = new Point(0, 0);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Size = new Size(575, 24);
+            menuStrip1.TabIndex = 0;
+            menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem_CnE, openFileToolStripMenuItem_L5X, quitToolStripMenuItem });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(37, 20);
+            fileToolStripMenuItem.Text = "File";
+            // 
+            // toolStripMenuItem_CnE
+            // 
+            toolStripMenuItem_CnE.Enabled = false;
+            toolStripMenuItem_CnE.Name = "toolStripMenuItem_CnE";
+            toolStripMenuItem_CnE.Size = new Size(148, 22);
+            toolStripMenuItem_CnE.Text = "Open CnE File";
+            toolStripMenuItem_CnE.Click += toolStripMenuItem_CnE_Click;
+            // 
+            // openFileToolStripMenuItem_L5X
+            // 
+            openFileToolStripMenuItem_L5X.Name = "openFileToolStripMenuItem_L5X";
+            openFileToolStripMenuItem_L5X.Size = new Size(148, 22);
+            openFileToolStripMenuItem_L5X.Text = "Open L5X File";
+            openFileToolStripMenuItem_L5X.Click += openFileToolStripMenuItem_Click;
+            // 
+            // quitToolStripMenuItem
+            // 
+            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            quitToolStripMenuItem.Size = new Size(148, 22);
+            quitToolStripMenuItem.Text = "Quit";
+            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
+            // 
+            // pLCToolStripMenuItem
+            // 
+            pLCToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { getUDTsToolStripMenuItem, getTagsToolStripMenuItem, connectToPLCToolStripMenuItem });
+            pLCToolStripMenuItem.Name = "pLCToolStripMenuItem";
+            pLCToolStripMenuItem.Size = new Size(40, 20);
+            pLCToolStripMenuItem.Text = "PLC";
+            // 
+            // getUDTsToolStripMenuItem
+            // 
+            getUDTsToolStripMenuItem.Name = "getUDTsToolStripMenuItem";
+            getUDTsToolStripMenuItem.Size = new Size(157, 22);
+            getUDTsToolStripMenuItem.Text = "Get UDTs";
+            getUDTsToolStripMenuItem.Click += getUDTsToolStripMenuItem_Click;
+            // 
+            // getTagsToolStripMenuItem
+            // 
+            getTagsToolStripMenuItem.Name = "getTagsToolStripMenuItem";
+            getTagsToolStripMenuItem.Size = new Size(157, 22);
+            getTagsToolStripMenuItem.Text = "Get Tags";
+            getTagsToolStripMenuItem.Click += getTagsToolStripMenuItem_Click;
+            // 
+            // connectToPLCToolStripMenuItem
+            // 
+            connectToPLCToolStripMenuItem.Name = "connectToPLCToolStripMenuItem";
+            connectToPLCToolStripMenuItem.Size = new Size(157, 22);
+            connectToPLCToolStripMenuItem.Text = "Connect to PLC";
+            connectToPLCToolStripMenuItem.Click += connectToPLCToolStripMenuItem_Click;
+            // 
+            // outputToolStripMenuItem
+            // 
+            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem });
+            outputToolStripMenuItem.Name = "outputToolStripMenuItem";
+            outputToolStripMenuItem.Size = new Size(57, 20);
+            outputToolStripMenuItem.Text = "Output";
+            // 
+            // updateCnEToolStripMenuItem
+            // 
+            updateCnEToolStripMenuItem.Name = "updateCnEToolStripMenuItem";
+            updateCnEToolStripMenuItem.Size = new Size(180, 22);
+            updateCnEToolStripMenuItem.Text = "Update CnE";
+            updateCnEToolStripMenuItem.Click += updateCnEToolStripMenuItem_Click;
+            // 
+            // exportTagsToolStripMenuItem
+            // 
+            exportTagsToolStripMenuItem.Name = "exportTagsToolStripMenuItem";
+            exportTagsToolStripMenuItem.Size = new Size(180, 22);
+            exportTagsToolStripMenuItem.Text = "Export Tags";
+            exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
+            // 
+            // aiReportToolStripMenuItem
+            // 
+            aiReportToolStripMenuItem.Name = "aiReportToolStripMenuItem";
+            aiReportToolStripMenuItem.Size = new Size(180, 22);
+            aiReportToolStripMenuItem.Text = "IO Report";
+            aiReportToolStripMenuItem.Click += aiReportToolStripMenuItem_Click;
+            // 
+            // helpToolStripMenuItem
+            // 
+            helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { About_MenuItem });
+            helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            helpToolStripMenuItem.Size = new Size(44, 20);
+            helpToolStripMenuItem.Text = "Help";
+            // 
+            // About_MenuItem
+            // 
+            About_MenuItem.Name = "About_MenuItem";
+            About_MenuItem.Size = new Size(107, 22);
+            About_MenuItem.Text = "About";
+            About_MenuItem.Click += About_MenuItem_Click;
+            // 
+            // filterToolStripMenuItem
+            // 
+            filterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { inUseToolStripMenuItem, simmedToolStripMenuItem, bypassedToolStripMenuItem, alarmedToolStripMenuItem, placeholderToolStripMenuItem });
+            filterToolStripMenuItem.Name = "filterToolStripMenuItem";
+            filterToolStripMenuItem.Size = new Size(45, 20);
+            filterToolStripMenuItem.Text = "Filter";
+            // 
+            // inUseToolStripMenuItem
+            // 
+            inUseToolStripMenuItem.Name = "inUseToolStripMenuItem";
+            inUseToolStripMenuItem.Size = new Size(136, 22);
+            inUseToolStripMenuItem.Text = "In Use";
+            inUseToolStripMenuItem.Click += inUseToolStripMenuItem_Click;
+            // 
+            // simmedToolStripMenuItem
+            // 
+            simmedToolStripMenuItem.Name = "simmedToolStripMenuItem";
+            simmedToolStripMenuItem.Size = new Size(136, 22);
+            simmedToolStripMenuItem.Text = "Simmed";
+            // 
+            // bypassedToolStripMenuItem
+            // 
+            bypassedToolStripMenuItem.Name = "bypassedToolStripMenuItem";
+            bypassedToolStripMenuItem.Size = new Size(136, 22);
+            bypassedToolStripMenuItem.Text = "Bypassed";
+            // 
+            // alarmedToolStripMenuItem
+            // 
+            alarmedToolStripMenuItem.Name = "alarmedToolStripMenuItem";
+            alarmedToolStripMenuItem.Size = new Size(136, 22);
+            alarmedToolStripMenuItem.Text = "Alarmed";
+            // 
+            // placeholderToolStripMenuItem
+            // 
+            placeholderToolStripMenuItem.Name = "placeholderToolStripMenuItem";
+            placeholderToolStripMenuItem.Size = new Size(136, 22);
+            placeholderToolStripMenuItem.Text = "Placeholder";
             // 
             // Form1
             // 
@@ -537,5 +580,11 @@
         private DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipDescDataGridViewTextBoxColumn;
+        private ToolStripMenuItem filterToolStripMenuItem;
+        private ToolStripMenuItem inUseToolStripMenuItem;
+        private ToolStripMenuItem simmedToolStripMenuItem;
+        private ToolStripMenuItem bypassedToolStripMenuItem;
+        private ToolStripMenuItem alarmedToolStripMenuItem;
+        private ToolStripMenuItem placeholderToolStripMenuItem;
     }
 }

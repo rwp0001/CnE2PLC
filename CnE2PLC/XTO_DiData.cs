@@ -20,17 +20,33 @@ namespace CnE2PLC
         public int SD_Count { get; set; } = 0;
         public int Val_Count { get; set; } = 0;
         public int Alm_Count { get; set; } = 0;
+        public int Raw_Count { get; set; } = 0;
 
-
-        private string RowComment 
-        { 
-            get 
-            {
-                string c = $"PLC Tag Description: {Description}\n";
-                c += $"PLC DataType: {DataType}\n";
-                if (Sim == true) c += "Input is Simmed.\n";
+        private string AlarmText { 
+            get {
+                string c = string.Empty;
+                c += Alarm==true ? "Alarm is active.\n" : "";
+                c += Sim==true ? "Input is Simmed.\n" : "";
+                if (InUse == false) c += "Not In Use.\n";
+                if (AOICalled == false) c += "AOI Not Called.\n";
+                if (AOICalls > 1) c += "AOI called more then once.\n";
+                if (References == 0) c += "Not used in Program. SCADA Tag.\n";
+                if (Placeholder == true) c += "Placeholder on IO.\n";
                 return c;
-            } 
+            } }
+
+        public override string ToString()
+        {
+            string c = $"Name: {Name}\n";
+            c += $"PLC Tag Description: {Description}\n";
+            c += $"PLC DataType: {DataType}\n";
+            c += AlarmText;
+            if (IO.Length > 0)
+            {
+                c += "IO: ";
+                c += IO;
+            }
+            return c;
         }
 
         public void ToValueRow(Excel.Range row)
@@ -67,10 +83,7 @@ namespace CnE2PLC
             }
 
             // comments
-
-            row.Cells[1, 3].AddComment(RowComment);
-
-
+            row.Cells[1, 3].AddComment(ToString());
         }
 
         public void ToAlarmRow(Excel.Range row)
@@ -199,7 +212,7 @@ namespace CnE2PLC
 
         public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (this.Sim == true)
+            if (Simmed)
             {
                 e.CellStyle.BackColor = Color.Red;
                 e.CellStyle.ForeColor = Color.White;
@@ -207,7 +220,7 @@ namespace CnE2PLC
                 return;
             }
 
-            if (InUse != true)
+            if (NotInUse)
             {
                 e.CellStyle.BackColor = Color.LightGray;
             }
@@ -231,6 +244,30 @@ namespace CnE2PLC
 
         }
 
+        public override bool Simmed {  get { return Sim ?? false; } }
+        public override bool Bypassed { get { return BypActive ?? false; } }
+        public override bool Alarmed { get { return AlmCode == 0 ? false : true; } }
+        public override bool NotInUse
+        {
+            get
+            {
+                if( InUse == false ) return true;
+                //if( AOICalled == false ) return true;
+                //if(Placeholder == true ) return true;
+                return false;
+            }
+        }
+        public override bool Placeholder
+        {
+            get
+            {
+                if( IO.ToLower().Contains( "placeholder" ) ) return true;
+                if( IO.ToLower().Contains( $"{Name}.Value".ToLower()) & Raw_Count < 2 ) return true;
+                return false;
+            }
+        }
+
+
         //Parameters
 
         /// <summary>
@@ -244,7 +281,7 @@ namespace CnE2PLC
         public int? AlmState { get; set; }
         public bool? Sim { get; set; }
         public bool? SimValue { get; set; }
-        public bool? BpyActive { get; set; }
+        public bool? BypActive { get; set; }
         public bool? AlmEnable { get; set; }
         public bool? AlmAutoAck { get; set; }
         public bool? StartupDlyCond { get; set; }
@@ -269,4 +306,12 @@ namespace CnE2PLC
         }
 
     }
+
+    public class DIData_FIMS : DIData
+    {
+        public DIData_FIMS() { }
+        public DIData_FIMS(XmlNode node) : base(node) { }
+
+    }
+
 }
