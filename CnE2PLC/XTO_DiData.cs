@@ -307,11 +307,4 @@ namespace CnE2PLC
 
     }
 
-    public class DIData_FIMS : DIData
-    {
-        public DIData_FIMS() { }
-        public DIData_FIMS(XmlNode node) : base(node) { }
-
-    }
-
 }

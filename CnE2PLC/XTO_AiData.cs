@@ -652,10 +652,4 @@ namespace CnE2PLC
 
     }
 
-    public class AIData_FIMS : AIData
-    {
-        public AIData_FIMS() { }
-        public AIData_FIMS(XmlNode node) : base(node) { }
-
-    }
 }

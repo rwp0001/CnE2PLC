@@ -382,8 +382,8 @@ namespace CnE2PLC
                 case "DOData": return new DOData(node);
 
                 // FIMS
-                case "AIData_FIMS": return new AIData_FIMS(node);
-                case "DIData_FIMS": return new DIData_FIMS(node);
+                case "AIData_FIMS": return new AIData(node);
+                case "DIData_FIMS": return new DIData(node);
 
                 // Valves
                 case "TwoPositionValveV2": return new TwoPositionValveV2(node);
@@ -392,6 +392,8 @@ namespace CnE2PLC
 
                 // Motors and Pumps
                 case "Motor_VFD": return new Motor_VFD(node);
+                case "PumpData": return new PumpData(node);
+                case "PumpVData": return new PumpVData(node);
 
                 // Interlocks
                 case "Intlk_8": return new Intlk_8(node);
