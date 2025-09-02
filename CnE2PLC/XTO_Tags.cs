@@ -23,7 +23,7 @@ namespace CnE2PLC
         {
             try
             {
-                DecodeL5K();
+                
 
                 foreach (XmlNode item in node.ChildNodes)
                 {
@@ -31,14 +31,10 @@ namespace CnE2PLC
                     {
                         try
                         {
-                            // skip arrays for now.
-                            XmlNode n1 = node.Attributes.GetNamedItem("Dimensions");
-                            if (n1 != null)
-                            {
-                                throw new Exception("Array WTF.");
-                            }
+                            XmlNode n1;
 
                             n1 = item.Attributes.GetNamedItem("Format");
+                            if (n1 != null) if (n1.InnerText == "L5K") L5K = item.InnerText;
                             if (n1 != null) if (n1.InnerText == "Decorated")
                             {
                                 foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
@@ -61,7 +57,7 @@ namespace CnE2PLC
                         }
                     }
 
-
+                    DecodeL5K();
                 }
             }
             catch (Exception ex)
@@ -200,6 +196,7 @@ namespace CnE2PLC
         #endregion
 
         #region Private Values
+        protected string L5K = string.Empty;
         protected string Cfg_EquipDescValue = string.Empty;
         protected List<string> L5K_strings = new List<string>();
         #endregion
@@ -414,48 +411,6 @@ namespace CnE2PLC
                 return 1;
             }
         }
-
-        public new class TagComparer : IComparer<PLCTag>
-        {
-            public int Compare(PLCTag? first, PLCTag? second)
-            {
-                if (first != null && second != null)
-                {
-                    int r;
-                    if(first.GetType() == typeof(XTO_AOI) & first.GetType() == typeof(XTO_AOI) )
-                    {
-                        XTO_AOI t1 = (XTO_AOI)first;
-                        XTO_AOI t2 = (XTO_AOI)second;
-                        // Check EquipID first
-                        r = t1.EquipNum.CompareTo(t2.EquipNum);
-                        if (r != 0) return r;
-                    }
-
-                    // next check the scope
-                    r = first.Path.CompareTo(second.Path);
-                    if (r != 0) return r;
-
-                    // check the name
-                    return first.Name.CompareTo(second.Name);
-                }
-
-                if (first == null && second == null)
-                {
-                    // We can't compare any properties, so they are essentially equal.
-                    return 0;
-                }
-
-                if (first != null)
-                {
-                    // Only the first instance is not null, so prefer that.
-                    return -1;
-                }
-
-                // Only the second instance is not null, so prefer that.
-                return 1;
-            }
-        }
-
 
         public override string ToString() { return base.ToString(); }
 

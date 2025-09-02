@@ -1,5 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Text;
 using System.Xml;
 
 namespace CnE2PLC
@@ -16,7 +19,7 @@ namespace CnE2PLC
         /// Convert a XML base tag to a class. 
         /// </summary>
         /// <param name="node">Node to be processed.</param>
-        [DebuggerStepThrough]
+        ///[DebuggerStepThrough]
         public PLCTag(XmlNode node)
         {
             try
@@ -25,20 +28,104 @@ namespace CnE2PLC
                 n = node.Attributes.GetNamedItem("Name");
                 if (n != null) Name = n.InnerText;
 
+                n = node.Attributes.GetNamedItem("TagType");
+                if (n != null)
+                {
+                    switch (n.InnerText)
+                    {
+                        case "Base": 
+                            TagType = TagTypes.Base; 
+                            break;
+
+                        case "Alias":
+                            TagType = TagTypes.Alias;
+                            break;
+
+                        case "Consumed":
+                            TagType = TagTypes.Consumed;
+                            break;
+
+                        case "Produced":
+                            TagType = TagTypes.Produced;
+                            break;
+                    }
+                }
+
                 n = node.Attributes.GetNamedItem("DataType");
                 if (n != null) DataType = n.InnerText;
 
+                n = node.Attributes.GetNamedItem("Constant");
+                if (n != null) Constant = GetBool(n.InnerText);
+
+                n = node.Attributes.GetNamedItem("Dimensions");
+                if (n != null) GetDimensions(n.InnerText);
+
+                n = node.Attributes.GetNamedItem("ExternalAccess");
+                if (n != null)
+                {
+                    switch (n.InnerText)
+                    {
+                        case "Read/Write":
+                            ExternalAccess = TagAccess.ReadWrite;
+;                           break;
+
+                        case "Read Only":
+                            ExternalAccess = TagAccess.ReadOnly;
+                            break;
+
+                        case "None":
+                            ExternalAccess = TagAccess.None;
+                            break;
+                    }
+                }
+
+                n = node.Attributes.GetNamedItem("Radix");
+                if (n != null)
+                {
+                    switch (n.InnerText)
+                    {
+                        case "Decimal":
+                            Radix = TagRadix.Decimal;
+                            break;
+
+                        case "Float":
+                            Radix = TagRadix.Float;
+                            break;
+
+                        case "Hex":
+                            Radix = TagRadix.Hex;
+                            break;
+
+                        case "ASCII":
+                            Radix = TagRadix.ASCII;
+                            break;
+
+                        case "Octal":
+                            Radix = TagRadix.Octal;
+                            break;
+
+                        case "Exponential":
+                            Radix = TagRadix.Exponential;
+                            break;
+
+                        //case "DateTime":
+                        //    Radix = TagRadix.DateTime;
+                        //    break;
+
+                        //case "DateTime":
+                        //    Radix = TagRadix.DateTimeNS;
+                        //    break;
+                    }
+                }
+
+
+                n = node.Attributes.GetNamedItem("Dimensions");
+                if (n != null) GetDimensions(n.InnerText);
+
+
                 foreach (XmlNode item in node.ChildNodes)
                 {
-                    //// skip arrays for now.
-                    //n = node.Attributes.GetNamedItem("Dimensions");
-                    //if (n != null)
-                    //{
-                    //    throw new NotImplementedException("Unhandled Array Tag.");
-                    //}
                     if (item.Name == "Description") Description = item.InnerText;
-                    n = item.Attributes.GetNamedItem("Format");
-                    if (n != null) if (n.InnerText == "L5K") L5K = item.InnerText;
                 }
             }
             catch (Exception ex)
@@ -71,7 +158,7 @@ namespace CnE2PLC
             }
         }
 
-        [DisplayName("Tag Data Type")]
+        [DisplayName("Tag DataType")]
         public string DataType { get; set; } = "DataType not set.";
 
         /// <summary>
@@ -86,16 +173,39 @@ namespace CnE2PLC
             }
             set
             {
-                value.ReplaceLineEndings(" ");
-                value = value.Replace('\n', ' ');
-                value = value.Replace('\r', ' ');
-                value = value.Trim();
+                value = CleanString(value);
                 if (value.Length > 1)
                 {
                     DescriptionValue = value;
                 }
             }
         }
+
+        public int[]? Dimension { get; set; } = { 0, 0, 0 };
+
+        /// <summary>
+        /// Base or Alias
+        /// </summary>
+        public TagTypes? TagType { get; set; }
+
+        public TagUsages? Usage { get; set; } 
+
+        public TagRadix? Radix { get; set; }
+
+        public TagAccess? ExternalAccess { get; set; }
+
+        public TagClasses? TagClass { get; set; }
+
+        /// <summary>
+        /// Is this tag modifable?
+        /// </summary>
+        public bool? Constant { get; set; }
+
+        /// <summary>
+        /// Used to select the base tag and qualifier that the tag references.
+        /// </summary>
+        public string? AliasFor { get; set; }
+
 
         /// <summary>
         /// How many time is the Tag used in the program.
@@ -106,7 +216,7 @@ namespace CnE2PLC
         /// <summary>
         /// Used to store the Type ID from the online PLC.
         /// </summary>
-        static int? TypeID;
+        static int? TypeID {  get; set; }
 
         public override string ToString()
         {
@@ -116,6 +226,98 @@ namespace CnE2PLC
             return c;
         }
 
+        /// <summary>
+        /// How is a tag used.
+        /// </summary>
+        public enum TagUsages
+        {
+            Local,
+            Input,
+            Output,
+            InOut,
+            Public
+        }
+
+        /// <summary>
+        /// Types of tags.
+        /// </summary>
+        public enum TagTypes
+        {
+            Base,
+            Alias,
+            Produced,
+            Consumed
+        }
+
+        /// <summary>
+        /// How to display the data.
+        /// </summary>
+        public enum TagRadix
+        {
+            Decimal,
+            Float,
+            Hex,
+            ASCII,
+            Octal,
+            Exponential,
+            DateTime,
+            DateTimeNS
+        }
+
+        /// <summary>
+        /// Used to select the access allowed to the tag from external applications such as HMIs. 
+        /// </summary>
+        public enum TagAccess
+        {
+            ReadWrite,
+            ReadOnly,
+            None
+        }
+
+        /// <summary>
+        /// Indicates whether the tag is a Standard tag or a Safety tag.
+        /// </summary>
+        public enum TagClasses
+        {
+            Standard,
+            Safety
+        }
+
+        /// <summary>
+        /// Cleans strings for use for the program.
+        /// </summary>
+        /// <param name="input">string to be cleaned up.</param>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        static string CleanString(string input)
+        {
+            input.ReplaceLineEndings(" ");
+            input = input.Replace('\n', ' ');
+            input = input.Replace('\r', ' ');
+            input = input.Trim();
+            return input;
+        }
+
+        void GetDimensions(string input)
+        {
+            string[] values = input.Split(' ');
+            int index = 0;
+            Dimension = new int[3];
+            foreach (var value in values)
+            {
+                int d = 0;
+                int.TryParse(value, out d);
+                Dimension[index] = d;
+                index++;
+            }
+        }
+
+        bool GetBool(string input)
+        {
+            if (input.ToLower().Contains("true")) return true;
+            return false;
+        }
+
         #endregion
 
         #region Private Values
@@ -123,7 +325,6 @@ namespace CnE2PLC
         protected string DataTypeValue = string.Empty;
         protected string PathValue = string.Empty;
         protected string DescriptionValue = string.Empty;
-        protected string L5K = string.Empty;
         #endregion
 
         /// <summary>
@@ -202,12 +403,26 @@ namespace CnE2PLC
         [DebuggerStepThrough]
         public class TagComparer : IComparer<PLCTag>
         {
-            public int Compare(PLCTag first, PLCTag second)
+            public int Compare(PLCTag? first, PLCTag? second)
             {
                 if (first != null && second != null)
                 {
+                    int r;
+                    if (first.GetType() == typeof(XTO_AOI) & first.GetType() == typeof(XTO_AOI))
+                    {
+                        XTO_AOI t1 = (XTO_AOI)first;
+                        XTO_AOI t2 = (XTO_AOI)second;
+                        // Check EquipID first
+                        r = t1.EquipNum.CompareTo(t2.EquipNum);
+                        if (r != 0) return r;
+                    }
+
+
+
+
+
                     // next check the scope
-                    int r = first.Path.CompareTo(second.Path);
+                    r = first.Path.CompareTo(second.Path);
                     if (r != 0) return r;
 
                     // check the name

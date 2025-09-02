@@ -1,12 +1,12 @@
 ﻿using CnE2PLC.Properties;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Xml;
-using System.Diagnostics;
-using System.ComponentModel;
-using Microsoft.Office.Interop.Excel;
-using libplctag.DataTypes;
 using libplctag;
-using System.Xml.Linq;
+using libplctag.DataTypes;
+using Microsoft.Office.Interop.Excel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Xml;
+using static CnE2PLC.PLCTag;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace CnE2PLC
 {
@@ -287,7 +287,20 @@ namespace CnE2PLC
                         else
                         {
                             PLCTag? t = CreateTag(item);
-                            if (t != null) Tags.Add(t);
+
+                            if (t != null)
+                            {
+                                Tags.Add(t);
+
+                                if ( t.DataType == "TankData") {
+                                    TankData data = (TankData)t;
+                                    Tags.Add(data.Level);
+                                    Tags.Add(data.LIT_O);
+                                    Tags.Add(data.LIT_W);
+                                }
+
+                            }
+                      
                         }
 
                     }
@@ -301,6 +314,7 @@ namespace CnE2PLC
                     }
 
                 }
+
             }
 
             catch (Exception ex)
@@ -312,9 +326,58 @@ namespace CnE2PLC
                     MessageBoxIcon.Error);
             }
 
+            // Apply sort.
+           
+            Tags.Sort(CompareTAGS);
+
+
             return Tags;
 
+
+
+
+
         }
+
+        private static int CompareTAGS(PLCTag? first, PLCTag? second)
+        {
+            if (first != null && second != null)
+            {
+                int r;
+                if (first.GetType() != typeof(PLCTag) & second.GetType() != typeof(PLCTag))
+                {
+                    XTO_AOI t1 = (XTO_AOI)first;
+                    XTO_AOI t2 = (XTO_AOI)second;
+                    // Check EquipID first
+                    r = t1.EquipNum.CompareTo(t2.EquipNum);
+                    if (r != 0) return r;
+                }
+
+                // next check the scope
+                r = first.Path.CompareTo(second.Path);
+                if (r != 0) return r;
+
+                // check the name
+                return first.Name.CompareTo(second.Name);
+            }
+
+            if (first == null && second == null)
+            {
+                // We can't compare any properties, so they are essentially equal.
+                return 0;
+            }
+
+            if (first != null)
+            {
+                // Only the first instance is not null, so prefer that.
+                return -1;
+            }
+
+            // Only the second instance is not null, so prefer that.
+            return 1;
+        }
+
+
 
         /// <summary>
         /// Maps the Datatype of a node to one of the classes we are looking for.
@@ -404,6 +467,10 @@ namespace CnE2PLC
                 /*    
                 case "IntlkESD": return new IntlkESD(node);
                  */
+
+                // TankData
+                case "TankData": return new TankData(node);
+
                 default: return null;
             }
         }
