@@ -334,9 +334,8 @@ namespace CnE2PLC
             int doCount = 0;
             int totalCount = 0;
 
-            foreach (XTO_AOI tag in PLC.AOI_Tags)
+            foreach (XTO_AOI tag in PLC.AOI_Tags.Where(t => !t.NotInUse))
             {
-                if (tag.NotInUse) continue;
                 switch (tag.DataType)
                 {
                     case "AIData":

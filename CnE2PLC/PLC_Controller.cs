@@ -504,14 +504,7 @@ namespace CnE2PLC
                 try
                 {
 
-                    if (tag is XTO_AOI)
-                    {
-                        XTO_AOI AOI = (XTO_AOI)tag;
-                        AOI.IOs.Clear();
-                        AOI.ClearCounts();
-                    }
-
-                        foreach (PLC_Program program in Programs)
+                    foreach (PLC_Program program in Programs.Where(p => !p.Disabled))
                     {
                         if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
 
