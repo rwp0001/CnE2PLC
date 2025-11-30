@@ -217,14 +217,12 @@ namespace CnE2PLC
 
                 foreach (PLCTag tag in Tags)
                 {
-                    if (tag is not XTO_AOI) continue;
-                    XTO_AOI AOI = (XTO_AOI)tag;
-                    if ( Filter_Alarmed & !AOI.Alarmed ) continue;
-                    if ( Filter_Bypassed & !AOI.Bypassed ) continue;
-                    if ( Filter_Simmed & !AOI.Simmed ) continue;
-                    if ( Filter_Placeholder & !AOI.Placeholder ) continue;
-                    if ( Filter_NotInUse & !AOI.NotInUse ) continue;
-                    list.Add(AOI);
+                    if ( Filter_Alarmed & !tag.Alarmed ) continue;
+                    if ( Filter_Bypassed & !tag.Bypassed ) continue;
+                    if ( Filter_Simmed & !tag.Simmed ) continue;
+                    if ( Filter_Placeholder & tag.Placeholder ) continue;
+                    if ( Filter_InUse & (tag.NotInUse | !tag.AOICalled) ) continue;
+                    list.Add(tag);
                 }
 
                 if (Filter_LocalTags) return list;
@@ -233,14 +231,12 @@ namespace CnE2PLC
                 {
                     foreach (PLCTag tag in program.LocalTags)
                     {
-                        if (tag is not XTO_AOI) continue;
-                        XTO_AOI AOI = (XTO_AOI)tag;
-                        if (Filter_Alarmed & !AOI.Alarmed) continue;
-                        if (Filter_Bypassed & !AOI.Bypassed) continue;
-                        if (Filter_Simmed & !AOI.Simmed) continue;
-                        if (Filter_Placeholder & !AOI.Placeholder) continue;
-                        if (Filter_NotInUse & !AOI.NotInUse) continue;
-                        list.Add(AOI);
+                        if (Filter_Alarmed & !tag.Alarmed) continue;
+                        if (Filter_Bypassed & !tag.Bypassed) continue;
+                        if (Filter_Simmed & !tag.Simmed) continue;
+                        if (Filter_Placeholder & tag.Placeholder) continue;
+                        if (Filter_InUse & (tag.NotInUse | !tag.AOICalled)) continue;
+                        list.Add(tag);
                     }
                 }
 
@@ -589,12 +585,12 @@ namespace CnE2PLC
             }
         }
 
-        public bool Filter_NotInUse { get; set; }
-        public bool Filter_Alarmed { get; set; }
-        public bool Filter_Bypassed { get; set; }
-        public bool Filter_Simmed { get; set; }
-        public bool Filter_Placeholder { get; set; }
-        public bool Filter_LocalTags { get; set; }
+        public bool Filter_InUse = false; // { get; set; }
+        public bool Filter_Alarmed = false; // { get; set; }
+        public bool Filter_Bypassed = false; // { get; set; }
+        public bool Filter_Simmed = false; // { get; set; }
+        public bool Filter_Placeholder = false; // { get; set; }
+        public bool Filter_LocalTags = false; // { get; set; }
 
         #region Report Functions
         /// <summary>

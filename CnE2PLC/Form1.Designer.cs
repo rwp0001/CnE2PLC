@@ -1,4 +1,5 @@
-﻿namespace CnE2PLC
+﻿
+namespace CnE2PLC
 {
     partial class Form1
     {
@@ -67,6 +68,7 @@
             updateCnEToolStripMenuItem = new ToolStripMenuItem();
             exportTagsToolStripMenuItem = new ToolStripMenuItem();
             aiReportToolStripMenuItem = new ToolStripMenuItem();
+            inUseSummaryToolStripMenuItem = new ToolStripMenuItem();
             helpToolStripMenuItem = new ToolStripMenuItem();
             About_MenuItem = new ToolStripMenuItem();
             filterToolStripMenuItem = new ToolStripMenuItem();
@@ -375,7 +377,7 @@
             // 
             // outputToolStripMenuItem
             // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem });
+            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem, inUseSummaryToolStripMenuItem });
             outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             outputToolStripMenuItem.Size = new Size(57, 20);
             outputToolStripMenuItem.Text = "Output";
@@ -383,23 +385,30 @@
             // updateCnEToolStripMenuItem
             // 
             updateCnEToolStripMenuItem.Name = "updateCnEToolStripMenuItem";
-            updateCnEToolStripMenuItem.Size = new Size(180, 22);
+            updateCnEToolStripMenuItem.Size = new Size(160, 22);
             updateCnEToolStripMenuItem.Text = "Update CnE";
             updateCnEToolStripMenuItem.Click += updateCnEToolStripMenuItem_Click;
             // 
             // exportTagsToolStripMenuItem
             // 
             exportTagsToolStripMenuItem.Name = "exportTagsToolStripMenuItem";
-            exportTagsToolStripMenuItem.Size = new Size(180, 22);
+            exportTagsToolStripMenuItem.Size = new Size(160, 22);
             exportTagsToolStripMenuItem.Text = "Export Tags";
             exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
             // 
             // aiReportToolStripMenuItem
             // 
             aiReportToolStripMenuItem.Name = "aiReportToolStripMenuItem";
-            aiReportToolStripMenuItem.Size = new Size(180, 22);
+            aiReportToolStripMenuItem.Size = new Size(160, 22);
             aiReportToolStripMenuItem.Text = "IO Report";
             aiReportToolStripMenuItem.Click += aiReportToolStripMenuItem_Click;
+            // 
+            // inUseSummaryToolStripMenuItem
+            // 
+            inUseSummaryToolStripMenuItem.Name = "inUseSummaryToolStripMenuItem";
+            inUseSummaryToolStripMenuItem.Size = new Size(160, 22);
+            inUseSummaryToolStripMenuItem.Text = "In Use Summary";
+            inUseSummaryToolStripMenuItem.Click += inUseSummaryToolStripMenuItem_Click;
             // 
             // helpToolStripMenuItem
             // 
@@ -425,33 +434,37 @@
             // inUseToolStripMenuItem
             // 
             inUseToolStripMenuItem.Name = "inUseToolStripMenuItem";
-            inUseToolStripMenuItem.Size = new Size(136, 22);
+            inUseToolStripMenuItem.Size = new Size(180, 22);
             inUseToolStripMenuItem.Text = "In Use";
             inUseToolStripMenuItem.Click += inUseToolStripMenuItem_Click;
             // 
             // simmedToolStripMenuItem
             // 
             simmedToolStripMenuItem.Name = "simmedToolStripMenuItem";
-            simmedToolStripMenuItem.Size = new Size(136, 22);
+            simmedToolStripMenuItem.Size = new Size(180, 22);
             simmedToolStripMenuItem.Text = "Simmed";
+            simmedToolStripMenuItem.Click += simmedToolStripMenuItem_Click;
             // 
             // bypassedToolStripMenuItem
             // 
             bypassedToolStripMenuItem.Name = "bypassedToolStripMenuItem";
-            bypassedToolStripMenuItem.Size = new Size(136, 22);
+            bypassedToolStripMenuItem.Size = new Size(180, 22);
             bypassedToolStripMenuItem.Text = "Bypassed";
+            bypassedToolStripMenuItem.Click += bypassedToolStripMenuItem_Click;
             // 
             // alarmedToolStripMenuItem
             // 
             alarmedToolStripMenuItem.Name = "alarmedToolStripMenuItem";
-            alarmedToolStripMenuItem.Size = new Size(136, 22);
+            alarmedToolStripMenuItem.Size = new Size(180, 22);
             alarmedToolStripMenuItem.Text = "Alarmed";
+            alarmedToolStripMenuItem.Click += alarmedToolStripMenuItem_Click;
             // 
             // placeholderToolStripMenuItem
             // 
             placeholderToolStripMenuItem.Name = "placeholderToolStripMenuItem";
-            placeholderToolStripMenuItem.Size = new Size(136, 22);
+            placeholderToolStripMenuItem.Size = new Size(180, 22);
             placeholderToolStripMenuItem.Text = "Placeholder";
+            placeholderToolStripMenuItem.Click += placeholderToolStripMenuItem_Click;
             // 
             // Form1
             // 
@@ -581,6 +594,7 @@
         private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn cfgEquipDescDataGridViewTextBoxColumn;
         private ToolStripMenuItem filterToolStripMenuItem;
+        private ToolStripMenuItem inUseSummaryToolStripMenuItem;
         private ToolStripMenuItem inUseToolStripMenuItem;
         private ToolStripMenuItem simmedToolStripMenuItem;
         private ToolStripMenuItem bypassedToolStripMenuItem;

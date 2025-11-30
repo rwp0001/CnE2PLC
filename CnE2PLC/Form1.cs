@@ -151,7 +151,8 @@ namespace CnE2PLC
             {
                 statusStrip1.BackColor = Color.Yellow;
                 splitContainer1.Panel2Collapsed = false;
-            } else
+            }
+            else
             {
                 statusStrip1.BackColor = Control.DefaultBackColor;
                 splitContainer1.Panel2Collapsed = true;
@@ -160,8 +161,9 @@ namespace CnE2PLC
 
         private void LogText_TextChanged(object sender, EventArgs e)
         {
-            if (ScrollToBottom) { 
-                
+            if (ScrollToBottom)
+            {
+
             }
         }
 
@@ -245,7 +247,7 @@ namespace CnE2PLC
 
         private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(PLC.AllTags.Count ==  0) return;
+            if (PLC.AllTags.Count == 0) return;
             OpenFileDialog openFileDialog1 = new OpenFileDialog
             {
                 Title = "Select C&E Template File",
@@ -324,12 +326,78 @@ namespace CnE2PLC
             PLC.CreateIOReport();
         }
 
+        private void inUseSummaryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int aiCount = 0;
+            int aoCount = 0;
+            int diCount = 0;
+            int doCount = 0;
+            int totalCount = 0;
+
+            foreach (XTO_AOI tag in PLC.AOI_Tags)
+            {
+                if (tag.NotInUse) continue;
+                switch (tag.DataType)
+                {
+                    case "AIData":
+                        aiCount++;
+                        break;
+                    case "AOData":
+                        aoCount++;
+                        break;
+                    case "DIData":
+                        diCount++;
+                        break;
+                    case "DOData":
+                        doCount++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            totalCount = aiCount + aoCount + diCount + doCount;
+            MessageBox.Show($"In Use Summary:\n\nAI Tags: {aiCount}\nAO Tags: {aoCount}\nDI Tags: {diCount}\nDO Tags: {doCount}\n\nTotal: {totalCount}", "In Use Tag Summary", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private void inUseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            PLC.Filter_NotInUse = !PLC.Filter_NotInUse;
-            inUseToolStripMenuItem.Checked = PLC.Filter_NotInUse;
-            Tags_DGV_Source.Filter = PLC.Filter_NotInUse ? "NotInUse = true" : "NotInUse = false";
-            TagsDataView.Refresh();
+            filter(ref PLC.Filter_InUse, ref inUseToolStripMenuItem);
+        }
+
+        private void placeholderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            filter(ref PLC.Filter_Placeholder, ref placeholderToolStripMenuItem);
+        }
+
+        private void simmedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            filter(ref PLC.Filter_Simmed, ref simmedToolStripMenuItem);
+        }
+
+        private void bypassedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            filter(ref PLC.Filter_Bypassed, ref bypassedToolStripMenuItem);
+        }
+
+        private void alarmedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            filter(ref PLC.Filter_Alarmed, ref alarmedToolStripMenuItem);
+        }
+
+        /// <summary>
+        /// Toggles the filter state and updates the checked status of the specified menu item to reflect the new filter
+        /// state.
+        /// </summary>
+        /// <remarks>This method also updates the data source of the TagsDataView to reflect the current
+        /// filter state. The caller should ensure that both parameters are valid references before calling this
+        /// method.</remarks>
+        /// <param name="filter_">A reference to a Boolean value indicating the current filter state. The value is toggled by this method.</param>
+        /// <param name="toolStripMenuItem">A reference to the ToolStripMenuItem whose Checked property is updated to match the new filter state.</param>
+        private void filter(ref bool filter_, ref ToolStripMenuItem toolStripMenuItem)
+        {
+            filter_ = !filter_;
+            toolStripMenuItem.Checked = filter_;
+            TagsDataView.DataSource = PLC.AOI_Tags;
         }
     }
 
