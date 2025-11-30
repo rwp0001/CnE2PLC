@@ -491,7 +491,7 @@ namespace CnE2PLC
                     tag.ClearCounts();
                     tag.IOs.Clear();
 
-                    foreach (PLC_Program program in Programs)
+                    foreach (PLC_Program program in Programs.Where(p => !p.Disabled))
                     {
                         if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
 
