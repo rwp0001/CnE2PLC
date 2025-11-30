@@ -218,8 +218,8 @@ namespace CnE2PLC
                     if ( Filter_Alarmed & !tag.Alarmed ) continue;
                     if ( Filter_Bypassed & !tag.Bypassed ) continue;
                     if ( Filter_Simmed & !tag.Simmed ) continue;
-                    if ( Filter_Placeholder & !tag.Placeholder ) continue;
-                    if ( Filter_NotInUse & !tag.NotInUse ) continue;
+                    if ( Filter_Placeholder & tag.Placeholder ) continue;
+                    if ( Filter_InUse & (tag.NotInUse | !tag.AOICalled) ) continue;
                     list.Add(tag);
                 }
 
@@ -232,8 +232,8 @@ namespace CnE2PLC
                         if (Filter_Alarmed & !tag.Alarmed) continue;
                         if (Filter_Bypassed & !tag.Bypassed) continue;
                         if (Filter_Simmed & !tag.Simmed) continue;
-                        if (Filter_Placeholder & !tag.Placeholder) continue;
-                        if (Filter_NotInUse & !tag.NotInUse) continue;
+                        if (Filter_Placeholder & tag.Placeholder) continue;
+                        if (Filter_InUse & (tag.NotInUse | !tag.AOICalled)) continue;
                         list.Add(tag);
                     }
                 }
@@ -557,12 +557,12 @@ namespace CnE2PLC
 
         }
 
-        public bool Filter_NotInUse { get; set; }
-        public bool Filter_Alarmed { get; set; }
-        public bool Filter_Bypassed { get; set; }
-        public bool Filter_Simmed { get; set; }
-        public bool Filter_Placeholder { get; set; }
-        public bool Filter_LocalTags { get; set; }
+        public bool Filter_InUse = false; // { get; set; }
+        public bool Filter_Alarmed = false; // { get; set; }
+        public bool Filter_Bypassed = false; // { get; set; }
+        public bool Filter_Simmed = false; // { get; set; }
+        public bool Filter_Placeholder = false; // { get; set; }
+        public bool Filter_LocalTags = false; // { get; set; }
 
         #region Report Functions
         /// <summary>
