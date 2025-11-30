@@ -14,7 +14,7 @@ namespace CnE2PLC
             {
                 Name = node.Attributes.GetNamedItem("Name").Value;
                 TestEdits = node.Attributes.GetNamedItem("TestEdits").Value;
-                Disabled = node.Attributes.GetNamedItem("Disabled").Value;
+                Disabled = node.Attributes.GetNamedItem("Disabled").Value == "true";
                 UseAsFolder = node.Attributes.GetNamedItem("UseAsFolder").Value;
 
                 // optional
@@ -82,7 +82,7 @@ namespace CnE2PLC
         public string? Name {  get; set; }
         public string? TestEdits { get; set; }
         public string? MainRoutineName { get; set; }
-        public string? Disabled { get; set; }
+        public bool Disabled { get; set; }
         public string? UseAsFolder { get; set; }
         public List<Routine> Routines { get; set; } = new();
         public List<PLCTag> LocalTags { get; set; } = new();
