@@ -29,7 +29,7 @@ namespace CnE2PLC
                     switch (node2.Name)
                     {
                         case "Tags":
-                            foreach (XTO_AOI tag in Controller.ProcessTags(node2))
+                            foreach (PLCTag tag in Controller.ProcessTags(node2))
                             {
                                 tag.Path = Name;
                                 LocalTags.Add(tag);
@@ -70,7 +70,12 @@ namespace CnE2PLC
             }
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}", "Import Program Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}", 
+                    "Import Program Error", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Error
+                    );
             }
 
 
@@ -128,7 +133,12 @@ namespace CnE2PLC
             }
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}", "Import Routine Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}", 
+                    "Import Routine Error", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Error
+                    );
             }
         }
 

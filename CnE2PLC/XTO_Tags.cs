@@ -50,10 +50,12 @@ namespace CnE2PLC
                         }
                         catch (Exception ex)
                         {
-                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", 
+                            var r = MessageBox.Show(
+                                $"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", 
                                 "Import Child Node Exception", 
                                 MessageBoxButtons.OK, 
-                                MessageBoxIcon.Error);
+                                MessageBoxIcon.Error
+                                );
                         }
                     }
 
@@ -62,7 +64,12 @@ namespace CnE2PLC
             }
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}", "Import Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Error: {ex.Message}\nNode: {node.Name}", 
+                    "Import Node Exception", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Error
+                    );
             }
         }
 
@@ -175,8 +182,8 @@ namespace CnE2PLC
         public bool AOICalled {
             get 
             { 
-                if(AOICalls == 0 ) return false;
-                return true;
+                if(AOICalls > 0 ) return true;
+                return false;
             }
         } 
 
@@ -187,11 +194,11 @@ namespace CnE2PLC
 
 
         // filters
-        public virtual bool Alarmed { get { return false; } }
-        public virtual bool Bypassed { get { return false; } }
-        public virtual bool Simmed { get { return false; } }
-        public virtual bool Placeholder { get { return false; } }
-        public virtual bool NotInUse { get { return false; } }
+        public virtual bool Alarmed { get; set; } = false;
+        public virtual bool Bypassed { get; set; } = false;
+        public virtual bool Simmed { get; set; } = false;
+        public virtual bool Placeholder { get; set; } = false;
+        public virtual bool NotInUse { get; set; } = false;
 
         #endregion
 
@@ -333,9 +340,15 @@ namespace CnE2PLC
                     L5K_strings.Add(O);
                 }
             }
+
             catch (Exception ex)
             {
-                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {this.Name}", "L5K Strings Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Error: {ex.Message}\nNode: {this.Name}", 
+                    "L5K Strings Exception", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Error
+                    );
             }
 
             /// I hate AB strings...
@@ -370,52 +383,11 @@ namespace CnE2PLC
 
         }
 
-        [DebuggerStepThrough]
+
         public virtual void ClearCounts() { throw new NotImplementedException(); }
 
-        /// <summary>
-        /// This class used to sort tags.
-        /// </summary>
         [DebuggerStepThrough]
-        public class AOIComparer : IComparer<XTO_AOI>
-        {
-            public int Compare(XTO_AOI? first, XTO_AOI? second)
-            {
-                if (first != null && second != null)
-                {
-                    // Check EquipID first
-                    int r = first.EquipNum.CompareTo(second.EquipNum);
-                    if (r != 0) return r;
-
-                    // next check the scope
-                    r = first.Path.CompareTo(second.Path);
-                    if (r != 0) return r;
-
-                    // check the name
-                    return first.Name.CompareTo(second.Name);
-                }
-
-                if (first == null && second == null)
-                {
-                    // We can't compare any properties, so they are essentially equal.
-                    return 0;
-                }
-
-                if (first != null)
-                {
-                    // Only the first instance is not null, so prefer that.
-                    return -1;
-                }
-
-                // Only the second instance is not null, so prefer that.
-                return 1;
-            }
-        }
-
         public override string ToString() { return base.ToString(); }
-
-
-
 
     }
 

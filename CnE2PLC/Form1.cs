@@ -19,6 +19,8 @@ namespace CnE2PLC
         bool ExcelUseable = false;
         bool ScrollToBottom = true;
 
+        
+
         public Form1()
         {
 
@@ -60,6 +62,8 @@ namespace CnE2PLC
             //    toolStripMenuItem_CnE.Enabled = false;
             //    toolStripMenuItem_CnE.ToolTipText = "Excel not Installed.";
             //}
+
+            Settings.Default.BaseTypes = true;
 
         }
 
@@ -278,7 +282,7 @@ namespace CnE2PLC
                     XmlDoc.LoadXml(FileData);
                     XmlNode ControllerNode = XmlDoc.SelectNodes("/RSLogix5000Content/Controller")[0];
                     PLC = new(ControllerNode);
-                    Tags_DGV_Source.DataSource = PLC.AOI_Tags;
+                    Tags_DGV_Source.DataSource = PLC.AllTags;
                     this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
                     toolStripTagCount.Text = $"Tags: {PLC.AllTags.Count}";
 

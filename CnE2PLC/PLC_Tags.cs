@@ -1,9 +1,7 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Xml;
+
 
 namespace CnE2PLC
 {
@@ -19,7 +17,7 @@ namespace CnE2PLC
         /// Convert a XML base tag to a class. 
         /// </summary>
         /// <param name="node">Node to be processed.</param>
-        ///[DebuggerStepThrough]
+        [DebuggerStepThrough]
         public PLCTag(XmlNode node)
         {
             try
@@ -128,7 +126,7 @@ namespace CnE2PLC
                     if (item.Name == "Description") Description = item.InnerText;
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}", "Import Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -214,6 +212,19 @@ namespace CnE2PLC
         public int References { get; set; } = 0;
 
         /// <summary>
+        /// Tag is used in code.
+        /// </summary>
+        public bool Referenced
+        {
+            [DebuggerStepThrough]
+            get { 
+                if (References > 0) return true;
+                return false;
+            } 
+        }
+
+
+        /// <summary>
         /// Used to store the Type ID from the online PLC.
         /// </summary>
         static int? TypeID {  get; set; }
@@ -283,13 +294,16 @@ namespace CnE2PLC
             Safety
         }
 
+        #endregion
+
+        #region Helper Functions
         /// <summary>
         /// Cleans strings for use for the program.
         /// </summary>
         /// <param name="input">string to be cleaned up.</param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        static string CleanString(string input)
+        public static string CleanString(string input)
         {
             input.ReplaceLineEndings(" ");
             input = input.Replace('\n', ' ');
@@ -298,11 +312,17 @@ namespace CnE2PLC
             return input;
         }
 
-        void GetDimensions(string input)
+        /// <summary>
+        /// Converts the string to three ints.
+        /// </summary>
+        /// <param name="input">Dimensions string.</param>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        public static int[] GetDimensions(string input)
         {
             string[] values = input.Split(' ');
             int index = 0;
-            Dimension = new int[3];
+            int[] Dimension = new int[3];
             foreach (var value in values)
             {
                 int d = 0;
@@ -310,22 +330,98 @@ namespace CnE2PLC
                 Dimension[index] = d;
                 index++;
             }
+            return Dimension;
         }
 
-        bool GetBool(string input)
+        /// <summary>
+        /// Get the index value from a string.
+        /// </summary>
+        /// <param name="input">Index string.</param>
+        /// <returns>The index value.</returns>
+        ///[DebuggerStepThrough]
+        public static int[] GetIndex(string input)
+        {
+            input = input.Substring(1, input.Length - 2);
+            string[] values = input.Split(',');
+            int index = 0;
+            int[] Dimension = new int[3];
+            foreach (var value in values)
+            {
+                int d = 0;
+                int.TryParse(value, out d);
+                Dimension[index] = d;
+                index++;
+            }
+            return Dimension;
+        }
+
+        /// <summary>
+        /// Convert string to a bool.
+        /// </summary>
+        /// <param name="input">String to Convert.</param>
+        /// <returns>A bool.</returns>
+        [DebuggerStepThrough]
+        public static bool GetBool(string input)
         {
             if (input.ToLower().Contains("true")) return true;
             return false;
         }
 
-        #endregion
+        /// <summary>
+        /// Used to sort the tags.
+        /// </summary>
+        /// <param name="first">First tag.</param>
+        /// <param name="second">Second tag.</param>
+        /// <returns></returns>
+        [DebuggerStepThrough]
+        public static int Compare(PLCTag? first, PLCTag? second)
+        {
+            try
+            {
+                if (first != null && second != null)
+                {
+                    int r;
+                    if (first is XTO_AOI & second is XTO_AOI)
+                    {
+                        XTO_AOI t1 = (XTO_AOI)first;
+                        XTO_AOI t2 = (XTO_AOI)second;
+                        // Check EquipID first
+                        r = t1.EquipNum.CompareTo(t2.EquipNum);
+                        if (r != 0) return r;
+                    }
 
-        #region Private Values
-        protected string NameValue = string.Empty;
-        protected string DataTypeValue = string.Empty;
-        protected string PathValue = string.Empty;
-        protected string DescriptionValue = string.Empty;
-        #endregion
+                    // next check the scope
+                    r = first.Path.CompareTo(second.Path);
+                    if (r != 0) return r;
+
+                    // check the name
+                    return first.Name.CompareTo(second.Name);
+                }
+
+                if (first == null && second == null)
+                {
+                    // We can't compare any properties, so they are essentially equal.
+                    return 0;
+                }
+
+                if (first != null)
+                {
+                    // Only the first instance is not null, so prefer that.
+                    return -1;
+                }
+
+                // Only the second instance is not null, so prefer that.
+                return 1;
+            }
+            catch (Exception)
+            {
+                string s = $"Failed to compare {first.Name} to {second.Name}.";
+                var r = MessageBox.Show(s, "Unable to Compare Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            return 0;
+
+        }
 
         /// <summary>
         /// Used to set the property of class without cast to the class.
@@ -377,14 +473,29 @@ namespace CnE2PLC
 
                 return;
             }
-            catch (Exception e)
+            catch (System.Exception e)
             {
-                string s = string.Format("Failed to set property {0} to value {1} with ex: {2}", DLM_Name, DLM_Value, e.Message);
-                var r = MessageBox.Show(s, "Set Property Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var r = MessageBox.Show(
+                    $"Failed to set property {DLM_Name} to value {DLM_Value} with ex: {e.Message}",
+                    "Set Property Exception",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                    );
             }
 
 
         }
+
+        #endregion
+
+        #region Private Values
+        protected string NameValue = string.Empty;
+        protected string DataTypeValue = string.Empty;
+        protected string PathValue = string.Empty;
+        protected string DescriptionValue = string.Empty;
+        #endregion
+
+       
 
         /// <summary>
         /// Needed for the class to display correctly on the datagridview. Should be overridden by the derived class.
@@ -397,124 +508,146 @@ namespace CnE2PLC
             //throw new NotImplementedException(); 
         }
 
-        /// <summary>
-        /// This class used to sort tags.
-        /// </summary>
-        [DebuggerStepThrough]
-        public class TagComparer : IComparer<PLCTag>
-        {
-            public int Compare(PLCTag? first, PLCTag? second)
-            {
-                if (first != null && second != null)
-                {
-                    int r;
-                    if (first.GetType() == typeof(XTO_AOI) & first.GetType() == typeof(XTO_AOI))
-                    {
-                        XTO_AOI t1 = (XTO_AOI)first;
-                        XTO_AOI t2 = (XTO_AOI)second;
-                        // Check EquipID first
-                        r = t1.EquipNum.CompareTo(t2.EquipNum);
-                        if (r != 0) return r;
-                    }
-
-
-
-
-
-                    // next check the scope
-                    r = first.Path.CompareTo(second.Path);
-                    if (r != 0) return r;
-
-                    // check the name
-                    return first.Name.CompareTo(second.Name);
-                }
-
-                if (first == null && second == null)
-                {
-                    // We can't compare any properties, so they are essentially equal.
-                    return 0;
-                }
-
-                if (first != null)
-                {
-                    // Only the first instance is not null, so prefer that.
-                    return -1;
-                }
-
-                // Only the second instance is not null, so prefer that.
-                return 1;
-            }
-        }
-
     }
 
-    public class PLC_Base : PLCTag
+    public class PLC_Bool : PLCTag
     {
-        public PLC_Base() { }
-        public PLC_Base(XmlNode node) : base(node)
-        {
-            try
-            {
-                foreach (XmlNode item in node.ChildNodes)
-                {
-                    if (item.Name == "Data")
-                    {
-                        try
-                        {
-
-                            if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
-                            {
-                                foreach (XmlNode DataValue in item.ChildNodes)
-                                {
-                                    SetProperty(
-                                        "Value",
-                                        DataValue.Attributes.GetNamedItem("DataType").Value.Trim(),
-                                        DataValue.Attributes.GetNamedItem("Value").Value.Trim()
-                                        );
-                                }
-                                continue;
-                            }
-
-                        }
-                        catch (Exception ex)
-                        {
-                            var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                var r = MessageBox.Show($"Error: {ex.Message}\nNode: {node.Name}\n", "Import Child Node Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+        public PLC_Bool() { }
+        public PLC_Bool(XmlNode node) : base(node) {
+            Value = false;
+            XmlNode n = node.LastChild.LastChild.Attributes.GetNamedItem("Value");
+            if (n != null) if (n.Value == "1") Value = true;
         }
-
-        [DebuggerStepThrough]
-        public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { }
-    }
-
-    public class PLC_Bool : PLC_Base
-    {
-        public PLC_Bool() { DataType = "BOOL"; }
-        public PLC_Bool(XmlNode node) : base(node) { DataType = "BOOL"; }
         public bool? Value { get; set; }
         public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
     }
-    public class PLC_Int : PLC_Base
+    public class PLC_Int : PLCTag
     {
-        public PLC_Int() { DataType = "INT"; }
-        public PLC_Int(XmlNode node) : base(node) { DataType = "INT"; }
+        public PLC_Int() { }
+        public PLC_Int(XmlNode node) : base(node) {
+            Value = 0;
+            XmlNode n = node.LastChild.LastChild.Attributes.GetNamedItem("Value");
+            if (n != null)int.TryParse(n.InnerText, out int Value);
+        }
         public int? Value { get; set; }
         public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
     }
-    public class PLC_Real : PLC_Base
+    public class PLC_Real : PLCTag
     {
-        public PLC_Real() { DataType = "REAL"; }
-        public PLC_Real(XmlNode node) : base(node) { DataType = "REAL"; }
+        public PLC_Real() { }
+        public PLC_Real(XmlNode node) : base(node) {
+            Value = 0;
+            XmlNode n = node.LastChild.LastChild.Attributes.GetNamedItem("Value");
+            if (n != null) float.TryParse(n.InnerText, out float Value);
+        }
         public float? Value { get; set; }
         public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
     }
-    public class ABTimer : PLC_Base
+    public class ABString : PLCTag
+    {
+        /// <summary>
+        /// Max Lenght of a string.
+        /// </summary>
+        private static int Max_Length = 500;
+
+        /// <summary>
+        /// Standard lenght of a string.
+        /// </summary>
+        private static int Std_Length = 82;
+
+        #region PLC Fields
+        /// <summary>
+        /// Lenght of the stored string.
+        /// </summary>
+        public Int32 LEN = 0;
+
+        /// <summary>
+        /// Byte array of the stored string.
+        /// </summary>
+        public char[] DATA = new char[Std_Length];
+        #endregion
+
+        public ABString()
+        {
+            Length = Std_Length;
+        }
+
+        /// <summary>
+        /// Create a string of lenght size and store the input in it.
+        /// </summary>
+        /// <param name="Input">String to be stored.</param>
+        /// <param name="Length">Max lenght of the string.</param>
+        public ABString(string Input, int Length )
+        {
+            this.Length = Length;
+            Set(Input);
+        }
+
+        public ABString(int Length)
+        {
+            this.Length = Length;
+        }
+
+        public ABString(XmlNode node) : base(node)
+        {
+            Set(node.LastChild.InnerText);
+        }
+
+        public ABString(int[] Index, XmlNode node) : base(node)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Store a new value in the string.
+        /// If the new value is longer then the max size than the value will be truncated.
+        /// </summary>
+        /// <param name="Input">String to be stored.</param>
+        public void Set(string Input)
+        {
+            DATA = new char[DATA.Length];
+            if (Input.Length > Length) Input = Input.Substring(0, Length);
+            for (int i = 0; i < Input.Length; i++) DATA[i] = (char)Input[i];
+            LEN = Input.Length;
+            if (LEN > Length) LEN = Length;
+            DataTypeValue = Input;
+        }
+
+        /// <summary>
+        /// Change the size of the string.
+        /// If the new size is shorter then the old size than the value will be truncated.
+        /// </summary>
+        public int Length 
+        { 
+            get { return DATA.Length; }
+            set
+            {
+                if (value < 0) throw new System.Exception("Must be greater then zero.");
+                if (value > Max_Length) throw new OverflowException();
+                string s = DataTypeValue;
+                DATA = new char[value];
+                Set(s);
+                DataType = "STRING";
+                if (value != Std_Length) DataType = $"STRING_{value}";
+            }
+        }
+
+        //public override string ToString()
+        //{
+        //    string value = "";
+        //    for (int i = 0; i < LEN; i++)
+        //    {
+        //        if (DATA[i] == 0) break;
+        //        char c = (char)DATA[i];
+        //        value.Append(c);
+        //    }
+        //    return value;
+        //}
+
+        public override string ToString() { return $"{base.ToString()}Value: {DataTypeValue}\n"; }
+    }
+
+    public class ABTimer : PLCTag
     {
         // Standard AB Timer Data Type
         // 12 bytes on PLC
@@ -525,66 +658,4 @@ namespace CnE2PLC
         public bool DN;
 
     }
-    public class ABString : PLC_Base
-    {
-        private static int Max_Length = 82;
-        public Int32 LEN = 0;
-        public byte[] DATA;
-
-        public ABString()
-        {
-            DataType = "STRING";
-            DATA = new byte[Max_Length];
-        }
-        public ABString(string Input, int Length = 82)
-        {
-            DataType = "STRING";
-            SetLength(Length);
-            DATA = new byte[Max_Length];
-            Set(Input);
-        }
-        public ABString(int Length)
-        {
-            DataType = "STRING";
-            SetLength(Length);
-            DATA = new byte[Max_Length];
-        }
-        public ABString(XmlNode node)
-        {
-            DataType = "STRING";
-            DATA = new byte[Max_Length];
-            throw new NotImplementedException();
-
-
-        }
-
-        public void Set(string Input)
-        {
-            DATA = new byte[Max_Length];
-            if (Input.Length > Max_Length) Input = Input.Substring(0, Max_Length);
-            for (int i = 0; i < Input.Length; i++) DATA[i] = (byte)Input[i];
-            LEN = Input.Length;
-            if (LEN > Max_Length) LEN = Max_Length;
-        }
-        public void SetLength(int Input)
-        {
-            if (Input < 0) throw new Exception("Must be greater then zero.");
-            string Old_Value = ToString();
-            Max_Length = Input;
-            Set(Old_Value);
-        }
-        public override string ToString()
-        {
-            string value = "";
-            for (int i = 0; i < LEN; i++)
-            {
-                if (DATA[i] == 0) break;
-                value.Append((char)DATA[i]);
-            }
-            return value;
-        }
-
-    }
-
-
 }
