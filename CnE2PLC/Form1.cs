@@ -3,6 +3,9 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
 using CnE2PLC.Properties;
+using NPOI.XSSF.UserModel;
+using System.IO;
+using NPOI.SS.UserModel;
 
 namespace CnE2PLC
 {
@@ -393,6 +396,41 @@ namespace CnE2PLC
             filter_ = !filter_;
             toolStripMenuItem.Checked = filter_;
             TagsDataView.DataSource = PLC.AOI_Tags;
+        }
+
+        private void nPOITestToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var file = File.OpenRead("CnE_Template.xlsx"))
+            {
+                using (var workbook = new XSSFWorkbook(file))
+                {
+                    var sheet = workbook.GetSheetAt(0);
+                    var lastRow = sheet.LastRowNum-1;
+                    var startRow = lastRow;
+                    var rowTemp = sheet.GetRow(lastRow);
+
+                    foreach (AIData tag in PLC.AOI_Tags.Where(t => t.DataType == "AIData"))
+                    {
+                        var row = rowTemp.CopyRowTo(++lastRow);
+                        row.GetCell(0).SetCellValue(tag.Cfg_EquipID ?? "");
+                        row.GetCell(1).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+                        row.GetCell(2).SetCellValue(tag.Name);
+                        row.GetCell(3).SetCellValue($"{tag.Name}.PV");
+                        row.GetCell(4).SetCellValue("Analog Input");
+                        row.GetCell(5).SetCellValue(tag.InUse == true ? "Standard IO" : "Not In Use");
+                        row.GetCell(6).SetCellValue("");
+                        row.GetCell(7).SetCellValue(tag.Cfg_EU);
+                        //row.Cells[2].CellComment.String =  tag.ToString();
+                    }
+                    sheet.ShiftRows(startRow+1, sheet.LastRowNum, -1);
+
+                    using (var newfile = File.Create("NPOITest.xlsx"))
+                    {
+                        workbook.Write(newfile);
+                    }
+                    MessageBox.Show("NPOITest.xlsx created.");
+                }
+            }
         }
     }
 
