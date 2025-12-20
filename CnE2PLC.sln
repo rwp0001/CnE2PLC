@@ -1,14 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34525.116
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CnE2PLC", "CnE2PLC\CnE2PLC.csproj", "{E2D97442-2E9C-4208-9C9E-91D7782D3ABC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BF56FD90-C996-4307-A7F3-25F7DBD06C2B}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\..\..\CnE_Template.xlsx = ..\..\..\..\CnE_Template.xlsx
-	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CnE2PLC.PLC", "CnE2PLC.PLC\CnE2PLC.PLC.csproj", "{54EEFC55-0B84-4FCB-B3F8-A903BC325CE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CnE2PLC.Reporting", "CnE2PLC.Reporting\CnE2PLC.Reporting.csproj", "{B056CAB2-D0FF-4974-B91D-2B637C637265}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CnE2PLC.Helpers", "CnE2PLC.Helpers\CnE2PLC.Helpers.csproj", "{0A90C310-A4A9-4FEC-969F-04889477E7BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +23,18 @@ Global
 		{E2D97442-2E9C-4208-9C9E-91D7782D3ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2D97442-2E9C-4208-9C9E-91D7782D3ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2D97442-2E9C-4208-9C9E-91D7782D3ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54EEFC55-0B84-4FCB-B3F8-A903BC325CE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54EEFC55-0B84-4FCB-B3F8-A903BC325CE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54EEFC55-0B84-4FCB-B3F8-A903BC325CE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54EEFC55-0B84-4FCB-B3F8-A903BC325CE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B056CAB2-D0FF-4974-B91D-2B637C637265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B056CAB2-D0FF-4974-B91D-2B637C637265}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B056CAB2-D0FF-4974-B91D-2B637C637265}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B056CAB2-D0FF-4974-B91D-2B637C637265}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A90C310-A4A9-4FEC-969F-04889477E7BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A90C310-A4A9-4FEC-969F-04889477E7BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A90C310-A4A9-4FEC-969F-04889477E7BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A90C310-A4A9-4FEC-969F-04889477E7BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
