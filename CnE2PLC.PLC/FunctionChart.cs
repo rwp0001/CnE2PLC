@@ -71,7 +71,7 @@ public class ChartElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -141,7 +141,7 @@ public class Step : ChartElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
     }
 
@@ -213,7 +213,7 @@ public class Transition : ChartElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
     }
     public string? Operand { get; set; }
@@ -259,7 +259,7 @@ public class SFC_TextBox : ChartElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
