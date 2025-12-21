@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
@@ -25,10 +25,10 @@ public partial class frmMain : Form
     {
 
         InitializeComponent();
-        TagsDataView.CellFormatting += new DataGridViewCellFormattingEventHandler(TagsDataView_CellFormatting);
-        TagsDataView.CellToolTipTextNeeded += new DataGridViewCellToolTipTextNeededEventHandler(TagsDataView_CellToolTipTextNeeded);
+        dgvTags.CellFormatting += new DataGridViewCellFormattingEventHandler(TagsDataView_CellFormatting);
+        dgvTags.CellToolTipTextNeeded += new DataGridViewCellToolTipTextNeededEventHandler(TagsDataView_CellToolTipTextNeeded);
 
-        TagsDataView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        dgvTags.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         Program.UITraceListener.TraceOutput += OnTraceOutputReceived;
 
         LogHelper.DebugPrint("Starting up...");
@@ -39,29 +39,32 @@ public partial class frmMain : Form
             this.Location = Settings.Default.WindowPos;
         }
         if (Settings.Default.WindowSize != Size.Empty) this.Size = Settings.Default.WindowSize;
+
+        if (Settings.Default.WindowMaximizedState) this.WindowState = FormWindowState.Maximized;
+
         if (Settings.Default.Debug)
         {
-            statusStrip1.BackColor = Color.Yellow;
-            splitContainer1.Panel2Collapsed = false;
+            status.BackColor = Color.Yellow;
+            splitContainer.Panel2Collapsed = false;
         }
         else
         {
-            statusStrip1.BackColor = Control.DefaultBackColor;
-            splitContainer1.Panel2Collapsed = true;
+            status.BackColor = Control.DefaultBackColor;
+            splitContainer.Panel2Collapsed = true;
         }
-        
+
     }
 
     private void OnTraceOutputReceived(object? sender, string message)
     {
         if (this.InvokeRequired)
         {
-            this.Invoke(()=>(OnTraceOutputReceived), message);
+            this.Invoke(() => (OnTraceOutputReceived), message);
         }
         else
         {
-            LogText.AppendText(message);
-            LogText.ScrollToCaret();
+            txtLogText.AppendText(message);
+            txtLogText.ScrollToCaret();
         }
     }
 
@@ -77,7 +80,7 @@ public partial class frmMain : Form
 
     private void TagsDataView_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
-        PLCTag? tag = (PLCTag?)TagsDataView.Rows[e.RowIndex].DataBoundItem;
+        PLCTag? tag = (PLCTag?)dgvTags.Rows[e.RowIndex].DataBoundItem;
         if (tag == null) return;
 
         if (tag is XTO_AOI)
@@ -154,7 +157,7 @@ public partial class frmMain : Form
     {
         if (e.RowIndex > -1)
         {
-            DataGridViewRow dataGridViewRow1 = TagsDataView.Rows[e.RowIndex];
+            DataGridViewRow dataGridViewRow1 = dgvTags.Rows[e.RowIndex];
             e.ToolTipText = $"{dataGridViewRow1.DataBoundItem}";
         }
     }
@@ -177,10 +180,11 @@ public partial class frmMain : Form
         }
         else
         {
+            SortColumn = e.ColumnIndex;
             SortDir = ListSortDirection.Ascending;
         }
 
-        //TagsDataView.Sort(this.TagsDataView.Columns[e.ColumnIndex], SortDir);
+        //if (e.ColumnIndex>=0 && e.ColumnIndex < this.TagsDataView.ColumnCount) TagsDataView.Sort(this.TagsDataView.Columns[e.ColumnIndex], SortDir);
     }
 
 
@@ -211,40 +215,41 @@ public partial class frmMain : Form
 
         if (Settings.Default.Debug)
         {
-            statusStrip1.BackColor = Color.Yellow;
-            splitContainer1.Panel2Collapsed = false;
+            status.BackColor = Color.Yellow;
+            splitContainer.Panel2Collapsed = false;
         }
         else
         {
-            statusStrip1.BackColor = Control.DefaultBackColor;
-            splitContainer1.Panel2Collapsed = true;
+            status.BackColor = Control.DefaultBackColor;
+            splitContainer.Panel2Collapsed = true;
         }
     }
 
     private void copyToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        Clipboard.SetText(LogText.SelectedText.ToString());
+        Clipboard.SetText(txtLogText.SelectedText.ToString());
     }
 
     private void clearLogToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        LogText.Clear();
+        txtLogText.Clear();
     }
 
     private void getUDTsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        LogText.Text += PLC.PrintUdtTags();
+        txtLogText.Text += PLC.PrintUdtTags();
     }
 
     private void getTagsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        LogText.Text += PLC.PrintTags();
+        txtLogText.Text += PLC.PrintTags();
     }
 
     private void FormIsClosing(object sender, FormClosingEventArgs e)
     {
         Settings.Default.WindowPos = this.Location;
         Settings.Default.WindowSize = this.Size;
+        Settings.Default.WindowMaximizedState = this.WindowState == FormWindowState.Maximized;
         Settings.Default.Save();
 
     }
@@ -301,7 +306,7 @@ public partial class frmMain : Form
                 string FileData = File.ReadAllText(openFileDialog1.FileName);
                 XmlDocument XmlDoc = new XmlDocument();
                 XmlDoc.LoadXml(FileData);
-                
+
                 XmlNodeList? controllerNodes = XmlDoc?.SelectNodes("/RSLogix5000Content/Controller");
                 XmlNode? ControllerNode = (controllerNodes != null && controllerNodes.Count > 0) ? controllerNodes[0] : null;
                 if (ControllerNode == null)
@@ -309,10 +314,10 @@ public partial class frmMain : Form
                     throw new InvalidOperationException("Controller node not found in the L5X file.");
                 }
                 PLC = new(ControllerNode);
-                
-                Tags_DGV_Source.DataSource = PLC.AOI_Tags;
+
+                bsTags.DataSource = PLC.AOI_Tags;
                 this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
-                toolStripTagCount.Text = $"Tags: {PLC.AllTags.Count}";
+                tsTagCount.Text = $"Tags: {PLC.AllTags.Count}";
 
             }
             catch (Exception ex)
@@ -381,27 +386,27 @@ public partial class frmMain : Form
 
     private void inUseToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        filter(ref PLC.Filter_InUse, ref inUseToolStripMenuItem);
+        filter(ref PLC.Filter_InUse, ref mnuFilter_InUse);
     }
 
     private void placeholderToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        filter(ref PLC.Filter_Placeholder, ref placeholderToolStripMenuItem);
+        filter(ref PLC.Filter_Placeholder, ref mnuFilter_Placeholder);
     }
 
     private void simmedToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        filter(ref PLC.Filter_Simmed, ref simmedToolStripMenuItem);
+        filter(ref PLC.Filter_Simmed, ref mnuFilter_Simmed);
     }
 
     private void bypassedToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        filter(ref PLC.Filter_Bypassed, ref bypassedToolStripMenuItem);
+        filter(ref PLC.Filter_Bypassed, ref mnuFilter_Bypassed);
     }
 
     private void alarmedToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        filter(ref PLC.Filter_Alarmed, ref alarmedToolStripMenuItem);
+        filter(ref PLC.Filter_Alarmed, ref mnuFilter_Alarmed);
     }
 
     /// <summary>
@@ -417,7 +422,32 @@ public partial class frmMain : Form
     {
         filter_ = !filter_;
         toolStripMenuItem.Checked = filter_;
-        TagsDataView.DataSource = PLC.AOI_Tags;
+        dgvTags.DataSource = PLC.AOI_Tags;
+    }
+
+    private void tsmnuFilter_InUse_All_Click(object sender, EventArgs e)
+    {
+        tsbtnFilter_InUse.Text = tsmnuFilter_InUse_All.Text;
+        tsmnuFilter_InUse_All.Checked = true;
+        tsmnuFilter_InUse_Only.Checked = false;
+        tsmnuFilter_InUse_Not.Checked = false;
+
+    }
+
+    private void tsmnuFilter_InUse_Only_Click(object sender, EventArgs e)
+    {
+        tsbtnFilter_InUse.Text = tsmnuFilter_InUse_Only.Text;
+        tsmnuFilter_InUse_All.Checked = false;
+        tsmnuFilter_InUse_Only.Checked = true;
+        tsmnuFilter_InUse_Not.Checked = false;
+    }
+
+    private void tsmnuFilter_InUse_Not_Click(object sender, EventArgs e)
+    {
+        tsbtnFilter_InUse.Text = tsmnuFilter_InUse_Not.Text;
+        tsmnuFilter_InUse_All.Checked = false;
+        tsmnuFilter_InUse_Only.Checked = false;
+        tsmnuFilter_InUse_Not.Checked = true;
     }
 }
 
