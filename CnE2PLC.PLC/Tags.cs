@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+﻿using CnE2PLC.Helpers;
+using CnE2PLC.PLC.XTO;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
-using CnE2PLC.PLC.XTO;
 
 namespace CnE2PLC.PLC;
 
@@ -22,109 +23,35 @@ public class PLCTag
     {
         try
         {
-            XmlNode? n;
-            n = node.Attributes.GetNamedItem("Name");
-            if (n != null) Name = n.InnerText;
+            Name = node.GetNamedAttributeItemInnerText("Name");
 
-            n = node.Attributes.GetNamedItem("TagType");
-            if (n != null)
+            string it = node.GetNamedAttributeItemInnerText("TagType");
+            TagType = node.GetNamedAttributeItemInnerText("TagType").ParseEnum<TagTypes>();
+                        
+            DataType = node.GetNamedAttributeItemInnerText("DataType");
+            Constant = GetBool(node.GetNamedAttributeItemInnerText("Constant"));
+            GetDimensions(node.GetNamedAttributeItemInnerText("Dimensions"));
+            
+            switch (node.GetNamedAttributeItemInnerText("ExternalAccess"))
             {
-                switch (n.InnerText)
-                {
-                    case "Base": 
-                        TagType = TagTypes.Base; 
-                        break;
+                case "Read/Write":
+                    ExternalAccess = TagAccess.ReadWrite;
+                    break;
 
-                    case "Alias":
-                        TagType = TagTypes.Alias;
-                        break;
+                case "Read Only":
+                    ExternalAccess = TagAccess.ReadOnly;
+                    break;
 
-                    case "Consumed":
-                        TagType = TagTypes.Consumed;
-                        break;
-
-                    case "Produced":
-                        TagType = TagTypes.Produced;
-                        break;
-                }
+                case "None":
+                    ExternalAccess = TagAccess.None;
+                    break;
             }
 
-            n = node.Attributes.GetNamedItem("DataType");
-            if (n != null) DataType = n.InnerText;
+            Radix = node.GetNamedAttributeItemInnerText("Radix").ParseEnum<TagRadix>();
+            
+            GetDimensions(node.GetNamedAttributeItemInnerText("Dimensions"));
+            Description = node.GetChildNodeInnerText("Description", true); // Tag Comments
 
-            n = node.Attributes.GetNamedItem("Constant");
-            if (n != null) Constant = GetBool(n.InnerText);
-
-            n = node.Attributes.GetNamedItem("Dimensions");
-            if (n != null) GetDimensions(n.InnerText);
-
-            n = node.Attributes.GetNamedItem("ExternalAccess");
-            if (n != null)
-            {
-                switch (n.InnerText)
-                {
-                    case "Read/Write":
-                        ExternalAccess = TagAccess.ReadWrite;
-;                           break;
-
-                    case "Read Only":
-                        ExternalAccess = TagAccess.ReadOnly;
-                        break;
-
-                    case "None":
-                        ExternalAccess = TagAccess.None;
-                        break;
-                }
-            }
-
-            n = node.Attributes.GetNamedItem("Radix");
-            if (n != null)
-            {
-                switch (n.InnerText)
-                {
-                    case "Decimal":
-                        Radix = TagRadix.Decimal;
-                        break;
-
-                    case "Float":
-                        Radix = TagRadix.Float;
-                        break;
-
-                    case "Hex":
-                        Radix = TagRadix.Hex;
-                        break;
-
-                    case "ASCII":
-                        Radix = TagRadix.ASCII;
-                        break;
-
-                    case "Octal":
-                        Radix = TagRadix.Octal;
-                        break;
-
-                    case "Exponential":
-                        Radix = TagRadix.Exponential;
-                        break;
-
-                    //case "DateTime":
-                    //    Radix = TagRadix.DateTime;
-                    //    break;
-
-                    //case "DateTime":
-                    //    Radix = TagRadix.DateTimeNS;
-                    //    break;
-                }
-            }
-
-
-            n = node.Attributes.GetNamedItem("Dimensions");
-            if (n != null) GetDimensions(n.InnerText);
-
-
-            foreach (XmlNode item in node.ChildNodes)
-            {
-                if (item.Name == "Description") Description = item.InnerText;
-            }
         }
         catch (Exception ex)
         {
@@ -384,17 +311,6 @@ public class PLCTag
     }
 
     /// <summary>
-    /// Needed for the class to display correctly on the datagridview. Should be overridden by the derived class.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    //[DebuggerStepThrough]
-    //public virtual void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-    //{
-    //    //throw new NotImplementedException(); 
-    //}
-
-    /// <summary>
     /// This class used to sort tags.
     /// </summary>
     [DebuggerStepThrough]
@@ -459,14 +375,14 @@ public class PLC_Base : PLCTag
                     try
                     {
 
-                        if (item.Attributes.GetNamedItem("Format").Value == "Decorated")
+                        if (item.GetNamedAttributeItemValue("Format") == "Decorated")
                         {
                             foreach (XmlNode DataValue in item.ChildNodes)
                             {
                                 SetProperty(
                                     "Value",
-                                    DataValue.Attributes.GetNamedItem("DataType").Value.Trim(),
-                                    DataValue.Attributes.GetNamedItem("Value").Value.Trim()
+                                    DataValue.GetNamedAttributeItemValue("DataType").Trim(),
+                                    DataValue.GetNamedAttributeItemValue("Value").Trim()
                                     );
                             }
                             continue;

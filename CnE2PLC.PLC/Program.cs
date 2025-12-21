@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Xml;
+using CnE2PLC.Helpers;
 using CnE2PLC.PLC.XTO;
 
 namespace CnE2PLC.PLC;
@@ -12,13 +13,13 @@ public class Program
     {
         try
         {
-            Name = node.Attributes.GetNamedItem("Name").Value;
-            TestEdits = node.Attributes.GetNamedItem("TestEdits").Value;
-            Disabled = node.Attributes.GetNamedItem("Disabled").Value;
-            UseAsFolder = node.Attributes.GetNamedItem("UseAsFolder").Value;
+            Name = node.GetNamedAttributeItemValue("Name");
+            TestEdits = node.GetNamedAttributeItemValue("TestEdits");
+            Disabled = node.GetNamedAttributeItemValue("Disabled");
+            UseAsFolder = node.GetNamedAttributeItemValue("UseAsFolder");
 
             // optional
-            if(node.Attributes["MainRoutineName"] != null) MainRoutineName = node.Attributes.GetNamedItem("MainRoutineName").Value;
+            MainRoutineName = node.GetNamedAttributeItemValue("MainRoutineName");
 
             LocalTags = new();
             Routines = new();
@@ -37,28 +38,32 @@ public class Program
                         break;
 
                     case "Routines":
-                        foreach (XmlNode Routine in node2.ChildNodes) { 
-                            string type = Routine.Attributes.GetNamedItem("Type").Value;
-                            switch (type)
+                        if (node2 != null)
+                        {
+                            foreach (XmlNode Routine in node2.ChildNodes)
                             {
-                                case "RLL":
-                                    Routines.Add(new RLL_Routine(Routine));
-                                    break;
+                                string type = Routine.GetNamedAttributeItemValue("Type");
+                                switch (type)
+                                {
+                                    case "RLL":
+                                        Routines.Add(new RLL_Routine(Routine));
+                                        break;
 
-                                case "ST":
-                                    Routines.Add(new ST_Routine(Routine));
-                                    break;
+                                    case "ST":
+                                        Routines.Add(new ST_Routine(Routine));
+                                        break;
 
-                                case "FBD":
-                                    Routines.Add(new FBD_Routine(Routine));
-                                    break;
+                                    case "FBD":
+                                        Routines.Add(new FBD_Routine(Routine));
+                                        break;
 
-                                case "SFC":
-                                    Routines.Add(new SFC_Routine(Routine));
-                                    break;
+                                    case "SFC":
+                                        Routines.Add(new SFC_Routine(Routine));
+                                        break;
 
-                                default:
-                                    break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
                         break;
@@ -123,8 +128,8 @@ public class Routine
     {
         try
         {
-            Name = node.Attributes.GetNamedItem("Name").Value;
-            Type = node.Attributes.GetNamedItem("Type").Value;
+            Name = node.GetNamedAttributeItemValue("Name");
+            Type = node.GetNamedAttributeItemValue("Type");
         }
         catch (Exception ex)
         {

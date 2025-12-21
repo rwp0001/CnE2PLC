@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using CnE2PLC.Helpers;
+using System.Diagnostics;
 using System.Xml;
 
 namespace CnE2PLC.PLC;
@@ -45,14 +46,14 @@ public class ChartElement
     {
         try
         {
-            string? s = node.Attributes.GetNamedItem("ID").Value;
+            string? s = node.Attributes?.GetNamedItem("ID")?.Value;
             if (s != null)
             {
                 int n = 0;
                 int.TryParse(s, out n);
                 ID = n;
             }
-            s = node.Attributes.GetNamedItem("X").Value;
+            s = node.Attributes?.GetNamedItem("X")?.Value;
             if (s != null)
             {
                 int n = 0;
@@ -60,7 +61,7 @@ public class ChartElement
                 X = n;
             }
 
-            s = node.Attributes.GetNamedItem("Y").Value;
+            s = node.Attributes?.GetNamedItem("Y")?.Value;
             if (s != null)
             {
                 int n = 0;
@@ -92,13 +93,13 @@ public class Step : ChartElement
     {
         try
         {
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
+            Operand = node.Attributes?.GetNamedItem("Operand")?.Value;
 
-            string s = node.Attributes.GetNamedItem("HideDesc").Value;
+            string s = node.Attributes?.GetNamedItem("HideDesc")?.Value ?? String.Empty;
             HideDesc = s[0] == 'f' ? false : true;
 
 
-            s = node.Attributes.GetNamedItem("DescX").Value;
+            s = node.Attributes?.GetNamedItem("DescX")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -106,7 +107,7 @@ public class Step : ChartElement
                 DescX = n;
             }
 
-            s = node.Attributes.GetNamedItem("DescY").Value;
+            s = node.Attributes?.GetNamedItem("DescY")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -114,7 +115,7 @@ public class Step : ChartElement
                 DescY = n;
             }
 
-            s = node.Attributes.GetNamedItem("DescWidth").Value;
+            s = node.Attributes?.GetNamedItem("DescWidth")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -122,19 +123,19 @@ public class Step : ChartElement
                 DescWidth = n;
             }
 
-            s = node.Attributes.GetNamedItem("InitialStep").Value;
+            s = node.Attributes?.GetNamedItem("InitialStep")?.Value ?? String.Empty;
             InitialStep = s[0] == 'f' ? false : true;
 
-            s = node.Attributes.GetNamedItem("PresetUsesExpr").Value;
+            s = node.Attributes?.GetNamedItem("PresetUsesExpr")?.Value ?? String.Empty;
             PresetUsesExpr = s[0] == 'f' ? false : true;
 
-            s = node.Attributes.GetNamedItem("LimitHighUsesExpr").Value;
+            s = node.Attributes?.GetNamedItem("LimitHighUsesExpr")?.Value ?? String.Empty;
             LimitHighUsesExpr = s[0] == 'f' ? false : true;
 
-            s = node.Attributes.GetNamedItem("LimitLowUsesExpr").Value;
+            s = node.Attributes?.GetNamedItem("LimitLowUsesExpr")?.Value ?? String.Empty;
             LimitLowUsesExpr = s[0] == 'f' ? false : true;
 
-            s = node.Attributes.GetNamedItem("ShowActions").Value;
+            s = node.Attributes?.GetNamedItem("ShowActions")?.Value ?? String.Empty;
             ShowActions = s[0] == 'f' ? false : true;
 
         }
@@ -155,8 +156,8 @@ public class Step : ChartElement
     public bool? LimitLowUsesExpr { get; set; }
     public bool? ShowActions { get; set; }
 
-    public virtual int TagCount(string tag) { throw new NotImplementedException(); }
-    public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
+    public override int TagCount(string tag) { throw new NotImplementedException(); }
+    public override int AOICount(string type, string tag) { throw new NotImplementedException(); }
 
 }
 public class Transition : ChartElement 
@@ -165,13 +166,13 @@ public class Transition : ChartElement
     public Transition(XmlNode node) : base(node) {
         try
         {
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
+            Operand = node.Attributes?.GetNamedItem("Operand")?.Value ?? String.Empty;
 
-            string s = node.Attributes.GetNamedItem("HideDesc").Value;
+            string s = node.Attributes?.GetNamedItem("HideDesc")?.Value ?? String.Empty;
             HideDesc = s[0] == 'f' ? false : true;
 
 
-            s = node.Attributes.GetNamedItem("DescX").Value;
+            s = node.Attributes?.GetNamedItem("DescX")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -179,7 +180,7 @@ public class Transition : ChartElement
                 DescX = n;
             }
 
-            s = node.Attributes.GetNamedItem("DescY").Value;
+            s = node.Attributes?.GetNamedItem("DescY")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -187,7 +188,7 @@ public class Transition : ChartElement
                 DescY = n;
             }
 
-            s = node.Attributes.GetNamedItem("DescWidth").Value;
+            s = node.Attributes?.GetNamedItem("DescWidth")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -197,9 +198,16 @@ public class Transition : ChartElement
 
             XmlNode? Content = node.SelectSingleNode("Condition");
 
-            foreach (XmlNode node2 in Content.SelectNodes("STContent"))
+            if (Content != null)
             {
-                foreach (XmlNode line in node2.ChildNodes) Conditions.Add(new Line(line));
+                XmlNodeList? STContent = Content.SelectNodes("STContent");
+                if (STContent != null)
+                {
+                    foreach (XmlNode node2 in STContent)
+                    {
+                        foreach (XmlNode line in node2.ChildNodes) Conditions.Add(new Line(line));
+                    }
+                }
             }
 
         }
@@ -239,7 +247,7 @@ public class SFC_TextBox : ChartElement
         {
             string? s;
 
-            s = node.Attributes.GetNamedItem("Width").Value;
+            s = node.Attributes?.GetNamedItem("Width")?.Value ?? String.Empty;
             if (s != null)
             {
                 int n = 0;
@@ -247,7 +255,7 @@ public class SFC_TextBox : ChartElement
                 Width = n;
             }
 
-            Text = node.Attributes.GetNamedItem("Text").Value;
+            Text = node.Attributes?.GetNamedItem("Text")?.Value ?? String.Empty;
         }
         catch (Exception ex)
         {

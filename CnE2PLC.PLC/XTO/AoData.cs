@@ -166,9 +166,9 @@ public class AOData : XTO_AOI
         row[i++] = Name;
         row[i++] = IO;
         row[i++] = Description;
-        row[i++] = Cfg_EquipID;
+        row[i++] = Cfg_EquipID ?? String.Empty;
         row[i++] = Cfg_EquipDesc;
-        row[i++] = Cfg_EU;
+        row[i++] = Cfg_EU ?? String.Empty;
         row[i++] = $"{AOICalls}";
         row[i++] = $"{References}";
         row[i++] = InUse == true ? "Yes" : "No";

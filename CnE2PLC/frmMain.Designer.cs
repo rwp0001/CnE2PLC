@@ -1,4 +1,5 @@
-﻿
+﻿using CnE2PLC.PLC.XTO;
+
 namespace CnE2PLC
 {
     partial class frmMain
@@ -77,7 +78,6 @@ namespace CnE2PLC
             bypassedToolStripMenuItem = new ToolStripMenuItem();
             alarmedToolStripMenuItem = new ToolStripMenuItem();
             placeholderToolStripMenuItem = new ToolStripMenuItem();
-            nPOITestToolStripMenuItem = new ToolStripMenuItem();
             toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             toolStripContainer1.ContentPanel.SuspendLayout();
             toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -145,14 +145,13 @@ namespace CnE2PLC
             toolStripUDTCount.Name = "toolStripUDTCount";
             toolStripUDTCount.Size = new Size(52, 17);
             toolStripUDTCount.Text = "No UDTs";
-            toolStripUDTCount.Click += toolStripStatusLabel1_Click;
             // 
             // toolStripDeviceCount
             // 
             toolStripDeviceCount.Name = "toolStripDeviceCount";
             toolStripDeviceCount.Size = new Size(66, 17);
             toolStripDeviceCount.Text = "No Devices";
-            toolStripDeviceCount.Click += toolStripDeviceCount_Click;
+            //toolStripDeviceCount.Click += toolStripDeviceCount_Click;
             // 
             // splitContainer1
             // 
@@ -204,7 +203,7 @@ namespace CnE2PLC
             TagsDataView.ShowEditingIcon = false;
             TagsDataView.Size = new Size(575, 191);
             TagsDataView.TabIndex = 1;
-            TagsDataView.CellClick += DevicesDataView_CellContentClick;
+            //TagsDataView.CellClick += DevicesDataView_CellContentClick;
             TagsDataView.ColumnHeaderMouseClick += TagsDataView_ColumnHeaderMouseClick;
             // 
             // equipNumDataGridViewTextBoxColumn
@@ -273,7 +272,7 @@ namespace CnE2PLC
             // Tags_DGV_Source
             // 
             Tags_DGV_Source.DataSource = typeof(XTO_AOI);
-            Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
+            //Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
             // 
             // LogText
             // 
@@ -286,7 +285,7 @@ namespace CnE2PLC
             LogText.Size = new Size(575, 63);
             LogText.TabIndex = 0;
             LogText.Text = "";
-            LogText.TextChanged += LogText_TextChanged;
+            //LogText.TextChanged += LogText_TextChanged;
             // 
             // contextMenuStrip_LogText
             // 
@@ -374,11 +373,10 @@ namespace CnE2PLC
             connectToPLCToolStripMenuItem.Name = "connectToPLCToolStripMenuItem";
             connectToPLCToolStripMenuItem.Size = new Size(157, 22);
             connectToPLCToolStripMenuItem.Text = "Connect to PLC";
-            connectToPLCToolStripMenuItem.Click += connectToPLCToolStripMenuItem_Click;
             // 
             // outputToolStripMenuItem
             // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem, inUseSummaryToolStripMenuItem, nPOITestToolStripMenuItem });
+            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem, inUseSummaryToolStripMenuItem });
             outputToolStripMenuItem.Name = "outputToolStripMenuItem";
             outputToolStripMenuItem.Size = new Size(57, 20);
             outputToolStripMenuItem.Text = "Output";
@@ -467,14 +465,7 @@ namespace CnE2PLC
             placeholderToolStripMenuItem.Text = "Placeholder";
             placeholderToolStripMenuItem.Click += placeholderToolStripMenuItem_Click;
             // 
-            // nPOITestToolStripMenuItem
-            // 
-            nPOITestToolStripMenuItem.Name = "nPOITestToolStripMenuItem";
-            nPOITestToolStripMenuItem.Size = new Size(180, 22);
-            nPOITestToolStripMenuItem.Text = "NPOI Test";
-            nPOITestToolStripMenuItem.Click += nPOITestToolStripMenuItem_Click;
-            // 
-            // Form1
+            // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -482,7 +473,7 @@ namespace CnE2PLC
             Controls.Add(toolStripContainer1);
             MainMenuStrip = menuStrip1;
             Margin = new Padding(2);
-            Name = "Form1";
+            Name = "frmMain";
             Text = "CnE2PLC";
             FormClosing += FormIsClosing;
             toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
@@ -519,60 +510,43 @@ namespace CnE2PLC
         private ToolStripStatusLabel toolStripTagCount;
         private ToolStripStatusLabel toolStripDeviceCount;
         private SplitContainer splitContainer1;
-        private DataGridViewTextBoxColumn acceptButtonDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn autoScrollDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn autoSizeDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn autoSizeModeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn autoValidateDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn backColorDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn formBorderStyleDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cancelButtonDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn controlBoxDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn helpButtonDataGridViewCheckBoxColumn;
-        private DataGridViewImageColumn iconDataGridViewImageColumn;
-        private DataGridViewCheckBoxColumn isMdiContainerDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn keyPreviewDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn locationDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn maximumSizeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn mainMenuStripDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn minimumSizeDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn maximizeBoxDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn mdiChildrenMinimizedAnchorBottomDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn minimizeBoxDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn opacityDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn rightToLeftLayoutDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn showInTaskbarDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn showIconDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn sizeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn sizeGripStyleDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn startPositionDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn textDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn topMostDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn transparencyKeyDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn windowStateDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn autoScrollMarginDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn autoScrollMinSizeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn accessibleDescriptionDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn accessibleNameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn accessibleRoleDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn allowDropDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn anchorDataGridViewTextBoxColumn;
-        private DataGridViewImageColumn backgroundImageDataGridViewImageColumn;
-        private DataGridViewTextBoxColumn backgroundImageLayoutDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn causesValidationDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn contextMenuStripDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cursorDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn dataBindingsDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn dockDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn enabledDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn fontDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn foreColorDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn rightToLeftDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn tagDataGridViewTextBoxColumn;
-        private DataGridViewCheckBoxColumn useWaitCursorDataGridViewCheckBoxColumn;
-        private DataGridViewCheckBoxColumn visibleDataGridViewCheckBoxColumn;
-        private DataGridViewTextBoxColumn paddingDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn imeModeDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn maximizeBoxDataGridViewCheckBoxColumn;
+        //private DataGridViewCheckBoxColumn mdiChildrenMinimizedAnchorBottomDataGridViewCheckBoxColumn;
+        //private DataGridViewCheckBoxColumn minimizeBoxDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn opacityDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn rightToLeftLayoutDataGridViewCheckBoxColumn;
+        //private DataGridViewCheckBoxColumn showInTaskbarDataGridViewCheckBoxColumn;
+        //private DataGridViewCheckBoxColumn showIconDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn sizeDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn sizeGripStyleDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn startPositionDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn textDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn topMostDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn transparencyKeyDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn windowStateDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn autoScrollMarginDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn autoScrollMinSizeDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn accessibleDescriptionDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn accessibleNameDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn accessibleRoleDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn allowDropDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn anchorDataGridViewTextBoxColumn;
+        //private DataGridViewImageColumn backgroundImageDataGridViewImageColumn;
+        //private DataGridViewTextBoxColumn backgroundImageLayoutDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn causesValidationDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn contextMenuStripDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn cursorDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn dataBindingsDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn dockDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn enabledDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn fontDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn foreColorDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn rightToLeftDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn tagDataGridViewTextBoxColumn;
+        //private DataGridViewCheckBoxColumn useWaitCursorDataGridViewCheckBoxColumn;
+        //private DataGridViewCheckBoxColumn visibleDataGridViewCheckBoxColumn;
+        //private DataGridViewTextBoxColumn paddingDataGridViewTextBoxColumn;
+        //private DataGridViewTextBoxColumn imeModeDataGridViewTextBoxColumn;
         private ContextMenuStrip contextMenuStrip_LogText;
         private ToolStripMenuItem copyToolStripMenuItem;
         private ToolStripMenuItem clearLogToolStripMenuItem;
@@ -582,7 +556,7 @@ namespace CnE2PLC
         private ToolStripStatusLabel toolStripUDTCount;
         private ToolStripMenuItem connectToPLCToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem_CnE;
-        private BindingSource TagsBindingSource;
+        //private BindingSource TagsBindingSource;
         private ToolStripMenuItem outputToolStripMenuItem;
         private ToolStripMenuItem updateCnEToolStripMenuItem;
         private ToolStripMenuItem exportTagsToolStripMenuItem;
@@ -608,6 +582,5 @@ namespace CnE2PLC
         private ToolStripMenuItem bypassedToolStripMenuItem;
         private ToolStripMenuItem alarmedToolStripMenuItem;
         private ToolStripMenuItem placeholderToolStripMenuItem;
-        private ToolStripMenuItem nPOITestToolStripMenuItem;
     }
 }

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Xml;
 using CnE2PLC.Properties;
-using NPOI.XSSF.UserModel;
 
 using CnE2PLC.PLC;
 using CnE2PLC.PLC.XTO;
@@ -20,19 +19,16 @@ namespace CnE2PLC
 
         int SortColumn = -1;
         ListSortDirection SortDir = ListSortDirection.Ascending;
-        bool ExcelUseable = false;
-        bool ScrollToBottom = true;
 
         public frmMain()
         {
 
             InitializeComponent();
-            TagsDataView.CellFormatting += new DataGridViewCellFormattingEventHandler(this.TagsDataView_CellFormatting);
-            TagsDataView.CellToolTipTextNeeded += new DataGridViewCellToolTipTextNeededEventHandler(this.TagsDataView_CellToolTipTextNeeded);
+            TagsDataView.CellFormatting += new DataGridViewCellFormattingEventHandler(TagsDataView_CellFormatting);
+            TagsDataView.CellToolTipTextNeeded += new DataGridViewCellToolTipTextNeededEventHandler(TagsDataView_CellToolTipTextNeeded);
 
             LogText.Text = string.Format("Startup at time: {0}\n", DateTime.Now);
 
-            //TagsDataView.AutoGenerateColumns = true;
             TagsDataView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
 
@@ -52,21 +48,7 @@ namespace CnE2PLC
                 statusStrip1.BackColor = Control.DefaultBackColor;
                 splitContainer1.Panel2Collapsed = true;
             }
-            //Type officeType = Type.GetTypeFromProgID("Excel.Application");
-            //if (officeType != null) ExcelUseable = true;
-
-            //if (!ExcelUseable)
-            //{
-            //    exportTagsToolStripMenuItem.Enabled = false;
-            //    exportTagsToolStripMenuItem.ToolTipText = "Excel not Installed.";
-            //    updateCnEToolStripMenuItem.Enabled = false;
-            //    updateCnEToolStripMenuItem.ToolTipText = "Excel not Installed.";
-            //    toolStripMenuItem_CnE.Enabled = false;
-            //    toolStripMenuItem_CnE.ToolTipText = "Excel not Installed.";
-            //}
-
-            Settings.Default.BaseTypes = true;
-
+            
         }
 
         bool isPointVisibleOnAScreen(Point p)
@@ -79,15 +61,9 @@ namespace CnE2PLC
             return false;
         }
 
-        bool isFormFullyVisible(Form f)
+        private void TagsDataView_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
-            return isPointVisibleOnAScreen(new Point(f.Left, f.Top)) && isPointVisibleOnAScreen(new Point(f.Right, f.Top)) && isPointVisibleOnAScreen(new Point(f.Left, f.Bottom)) && isPointVisibleOnAScreen(new Point(f.Right, f.Bottom));
-        }
-
-        private void TagsDataView_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
-        {
-            PLCTag tag = (PLCTag)TagsDataView.Rows[e.RowIndex].DataBoundItem;
-            //tag.CellFormatting(sender, e);
+            PLCTag? tag = (PLCTag?)TagsDataView.Rows[e.RowIndex].DataBoundItem;
 
             if (tag is XTO_AOI)
             {
@@ -95,7 +71,7 @@ namespace CnE2PLC
                 {
                     e.CellStyle.BackColor = Color.Red;
                     e.CellStyle.ForeColor = Color.White;
-                    e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                    e.CellStyle.Font = new Font(e.CellStyle.Font ?? Control.DefaultFont, FontStyle.Bold);
                     return;
                 }
 
@@ -107,7 +83,7 @@ namespace CnE2PLC
                 if (((XTO_AOI)tag).AOICalls == 0)
                 {
                     e.CellStyle.BackColor = Color.LightGray;
-                    e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+                    e.CellStyle.Font = new Font(e.CellStyle.Font ?? Control.DefaultFont, FontStyle.Italic);
 
                 }
 
@@ -123,7 +99,6 @@ namespace CnE2PLC
                 {
                     e.CellStyle.BackColor = Color.Red;
                     e.CellStyle.ForeColor = Color.Cyan;
-                    //e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
                     return;
                 }
 
@@ -150,7 +125,7 @@ namespace CnE2PLC
                 {
                     e.CellStyle.BackColor = Color.Red;
                     e.CellStyle.ForeColor = Color.White;
-                    e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                    e.CellStyle.Font = new Font(e.CellStyle.Font ?? Control.DefaultFont, FontStyle.Bold);
                     return;
                 }
                 if (((Intlk_8)tag).IntlkOK != true)
@@ -160,12 +135,12 @@ namespace CnE2PLC
             }
         }
 
-        void TagsDataView_CellToolTipTextNeeded(object sender, DataGridViewCellToolTipTextNeededEventArgs e)
+        void TagsDataView_CellToolTipTextNeeded(object? sender, DataGridViewCellToolTipTextNeededEventArgs e)
         {
             if (e.RowIndex > -1)
             {
                 DataGridViewRow dataGridViewRow1 = TagsDataView.Rows[e.RowIndex];
-                e.ToolTipText = $"{dataGridViewRow1.DataBoundItem.ToString()}";
+                e.ToolTipText = $"{dataGridViewRow1.DataBoundItem}";
             }
         }
 
@@ -194,7 +169,7 @@ namespace CnE2PLC
         }
 
 
-        private void quitToolStripMenuItem_Click(object sender, EventArgs e) { System.Windows.Forms.Application.Exit(); }
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e) { Application.Exit(); }
 
 
 
@@ -231,39 +206,6 @@ namespace CnE2PLC
             }
         }
 
-        private void LogText_TextChanged(object sender, EventArgs e)
-        {
-            if (ScrollToBottom)
-            {
-
-            }
-        }
-
-        private void DevivicesBindingSource_CurrentChanged(object sender, EventArgs e)
-        {
-            //Application.DoEvents();
-        }
-
-        private void toolStripDeviceCount_Click(object sender, EventArgs e)
-        {
-            //Application.DoEvents();
-        }
-
-        private void DevicesDataView_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            try
-            {
-                object obj = TagsDataView.Rows[e.RowIndex].DataBoundItem;
-                Application.DoEvents();
-            }
-            catch (Exception)
-            {
-
-
-            }
-
-        }
-
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Clipboard.SetText(LogText.SelectedText.ToString());
@@ -282,16 +224,6 @@ namespace CnE2PLC
         private void getTagsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LogText.Text += PLC.PrintTags();
-        }
-
-        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void connectToPLCToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void FormIsClosing(object sender, FormClosingEventArgs e)
@@ -354,9 +286,16 @@ namespace CnE2PLC
                     string FileData = File.ReadAllText(openFileDialog1.FileName);
                     XmlDocument XmlDoc = new XmlDocument();
                     XmlDoc.LoadXml(FileData);
-                    XmlNode ControllerNode = XmlDoc.SelectNodes("/RSLogix5000Content/Controller")[0];
+                    
+                    XmlNodeList? controllerNodes = XmlDoc?.SelectNodes("/RSLogix5000Content/Controller");
+                    XmlNode? ControllerNode = (controllerNodes != null && controllerNodes.Count > 0) ? controllerNodes[0] : null;
+                    if (ControllerNode == null)
+                    {
+                        throw new InvalidOperationException("Controller node not found in the L5X file.");
+                    }
                     PLC = new(ControllerNode);
-                    Tags_DGV_Source.DataSource = PLC.AllTags;
+                    
+                    Tags_DGV_Source.DataSource = PLC.AOI_Tags;
                     this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
                     toolStripTagCount.Text = $"Tags: {PLC.AllTags.Count}";
 
@@ -376,11 +315,6 @@ namespace CnE2PLC
             AboutBox.ShowDialog();
         }
 
-        private void Tags_DGV_Source_CurrentChanged(object sender, EventArgs e)
-        {
-
-        }
-
         [DebuggerStepThrough]
         private string AssemblyTitle()
         {
@@ -390,7 +324,7 @@ namespace CnE2PLC
                 AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
                 if (titleAttribute.Title != "") return titleAttribute.Title;
             }
-            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
         }
 
         private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
@@ -469,41 +403,6 @@ namespace CnE2PLC
             filter_ = !filter_;
             toolStripMenuItem.Checked = filter_;
             TagsDataView.DataSource = PLC.AOI_Tags;
-        }
-
-        private void nPOITestToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (var file = File.OpenRead("CnE_Template.xlsx"))
-            {
-                using (var workbook = new XSSFWorkbook(file))
-                {
-                    var sheet = workbook.GetSheetAt(0);
-                    var lastRow = sheet.LastRowNum-1;
-                    var startRow = lastRow;
-                    var rowTemp = sheet.GetRow(lastRow);
-
-                    foreach (AIData tag in PLC.AOI_Tags.Where(t => t.DataType == "AIData"))
-                    {
-                        var row = rowTemp.CopyRowTo(++lastRow);
-                        row.GetCell(0).SetCellValue(tag.Cfg_EquipID ?? "");
-                        row.GetCell(1).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
-                        row.GetCell(2).SetCellValue(tag.Name);
-                        row.GetCell(3).SetCellValue($"{tag.Name}.PV");
-                        row.GetCell(4).SetCellValue("Analog Input");
-                        row.GetCell(5).SetCellValue(tag.InUse == true ? "Standard IO" : "Not In Use");
-                        row.GetCell(6).SetCellValue("");
-                        row.GetCell(7).SetCellValue(tag.Cfg_EU);
-                        //row.Cells[2].CellComment.String =  tag.ToString();
-                    }
-                    sheet.ShiftRows(startRow+1, sheet.LastRowNum, -1);
-
-                    using (var newfile = File.Create("NPOITest.xlsx"))
-                    {
-                        workbook.Write(newfile);
-                    }
-                    MessageBox.Show("NPOITest.xlsx created.");
-                }
-            }
         }
     }
 

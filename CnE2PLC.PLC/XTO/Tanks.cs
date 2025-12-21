@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using CnE2PLC.Helpers;
+using System.Xml;
 
 namespace CnE2PLC.PLC.XTO;
 
@@ -116,14 +117,13 @@ public class TankData : XTO_AOI
         foreach (XmlNode childNode in node.ChildNodes)
         {
             if (childNode.Name != "Data") continue;
-            XmlNode n = childNode.Attributes.GetNamedItem("Format");
-            if ( n.InnerText != "Decorated" ) continue; // skip L5Ks
-            
-            foreach (XmlNode node2 in childNode.FirstChild.ChildNodes)
-            {
-                n = node2.Attributes.GetNamedItem("Name");
-                if (n == null) continue;
+            if (childNode.GetNamedAttributeItemInnerText("Format") != "Decorated" ) continue; // skip L5Ks
 
+            XmlNode fc = childNode.FirstChild ?? XMLHelper.CreateGenericXmlNode();
+            foreach (XmlNode node2 in fc.ChildNodes)
+            {
+                if (!node2.AttributeExists("Name", out XmlNode n)) continue;
+                
                 if (n.InnerText == "Level")
                 {
                     Level = new AIData(node2);
@@ -135,29 +135,33 @@ public class TankData : XTO_AOI
 
                 if (n.InnerText == "LIT_O")
                 {
-                    LIT_O = new AIData(node2);
-                    LIT_O.Cfg_EquipID = L5K_strings[2];
-                    LIT_O.Cfg_EquipDesc = L5K_strings[1];
-                    LIT_O.Cfg_EU = L5K_strings[3];
-                    LIT_O.Name = $"{Name}.LIT_O";
+                    LIT_O = new AIData(node2)
+                    {
+                        Cfg_EquipID = L5K_strings[2],
+                        Cfg_EquipDesc = L5K_strings[1],
+                        Cfg_EU = L5K_strings[3],
+                        Name = $"{Name}.LIT_O"
+                    };
                 }
 
                 if (n.InnerText == "LIT_W")
                 {
-                    LIT_W = new AIData(node2);
-                    LIT_W.Cfg_EquipID = L5K_strings[7];
-                    LIT_W.Cfg_EquipDesc = L5K_strings[6];
-                    LIT_W.Cfg_EU = L5K_strings[8];
-                    LIT_W.Name = $"{Name}.LIT_W";
+                    LIT_W = new AIData(node2)
+                    {
+                        Cfg_EquipID = L5K_strings[7],
+                        Cfg_EquipDesc = L5K_strings[6],
+                        Cfg_EU = L5K_strings[8],
+                        Name = $"{Name}.LIT_W"
+                    };
                 }
             }
         }
     }
 
     public override void ClearCounts() {
-        Level.ClearCounts();
-        LIT_O.ClearCounts();
-        LIT_W.ClearCounts();
+        Level?.ClearCounts();
+        LIT_O?.ClearCounts();
+        LIT_W?.ClearCounts();
     }
 
     #region Tag Values
