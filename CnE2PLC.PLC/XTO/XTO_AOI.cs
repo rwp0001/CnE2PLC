@@ -50,7 +50,7 @@ public class XTO_AOI : PLCTag
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}");
+                        LogHelper.DebugPrint($"Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}");
                     }
                 }
 
@@ -59,7 +59,7 @@ public class XTO_AOI : PLCTag
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}\nNode: {node.Name}");
+            LogHelper.DebugPrint($"Error: {ex.Message}\nNode: {node.Name}");
         }
     }
 
@@ -332,7 +332,7 @@ public class XTO_AOI : PLCTag
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}\nNode: {this.Name}");
+            LogHelper.DebugPrint($"Error: {ex.Message}\nNode: {this.Name}");
         }
 
         /// I hate AB strings...

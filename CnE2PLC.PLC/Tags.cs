@@ -55,7 +55,7 @@ public class PLCTag
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Node Exception: Error: {ex.Message}\nNode: {node.Name}");
+            LogHelper.DebugPrint($"Import Node Exception: Error: {ex.Message}\nNode: {node.Name}");
         }
     }
 
@@ -304,7 +304,7 @@ public class PLCTag
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"Set Property Exception: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {e.Message}");
+            LogHelper.DebugPrint($"Set Property Exception: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {e.Message}");
         }
 
 
@@ -391,14 +391,14 @@ public class PLC_Base : PLCTag
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}");
+                        LogHelper.DebugPrint($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}");
+            LogHelper.DebugPrint($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}");
         }
     }
 

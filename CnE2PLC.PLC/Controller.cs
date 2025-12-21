@@ -5,7 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
 using CnE2PLC.Helpers;
-using System.Reflection.Metadata.Ecma335;
 
 namespace CnE2PLC.PLC;
 
@@ -16,6 +15,8 @@ public class Controller
     {
         try
         {
+            LogHelper.DebugPrint("Creating Controller");
+
             if (node == null) throw new ArgumentNullException(nameof(node));
 
             Use = node.GetNamedAttributeItemInnerText("Use");
@@ -45,7 +46,7 @@ public class Controller
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Controller Import Error: {ex.Message}");
+            LogHelper.DebugPrint($"Controller Import Error: {ex.Message}");
         }
     }
 
@@ -184,7 +185,7 @@ public class Controller
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Tag Import Exception: Error Processing node.\nEroor: {ex.Message}\nName: {item?.Name}\nNode:\n{item?.InnerText}\n");
+                    LogHelper.DebugPrint($"Tag Import Exception: Error Processing node.\nEroor: {ex.Message}\nName: {item?.Name}\nNode:\n{item?.InnerText}\n");
                 }
 
             }
@@ -192,7 +193,7 @@ public class Controller
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Process Tags Exception: Error: {ex.Message}\nFrom: {XMLTags}");
+            LogHelper.DebugPrint($"Process Tags Exception: Error: {ex.Message}\nFrom: {XMLTags}");
         }
 
         // Apply sort.
@@ -400,7 +401,7 @@ public class Controller
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Update Counts Exception: Error: {ex.Message}\nFrom: {tag.Name}");
+                LogHelper.DebugPrint($"Update Counts Exception: Error: {ex.Message}\nFrom: {tag.Name}");
             }
         }
 
@@ -1243,7 +1244,7 @@ public class Controller
                     throw new Exception(($"PLC did not respond."));
                 }
                 connected = true;
-                if (connected) Debug.Print("connected");
+                if (connected) LogHelper.DebugPrint("connected");
             }
 
             Tag<TagInfoPlcMapper, TagInfo[]> returnvalue = new();
@@ -1408,7 +1409,7 @@ public class Task {
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error: {ex.Message}", "Contoller Import Error");
+            LogHelper.DebugPrint($"Contoller Import Error: {ex.Message}");
         }
     }
 
