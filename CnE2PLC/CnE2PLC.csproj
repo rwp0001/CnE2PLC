@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -16,6 +16,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CnE2PLC.Helpers\CnE2PLC.Helpers.csproj" />
+    <ProjectReference Include="..\CnE2PLC.PLC\CnE2PLC.PLC.csproj" />
+    <ProjectReference Include="..\CnE2PLC.Reporting\CnE2PLC.Reporting.csproj" />
     <ProjectReference Include="..\CnE2PLC.Helpers\CnE2PLC.Helpers.csproj" />
     <ProjectReference Include="..\CnE2PLC.PLC\CnE2PLC.PLC.csproj" />
     <ProjectReference Include="..\CnE2PLC.Reporting\CnE2PLC.Reporting.csproj" />
@@ -42,6 +45,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="CnE_Template.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
