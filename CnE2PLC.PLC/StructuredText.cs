@@ -26,7 +26,7 @@ public class ST_Routine : Routine
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import ST Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import ST Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
     }
 
@@ -69,7 +69,7 @@ public class Line
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Rung Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Rung Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -96,7 +96,7 @@ public class Line
         }
         catch (Exception ex )
         {
-            Debug.Print($"AOICount Error: {ex.Message}");
+            LogHelper.DebugPrint($"AOICount Error: {ex.Message}");
             throw;
         }
         

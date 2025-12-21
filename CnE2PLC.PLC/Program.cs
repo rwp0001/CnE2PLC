@@ -75,7 +75,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Program Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Program Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
 
@@ -133,7 +133,7 @@ public class Routine
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
     }
 

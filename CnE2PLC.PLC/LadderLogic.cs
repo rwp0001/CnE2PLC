@@ -32,7 +32,7 @@ internal class RLL_Routine : Routine
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import LL Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import LL Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
 
@@ -100,7 +100,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Rung Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Rung Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -131,7 +131,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-            Debug.Print($"AOICount Error: {ex.Message}");
+            LogHelper.DebugPrint($"AOICount Error: {ex.Message}");
             throw;
         }
 
@@ -161,7 +161,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-            Debug.Print($"GetIO Error: {ex.Message}");
+            LogHelper.DebugPrint($"GetIO Error: {ex.Message}");
             throw;
         }
 

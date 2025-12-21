@@ -27,7 +27,7 @@ public class FBD_Routine : Routine
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import ST Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import ST Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
     }
 
@@ -118,7 +118,7 @@ public class Sheet
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Sheet Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Sheet Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -180,7 +180,7 @@ public class SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -209,7 +209,7 @@ public class IRef : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import IRef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import IRef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -237,7 +237,7 @@ public class ORef : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import ORef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import ORef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -267,7 +267,7 @@ public class Block : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Block Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Block Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -308,13 +308,13 @@ public class Wire : SheetElement
                 FromID = n;
             }
 
-            try { ToParam = node.GetNamedAttributeItemValue("ToParam"); } catch (Exception ex ){ Debug.Print($"Wire Error: {ex.Message}"); }
+            try { ToParam = node.GetNamedAttributeItemValue("ToParam"); } catch (Exception ex ){ LogHelper.DebugPrint($"Wire Error: {ex.Message}"); }
 
-            try { FromParam = node.GetNamedAttributeItemValue("FromParam"); } catch (Exception ex) { Debug.Print($"Wire Error: {ex.Message}"); }
+            try { FromParam = node.GetNamedAttributeItemValue("FromParam"); } catch (Exception ex) { LogHelper.DebugPrint($"Wire Error: {ex.Message}"); }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Wire Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Wire Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
 
@@ -352,7 +352,7 @@ public class AddOnInstruction : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import AOI Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import AOI Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -389,7 +389,7 @@ public class FBD_TextBox : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
@@ -429,7 +429,7 @@ public class Attachment : SheetElement
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Import Attachment Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"Import Attachment Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
         }
 
     }
