@@ -1,5 +1,4 @@
 ﻿using CnE2PLC.Helpers;
-using Microsoft.VisualBasic.ApplicationServices;
 using System.Reflection;
 
 namespace CnE2PLC;
@@ -37,7 +36,7 @@ partial class frmAbout : Form
                     return titleAttribute.Title;
                 }
             }
-            return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
         }
     }
 
@@ -45,7 +44,7 @@ partial class frmAbout : Form
     {
         get
         {
-            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
         }
     }
 

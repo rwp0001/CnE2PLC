@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using CnE2PLC.Helpers;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -18,11 +19,15 @@ internal class RLL_Routine : Routine
     {
         try
         {
-            Name = node.Attributes.GetNamedItem("Name").Value;
-            Type = node.Attributes.GetNamedItem("Type").Value;
-            foreach (XmlNode node2 in node.SelectNodes("RLLContent"))
+            Name = node.GetNamedAttributeItemValue("Name");
+            Type = node.GetNamedAttributeItemValue("Type");
+            XmlNodeList? RLLContent = node.SelectNodes("RLLContent");
+            if (RLLContent != null)
             {
-                foreach (XmlNode rung in node2.ChildNodes) Rungs.Add(new Rung(rung));
+                foreach (XmlNode node2 in RLLContent)
+                {
+                    foreach (XmlNode rung in node2.ChildNodes) Rungs.Add(new Rung(rung));
+                }
             }
         }
         catch (Exception ex)
@@ -81,11 +86,11 @@ internal class Rung
     {
         try
         {
-            string s = node.Attributes.GetNamedItem("Number").Value;
+            string s = node.GetNamedAttributeItemValue("Number");
             int n;
             int.TryParse(s, out n);
             Number = n;
-            Type = node.Attributes.GetNamedItem("Type").Value;
+            Type = node.GetNamedAttributeItemValue("Type");
 
             foreach (XmlNode node2 in node.ChildNodes)
             {
@@ -126,7 +131,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-
+            Debug.Print($"AOICount Error: {ex.Message}");
             throw;
         }
 
@@ -156,7 +161,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-
+            Debug.Print($"GetIO Error: {ex.Message}");
             throw;
         }
 

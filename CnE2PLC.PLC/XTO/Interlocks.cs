@@ -238,7 +238,7 @@ public class Intlk_64 : XTO_AOI
     /// <summary>
     /// Interlock Inputs
     /// </summary>
-    IntlkESD[] IntlkIO;
+    //IntlkESD[]? IntlkIO;
 
     /// <summary>
     /// 1=At Least One Interlock Bypass is Active

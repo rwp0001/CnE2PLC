@@ -11,7 +11,7 @@
 	  <Title>CnE Toolbox</Title>
 	  <Description>A set of tools used for working with CnE files and PLC code.</Description>
 	  <PackageProjectUrl>https://github.com/rwp0001/CnE2PLC</PackageProjectUrl>
-	  <Copyright>Copyright 2025 Robert Phillips &amp; David Green</Copyright>
+	  <Copyright>Copyright 2025 Robert Phillips &amp;&amp; David Green</Copyright>
 	  <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 

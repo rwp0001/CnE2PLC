@@ -4,6 +4,8 @@ using libplctag.DataTypes;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
+using CnE2PLC.Helpers;
+using System.Reflection.Metadata.Ecma335;
 
 namespace CnE2PLC.PLC;
 
@@ -14,157 +16,36 @@ public class Controller
     {
         try
         {
-            int n;
-            DateTime t;
-            XmlNode? s;
+            if (node == null) throw new ArgumentNullException(nameof(node));
 
-            s = node.Attributes.GetNamedItem("Use");
-            if (s != null) Use = s.InnerText;
-
-            s = node.Attributes.GetNamedItem("Name");
-            if (s != null) Name = s.InnerText;
-
-            s = node.Attributes.GetNamedItem("ProcessorType");
-            if (s != null) ProcessorType = s.InnerText;
-
-            s = node.Attributes.GetNamedItem("MajorRev");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                MajorRev = n;
-            }
-
-            s = node.Attributes.GetNamedItem("MinorRev");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                MinorRev = n;
-            }
-
-            s = node.Attributes.GetNamedItem("TimeSlice");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                TimeSlice = n;
-            }
-
-            s = node.Attributes.GetNamedItem("ShareUnusedTimeSlice");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                ShareUnusedTimeSlice = n;
-            }
-
-            s = node.Attributes.GetNamedItem("ProjectCreationDate");
-            if (s != null) ProjectCreationDate = ParseABTime(s.InnerText);
-
-            s = node.Attributes.GetNamedItem("LastModifiedDate");
-            if (s != null) LastModifiedDate = ParseABTime(s.InnerText);
-
-            s = node.Attributes.GetNamedItem("CommPath");
-            if (s != null) CommPath = s.InnerText;
-
+            Use = node.GetNamedAttributeItemInnerText("Use");
+            Name = node.GetNamedAttributeItemInnerText("Name");
+            ProcessorType = node.GetNamedAttributeItemInnerText("ProcessorType");
+            MajorRev = node.GetNamedAttributeItemInnerTextAsInt("MajorRev");
+            MinorRev = node.GetNamedAttributeItemInnerTextAsInt("MinorRev");
+            TimeSlice = node.GetNamedAttributeItemInnerTextAsInt("TimeSlice");
+            ShareUnusedTimeSlice = node.GetNamedAttributeItemInnerTextAsInt("ShareUnusedTimeSlice");
+            ProjectCreationDate = node.GetNameAttributeItemInnerTextAsDateTime("ProjectCreationDate");
+            LastModifiedDate = node.GetNameAttributeItemInnerTextAsDateTime("LastModifiedDate");
+            CommPath = node.GetNamedAttributeItemInnerText("CommPath");
+            
             // get global tags
-            Tags = ProcessTags(node.SelectSingleNode("Tags"));
+            Tags = ProcessTags(node?.SelectSingleNode("Tags") ?? XMLHelper.CreateGenericXmlNode());
             // i may change the program to add all tags later, but for now i'm only doing the aoi's i need.
 
             // get all the task
-            foreach (XmlNode p_node in node.SelectSingleNode("Tasks").ChildNodes) Tasks.Add(new Task(p_node));
+            XmlNode tasks = node?.SelectSingleNode("Tasks") ?? XMLHelper.CreateGenericXmlNode();
+            foreach (XmlNode p_node in tasks.ChildNodes) Tasks.Add(new Task(p_node));
 
             // get all the programs
-            foreach (XmlNode p_node in node.SelectSingleNode("Programs").ChildNodes) Programs.Add(new Program(p_node));
+            XmlNode programs = node?.SelectSingleNode("Programs") ?? XMLHelper.CreateGenericXmlNode();
+            foreach (XmlNode p_node in programs.ChildNodes) Programs.Add(new Program(p_node));
 
             UpdateCounts();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Controller Import Error: {ex.Message}");
-        }
-
-        [DebuggerStepThrough]
-        DateTime ParseABTime(string input)
-        {
-            // Sat May 11 10:43:06 2024
-            int n, year, month, day, hour, minute, second;
-            string s;
-
-            s = input.Substring(20, 4);
-            int.TryParse(s, out n);
-            year = n;
-
-            s = input.Substring(8, 2);
-            int.TryParse(s, out n);
-            day = n;
-
-            s = input.Substring(11, 2);
-            int.TryParse(s, out n);
-            hour = n;
-
-            s = input.Substring(14, 2);
-            int.TryParse(s, out n);
-            minute = n;
-
-            s = input.Substring(17, 2);
-            int.TryParse(s, out n);
-            second = n;
-
-            s = input.Substring(4, 3);
-            switch (s)
-            {
-                case "Jan":
-                    month = 1;
-                    break;
-
-                case "Feb":
-                    month = 2;
-                    break;
-
-                case "Mar":
-                    month = 3;
-                    break;
-
-                case "Apr":
-                    month = 4;
-                    break;
-
-                case "May":
-                    month = 5;
-                    break;
-
-                case "Jun":
-                    month = 6;
-                    break;
-
-                case "Jul":
-                    month = 7;
-                    break;
-
-                case "Aug":
-                    month = 8;
-                    break;
-
-                case "Sep":
-                    month = 9;
-                    break;
-
-                case "Oct":
-                    month = 10;
-                    break;
-
-                case "Nov":
-                    month = 11;
-                    break;
-
-                case "Dec":
-                    month = 12;
-                    break;
-
-                default:
-                    month = 0;
-                    break;
-            }
-
-            return new DateTime(year, month, day, hour, minute, second);
         }
     }
 
@@ -249,26 +130,30 @@ public class Controller
         List<PLCTag> Tags = new();
         try
         {
+            if (XMLTags == null) XMLTags = XMLHelper.CreateGenericXmlNode();
             foreach (XmlNode item in XMLTags.ChildNodes)
             {
                 try
                 {
                     // Handle Arrays here.
-                    XmlNode n = item.Attributes.GetNamedItem("Dimensions");
+                    XmlNode? n = item?.Attributes?.GetNamedItem("Dimensions");
                     if ( n != null )
                     {
                         int.TryParse(n.InnerText, out int Dimensions);
-                        foreach (XmlNode node in item.ChildNodes) {
-                            n = node.Attributes.GetNamedItem("Format");
-                            if (n != null) if (n.InnerText != "Decorated") continue; // skip L5Ks
+                        foreach (XmlNode node in n.ChildNodes) {
+                            if (node.GetNamedAttributeItemInnerText("Format") != "Decorated") continue; // skip L5Ks
 
                             if (node.Name == "Data") {
                                 foreach (XmlNode node2 in node.ChildNodes) {
                                     if (node2.Name == "Array") {
                                         foreach (XmlNode node3 in node2.ChildNodes)
                                         {
-                                            PLCTag? t = CreateTag(node.FirstChild);
-                                            if (t != null) Tags.Add(t);
+                                            XmlNode? fc = node3.FirstChild;
+                                            if (fc != null)
+                                            { 
+                                                PLCTag? t = CreateTag(fc);
+                                                if (t != null) Tags.Add(t);
+                                            }
                                         }
                                     }
 
@@ -279,7 +164,7 @@ public class Controller
                     }
                     else
                     {
-                        PLCTag? t = CreateTag(item);
+                        PLCTag? t = CreateTag(item ?? XMLHelper.CreateGenericXmlNode());
 
                         if (t != null)
                         {
@@ -287,9 +172,9 @@ public class Controller
 
                             if ( t.DataType == "TankData") {
                                 TankData data = (TankData)t;
-                                Tags.Add(data.Level);
-                                Tags.Add(data.LIT_O);
-                                Tags.Add(data.LIT_W);
+                                if (data.Level != null) Tags.Add(data.Level);
+                                if (data.LIT_O != null) Tags.Add(data.LIT_O);
+                                if (data.LIT_W != null) Tags.Add(data.LIT_W);
                             }
 
                         }
@@ -299,29 +184,22 @@ public class Controller
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Tag Import Exception: Error Processing node.\nEroor: {ex.Message}\nName: {item.Name}\nNode:\n{item.InnerText}\n");
+                    Debug.WriteLine($"Tag Import Exception: Error Processing node.\nEroor: {ex.Message}\nName: {item?.Name}\nNode:\n{item?.InnerText}\n");
                 }
 
             }
 
         }
-
         catch (Exception ex)
         {
             Debug.WriteLine($"Process Tags Exception: Error: {ex.Message}\nFrom: {XMLTags}");
         }
 
         // Apply sort.
-       
+
         Tags.Sort(CompareTAGS);
 
-
         return Tags;
-
-
-
-
-
     }
 
     private static int CompareTAGS(PLCTag? first, PLCTag? second)
@@ -375,41 +253,31 @@ public class Controller
         Name = string.Empty;
         DataType = string.Empty;
         TagType = string.Empty;
-        int Dimensions, i;
+        //int Dimensions, i;
 
-        if (node.Attributes.Count != 0)
+        if (node.Attributes?.Count != 0)
         {
-            XmlNode n;
+            string it = String.Empty;
+            it = node.GetNamedAttributeItemInnerText("Name");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            Name = it;
 
-            n = node.Attributes.GetNamedItem("Name");
-            if (n != null) Name = n.InnerText;
-            if (n == null) return null;
-
-            n = node.Attributes.GetNamedItem("TagType");
-            if (n != null) TagType = n.InnerText;
-            if (n == null) return null;
-
-            n = node.Attributes.GetNamedItem("DataType");
-            if (n != null) DataType = n.InnerText;
-            if (n == null) return null;
-
+            it = node.GetNamedAttributeItemInnerText("TagType");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            TagType = it;
+            
+            it = node.GetNamedAttributeItemInnerText("DataType");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            DataType = it;
+            
             // handle differrent lenght strings
             if (DataType.ToLower().Contains("string")) DataType = "String";
 
             if (TagType == "Alias") DataType = TagType;
 
-            n = node.Attributes.GetNamedItem("Dimensions");
-            if (n != null)
-            {
-                int.TryParse(n.InnerText, out i);
-                Dimensions = i;
-            }
+            //Dimensions = node.GetNamedAttributeItemInnerTextAsInt("Dimensions");
 
-            n = node.Attributes.GetNamedItem("Index");
-            if (n != null)
-            {
-                Name += n.InnerText;
-            }
+            Name += node.GetNamedAttributeItemInnerText("Index");
         }
 
         switch (DataType)
@@ -1331,9 +1199,9 @@ public class Controller
     }
 
     public string GetUDTName(int id) {
-        string s;
+        string? s;
         UDT_ID_Pairs.TryGetValue(id, out s);
-        return s?? $"{id} Not Found.";
+        return s ?? $"{id} Not Found.";
     }
 
     public string GetUDTName(TagInfo tag)
@@ -1375,6 +1243,7 @@ public class Controller
                     throw new Exception(($"PLC did not respond."));
                 }
                 connected = true;
+                if (connected) Debug.Print("connected");
             }
 
             Tag<TagInfoPlcMapper, TagInfo[]> returnvalue = new();
@@ -1515,44 +1384,26 @@ public class Task {
         try
         {
             int n;
-            XmlNode? s;
 
-            s = node.Attributes.GetNamedItem("Name");
-            if (s != null) Name = s.InnerText;
+            Name = node.GetNamedAttributeItemInnerText("Name");
+            Type = node.GetNamedAttributeItemInnerText("Type");
+            Description = node.GetNamedAttributeItemInnerText("Description");
 
-            s = node.Attributes.GetNamedItem("Type");
-            if (s != null) Type = s.InnerText;
+            int.TryParse(node.GetNamedAttributeItemInnerText("Rate"), out n);
+            Rate = n;
 
-            s = node.Attributes.GetNamedItem("Rate");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                Rate = n;
-            }
-
-            s = node.Attributes.GetNamedItem("Priority");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                Priority = n;
-            }
-
-            s = node.Attributes.GetNamedItem("Watchdog");
-            if (s != null)
-            {
-                int.TryParse(s.InnerText, out n);
-                Watchdog = n;
-            }
-
-            s = node.Attributes.GetNamedItem("Description");
-            if (s != null) Description = s.InnerText;
-
-
+            int.TryParse(node.GetNamedAttributeItemInnerText("Priority"), out n);
+            Priority = n;
+            
+            int.TryParse(node.GetNamedAttributeItemInnerText("Watchdog"), out n);
+            Watchdog = n;
+            
             // get all the program names
-            foreach (XmlNode p_node in node.SelectSingleNode("ScheduledPrograms").ChildNodes)
+            XmlNode sched = node.SelectSingleNode("ScheduledPrograms", XMLHelper.CreateGenericXmlNode());
+            foreach (XmlNode p_node in sched.ChildNodes)
             {
-                XmlNode p = p_node.Attributes.GetNamedItem("Name");
-                if ( p != null ) ScheduledPrograms.Add(p.InnerText);
+                string it = p_node.GetNamedAttributeItemInnerText("Name");
+                if ( it.Length > 0 ) ScheduledPrograms.Add(it);
             }
         }
         catch (Exception ex)

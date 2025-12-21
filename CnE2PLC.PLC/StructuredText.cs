@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Xml;
+using CnE2PLC.Helpers;
 
 namespace CnE2PLC.PLC;
 
@@ -14,9 +15,13 @@ public class ST_Routine : Routine
     {
         try
         {
-            foreach (XmlNode node2 in node.SelectNodes("STContent"))
+            XmlNodeList? STContent = node.SelectNodes("STContent");
+            if (STContent != null)
             {
-                foreach (XmlNode line in node2.ChildNodes) Lines.Add(new Line(line));
+                foreach (XmlNode node2 in STContent)
+                {
+                    foreach (XmlNode line in node2.ChildNodes) Lines.Add(new Line(line));
+                }
             }
         }
         catch (Exception ex)
@@ -58,14 +63,9 @@ public class Line
     {
         try
         {
-            string s = node.Attributes.GetNamedItem("Number").Value;
-            int n;
-            int.TryParse(s, out n);
-            Number = n;
-            foreach (XmlNode node2 in node.ChildNodes)
-            {
-                if (node2.Name == "Text") Text = node2.InnerText;
-            }
+            string s = node.GetNamedAttributeItemValue("Number");
+            Number = int.TryParse(s, out int n) ? n : 0;
+            Text = node.GetChildNodeInnerText("Text", true);
         }
         catch (Exception ex)
         {
@@ -96,7 +96,7 @@ public class Line
         }
         catch (Exception ex )
         {
-
+            Debug.Print($"AOICount Error: {ex.Message}");
             throw;
         }
         

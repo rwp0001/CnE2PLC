@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using CnE2PLC.Helpers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
 
@@ -24,24 +25,23 @@ public class XTO_AOI : PLCTag
         try
         {
             
-
             foreach (XmlNode item in node.ChildNodes)
             {
                 if (item.Name == "Data")
                 {
                     try
                     {
-                        XmlNode n1;
+                        string format = item.GetNamedAttributeItemInnerText("Format");
 
-                        n1 = item.Attributes.GetNamedItem("Format");
-                        if (n1 != null) if (n1.InnerText == "L5K") L5K = item.InnerText;
-                        if (n1 != null) if (n1.InnerText == "Decorated")
+                        if (format == "L5K") L5K = item.InnerText ?? "";
+                        if (format == "Decorated")
                         {
-                            foreach (XmlNode DataValueMember in item.ChildNodes[0].ChildNodes)
+                            XmlNode fc = item.FirstChild ?? XMLHelper.CreateGenericXmlNode();
+                            foreach (XmlNode DataValueMember in fc.ChildNodes)
                             {
-                                var n = DataValueMember.Attributes.GetNamedItem("Name");
-                                var d = DataValueMember.Attributes.GetNamedItem("DataType");
-                                var v = DataValueMember.Attributes.GetNamedItem("Value");
+                                var n = DataValueMember?.Attributes?.GetNamedItem("Name");
+                                var d = DataValueMember?.Attributes?.GetNamedItem("DataType");
+                                var v = DataValueMember?.Attributes?.GetNamedItem("Value");
                                 if (n == null || d == null || v == null) continue;
                                 SetProperty(n.InnerText, d.InnerText, v.InnerText);
                             }
@@ -420,7 +420,7 @@ public class XTO_AOI : PLCTag
 public class AlmData : PLCTag
 {
     // 80 bytes on PLC
-    static readonly int Length = 80;
+    //static readonly int Length = 80;
 
     //Parameters
     public bool? EnableIn { get; }
@@ -451,7 +451,7 @@ public class AlmData : PLCTag
 public class BypData : PLCTag
 {
     // 24 bytes on PLC
-    static readonly int Length = 24;
+    //static readonly int Length = 24;
 
     //Parameters
     public bool? EnableIn { get; }

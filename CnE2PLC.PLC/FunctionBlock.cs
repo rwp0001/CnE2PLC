@@ -1,6 +1,8 @@
 ﻿using libplctag;
 using System.Diagnostics;
 using System.Xml;
+using System.Xml.Linq;
+using CnE2PLC.Helpers;
 
 namespace CnE2PLC.PLC;
 
@@ -14,9 +16,13 @@ public class FBD_Routine : Routine
     {
         try
         {
-            foreach (XmlNode node2 in node.SelectNodes("FBDContent"))
+            XmlNodeList? FBDContent = node.SelectNodes("FBDContent");
+            if (FBDContent != null)
             {
-                foreach (XmlNode sheet in node2.ChildNodes) Sheets.Add(new Sheet(sheet));
+                foreach (XmlNode node2 in FBDContent)
+                {
+                    foreach (XmlNode sheet in node2.ChildNodes) Sheets.Add(new Sheet(sheet));
+                }
             }
         }
         catch (Exception ex)
@@ -64,7 +70,7 @@ public class Sheet
         {
 
             //Description = node.Attributes.GetNamedItem("Description").Value;
-            string s = node.Attributes.GetNamedItem("Number").Value;
+            string s = node.GetNamedAttributeItemValue("Number");
             if (s != null)
             {
                 int n;
@@ -149,14 +155,14 @@ public class SheetElement
     {
         try
         {
-            string? s = node.Attributes.GetNamedItem("ID").Value;
+            string s = node.GetNamedAttributeItemValue("ID");
             if (s != null)
             {
                 int n = 0;
                 int.TryParse(s, out n);
                 ID = n;
             }
-            s = node.Attributes.GetNamedItem("X").Value;
+            s = node.GetNamedAttributeItemValue("X");
             if (s != null)
             {
                 int n = 0;
@@ -164,7 +170,7 @@ public class SheetElement
                 X = n;
             }
 
-            s = node.Attributes.GetNamedItem("Y").Value;
+            s = node.GetNamedAttributeItemValue("Y");
             if (s != null)
             {
                 int n = 0;
@@ -197,8 +203,8 @@ public class IRef : SheetElement
     {
         try
         {
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
-            string s = node.Attributes.GetNamedItem("HideDesc").Value;
+            Operand = node.GetNamedAttributeItemValue("Operand");
+            string s = node.GetNamedAttributeItemValue("HideDesc");
             HideDesc = s[0] == 'f' ? false : true;
         }
         catch (Exception ex)
@@ -211,7 +217,7 @@ public class IRef : SheetElement
     public string? Operand { get; set; }
     public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
     public override int AOICount(string type, string tag) { return 0; }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
@@ -225,8 +231,8 @@ public class ORef : SheetElement
     {
         try
         {
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
-            string s = node.Attributes.GetNamedItem("HideDesc").Value;
+            Operand = node.GetNamedAttributeItemValue("Operand");
+            string s = node.GetNamedAttributeItemValue("HideDesc");
             HideDesc = s[0] == 'f' ? false : true;
         }
         catch (Exception ex)
@@ -239,7 +245,7 @@ public class ORef : SheetElement
     public string? Operand { get; set; }
     public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
     public override int AOICount(string type, string tag) { return 0; }
 
@@ -253,10 +259,10 @@ public class Block : SheetElement
     {
         try
         {
-            Type = node.Attributes.GetNamedItem("Type").Value;
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
-            VisiblePins = node.Attributes.GetNamedItem("VisiblePins").Value;
-            string s = node.Attributes.GetNamedItem("HideDesc").Value;
+            Type = node.GetNamedAttributeItemValue("Type");
+            Operand = node.GetNamedAttributeItemValue("Operand");
+            VisiblePins = node.GetNamedAttributeItemValue("VisiblePins");
+            string s = node.GetNamedAttributeItemValue("HideDesc");
             HideDesc = s[0] == 'f' ? false : true;
         }
         catch (Exception ex)
@@ -271,7 +277,7 @@ public class Block : SheetElement
     public string? VisiblePins { get; set; }
     public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
     public override int AOICount(string type, string tag) { return 0; }
 
@@ -284,9 +290,9 @@ public class Wire : SheetElement
     {
         try
         {
-            string? s;
+            string s;
 
-            s = node.Attributes.GetNamedItem("ToID").Value;
+            s = node.GetNamedAttributeItemValue("ToID");
             if (s != null)
             {
                 int n = 0;
@@ -294,7 +300,7 @@ public class Wire : SheetElement
                 ToID = n;
             }
 
-            s = node.Attributes.GetNamedItem("FromID").Value;
+            s = node.GetNamedAttributeItemValue("FromID");
             if (s != null)
             {
                 int n = 0;
@@ -302,9 +308,9 @@ public class Wire : SheetElement
                 FromID = n;
             }
 
-            try { ToParam = node.Attributes.GetNamedItem("ToParam").Value; } catch (Exception ex ){ }
+            try { ToParam = node.GetNamedAttributeItemValue("ToParam"); } catch (Exception ex ){ Debug.Print($"Wire Error: {ex.Message}"); }
 
-            try { FromParam = node.Attributes.GetNamedItem("FromParam").Value; } catch (Exception ex) { }
+            try { FromParam = node.GetNamedAttributeItemValue("FromParam"); } catch (Exception ex) { Debug.Print($"Wire Error: {ex.Message}"); }
         }
         catch (Exception ex)
         {
@@ -340,9 +346,9 @@ public class AddOnInstruction : SheetElement
     {
         try
         {
-            Name = node.Attributes.GetNamedItem("Name").Value;
-            Operand = node.Attributes.GetNamedItem("Operand").Value;
-            VisiblePins = node.Attributes.GetNamedItem("VisiblePins").Value;
+            Name = node.GetNamedAttributeItemValue("Name");
+            Operand = node.GetNamedAttributeItemValue("Operand");
+            VisiblePins = node.GetNamedAttributeItemValue("VisiblePins");
         }
         catch (Exception ex)
         {
@@ -355,11 +361,11 @@ public class AddOnInstruction : SheetElement
     public string? Operand { get; set; }
     public string? VisiblePins { get; set; }
 
-    public override int TagCount(string tag) { return Operand.Contains(tag) ? 1 : 0; }
+    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
     public override int AOICount(string type, string tag) { 
         if( Name != type ) return 0;
-        return Operand.Contains(tag) ? 1 : 0; 
+        return Operand.ContainsAsBit(tag); 
     }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
@@ -372,14 +378,14 @@ public class FBD_TextBox : SheetElement
         try
         {
             string? s;
-            s = node.Attributes.GetNamedItem("Width").Value;
+            s = node.GetNamedAttributeItemValue("Width");
             if (s != null)
             {
                 int n = 0;
                 int.TryParse(s, out n);
                 Width = n;
             }
-            Text = node.Attributes.GetNamedItem("Text").Value;
+            Text = node.GetNamedAttributeItemValue("Text");
         }
         catch (Exception ex)
         {
@@ -405,7 +411,7 @@ public class Attachment : SheetElement
         try
         {
             string? s;
-            s = node.Attributes.GetNamedItem("ToID").Value;
+            s = node.GetNamedAttributeItemValue("ToID");
             if (s != null)
             {
                 int n = 0;
@@ -413,7 +419,7 @@ public class Attachment : SheetElement
                 ToID = n;
             }
 
-            s = node.Attributes.GetNamedItem("FromID").Value;
+            s = node.GetNamedAttributeItemValue("FromID");
             if (s != null)
             {
                 int n = 0;
