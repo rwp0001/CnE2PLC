@@ -53,35 +53,6 @@ public class Motor_VFD : XTO_AOI
 
     public override void ClearCounts() { }
 
-    //public void ToRunFailRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.FailToRun";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = "";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
-
-    //    //if (PosFail_Count == 0)
-    //    //{
-    //    //    {
-    //    //        row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //    //        row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //    //    }
-    //    //}
-
-    //}
-
 }
 
 public class P_PF753 : Pump 

@@ -1,11 +1,12 @@
+using CnE2PLC.PLC;
+using CnE2PLC.PLC.XTO;
+using CnE2PLC.Properties;
+using CnE2PLC.Reporting;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Windows.Forms;
 using System.Xml;
-using CnE2PLC.Properties;
-
-using CnE2PLC.PLC;
-using CnE2PLC.PLC.XTO;
 
 namespace CnE2PLC
 {
@@ -252,20 +253,35 @@ namespace CnE2PLC
         private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (PLC.AllTags.Count == 0) return;
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
+
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog
             {
-                Title = "Select C&E Template File",
+                Title = "Select C&E File",
                 Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Multiselect = false
+                FileName = $"{PLC.Name}_CnE_Report.xlsx",
+                RestoreDirectory = true,
+                FilterIndex = 1
+
             };
 
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                PLC.CreateCnE(openFileDialog1.FileName);
+                Stream myStream = saveFileDialog1.OpenFile();
+                if (myStream == null) return;
+                
+                CnE_Report.CreateReport(PLC, myStream);
+                myStream.Close();
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = saveFileDialog1.FileName,
+                    UseShellExecute = true
+                });
+
             }
         }
+
+
 
 
         private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -329,7 +345,7 @@ namespace CnE2PLC
 
         private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            PLC.CreateIOReport();
+            //Reporting.CreateIOReport();
         }
 
         private void inUseSummaryToolStripMenuItem_Click(object sender, EventArgs e)
