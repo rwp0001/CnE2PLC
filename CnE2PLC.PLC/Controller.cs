@@ -2,9 +2,9 @@
 using libplctag;
 using libplctag.DataTypes;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Xml;
 using CnE2PLC.Helpers;
+using System.Linq;
 
 namespace CnE2PLC.PLC;
 
@@ -87,14 +87,14 @@ public class Controller
         get
         {
             BindingList<XTO_AOI> list = new();
-
+            
             foreach (XTO_AOI tag in Tags)
             {
-                if ( Filter_Alarmed & !tag.Alarmed ) continue;
-                if ( Filter_Bypassed & !tag.Bypassed ) continue;
-                if ( Filter_Simmed & !tag.Simmed ) continue;
-                if ( Filter_Placeholder & tag.Placeholder ) continue;
-                if ( Filter_InUse & (tag.NotInUse | !tag.AOICalled) ) continue;
+                if (Filter_Alarmed & !tag.Alarmed) continue;
+                if (Filter_Bypassed & !tag.Bypassed) continue;
+                if (Filter_Simmed & !tag.Simmed) continue;
+                if (Filter_Placeholder & tag.Placeholder) continue;
+                if (Filter_InUse & (tag.NotInUse | !tag.AOICalled)) continue;
                 list.Add(tag);
             }
 

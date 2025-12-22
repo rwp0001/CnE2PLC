@@ -33,149 +33,158 @@ namespace CnE2PLC
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
-            toolStripContainer1 = new ToolStripContainer();
-            statusStrip1 = new StatusStrip();
-            toolStripProgressBar1 = new ToolStripProgressBar();
-            toolStripTagCount = new ToolStripStatusLabel();
-            toolStripUDTCount = new ToolStripStatusLabel();
-            toolStripDeviceCount = new ToolStripStatusLabel();
-            splitContainer1 = new SplitContainer();
-            TagsDataView = new DataGridView();
-            equipNumDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            pathDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            dataTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            AOICalls = new DataGridViewTextBoxColumn();
-            References = new DataGridViewTextBoxColumn();
-            IO = new DataGridViewTextBoxColumn();
-            descriptionDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cfgEquipDescDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            Tags_DGV_Source = new BindingSource(components);
-            LogText = new RichTextBox();
-            contextMenuStrip_LogText = new ContextMenuStrip(components);
-            copyToolStripMenuItem = new ToolStripMenuItem();
-            clearLogToolStripMenuItem = new ToolStripMenuItem();
-            menuStrip1 = new MenuStrip();
-            fileToolStripMenuItem = new ToolStripMenuItem();
-            toolStripMenuItem_CnE = new ToolStripMenuItem();
-            openFileToolStripMenuItem_L5X = new ToolStripMenuItem();
-            quitToolStripMenuItem = new ToolStripMenuItem();
-            pLCToolStripMenuItem = new ToolStripMenuItem();
-            getUDTsToolStripMenuItem = new ToolStripMenuItem();
-            getTagsToolStripMenuItem = new ToolStripMenuItem();
-            connectToPLCToolStripMenuItem = new ToolStripMenuItem();
-            outputToolStripMenuItem = new ToolStripMenuItem();
-            updateCnEToolStripMenuItem = new ToolStripMenuItem();
-            exportTagsToolStripMenuItem = new ToolStripMenuItem();
-            aiReportToolStripMenuItem = new ToolStripMenuItem();
-            inUseSummaryToolStripMenuItem = new ToolStripMenuItem();
-            helpToolStripMenuItem = new ToolStripMenuItem();
-            About_MenuItem = new ToolStripMenuItem();
-            filterToolStripMenuItem = new ToolStripMenuItem();
-            inUseToolStripMenuItem = new ToolStripMenuItem();
-            simmedToolStripMenuItem = new ToolStripMenuItem();
-            bypassedToolStripMenuItem = new ToolStripMenuItem();
-            alarmedToolStripMenuItem = new ToolStripMenuItem();
-            placeholderToolStripMenuItem = new ToolStripMenuItem();
-            toolStripContainer1.BottomToolStripPanel.SuspendLayout();
-            toolStripContainer1.ContentPanel.SuspendLayout();
-            toolStripContainer1.TopToolStripPanel.SuspendLayout();
-            toolStripContainer1.SuspendLayout();
-            statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
-            splitContainer1.Panel1.SuspendLayout();
-            splitContainer1.Panel2.SuspendLayout();
-            splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)TagsDataView).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)Tags_DGV_Source).BeginInit();
-            contextMenuStrip_LogText.SuspendLayout();
-            menuStrip1.SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
+            tsContainer = new ToolStripContainer();
+            status = new StatusStrip();
+            tsProgressBar = new ToolStripProgressBar();
+            tsTagCount = new ToolStripStatusLabel();
+            tsUDTCount = new ToolStripStatusLabel();
+            tsDeviceCount = new ToolStripStatusLabel();
+            splitContainer = new SplitContainer();
+            dgvTags = new DataGridView();
+            dgvTxtCol_EquipNum = new DataGridViewTextBoxColumn();
+            dgvTxtCol_Name = new DataGridViewTextBoxColumn();
+            dgvTxtCol_Path = new DataGridViewTextBoxColumn();
+            dgvTxtCol_DataType = new DataGridViewTextBoxColumn();
+            dgvTxtCol_AOICalls = new DataGridViewTextBoxColumn();
+            dgvTxtCol_References = new DataGridViewTextBoxColumn();
+            dgvTxtCol_IO = new DataGridViewTextBoxColumn();
+            dgvTxtCol_Description = new DataGridViewTextBoxColumn();
+            dgvTxtCol_CfgEquipID = new DataGridViewTextBoxColumn();
+            dgvTxtCol_CfgEquipDesc = new DataGridViewTextBoxColumn();
+            bsTags = new BindingSource(components);
+            txtLogText = new RichTextBox();
+            mnuContext_LogText = new ContextMenuStrip(components);
+            mnuContext_Copy = new ToolStripMenuItem();
+            mnuContext_ClearLog = new ToolStripMenuItem();
+            mnu = new MenuStrip();
+            mnuFile = new ToolStripMenuItem();
+            mnuFile_OpenCnE = new ToolStripMenuItem();
+            mnuFileOpenL5X = new ToolStripMenuItem();
+            mnuFile_Quit = new ToolStripMenuItem();
+            mnuPLC = new ToolStripMenuItem();
+            mnuPLC_GetUDTs = new ToolStripMenuItem();
+            mnuPLC_GetTags = new ToolStripMenuItem();
+            mnuPLC_Connect = new ToolStripMenuItem();
+            mnuOutput = new ToolStripMenuItem();
+            mnuOutput_UpdateCnE = new ToolStripMenuItem();
+            mnuOutput_ExportTags = new ToolStripMenuItem();
+            mnuOutput_IOReport = new ToolStripMenuItem();
+            mnuOutput_InUseSummary = new ToolStripMenuItem();
+            mnuFilter = new ToolStripMenuItem();
+            mnuFilter_InUse = new ToolStripMenuItem();
+            mnuFilter_Simmed = new ToolStripMenuItem();
+            mnuFilter_Bypassed = new ToolStripMenuItem();
+            mnuFilter_Alarmed = new ToolStripMenuItem();
+            mnuFilter_Placeholder = new ToolStripMenuItem();
+            mnuHelp = new ToolStripMenuItem();
+            mnuHelp_About = new ToolStripMenuItem();
+            tsFilters = new ToolStrip();
+            tslblFilters = new ToolStripLabel();
+            tslblFilter_InUse = new ToolStripLabel();
+            tsbtnFilter_InUse = new ToolStripDropDownButton();
+            tsmnuFilter_InUse_All = new ToolStripMenuItem();
+            tsmnuFilter_InUse_Only = new ToolStripMenuItem();
+            tsmnuFilter_InUse_Not = new ToolStripMenuItem();
+            tsContainer.BottomToolStripPanel.SuspendLayout();
+            tsContainer.ContentPanel.SuspendLayout();
+            tsContainer.TopToolStripPanel.SuspendLayout();
+            tsContainer.SuspendLayout();
+            status.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
+            splitContainer.Panel1.SuspendLayout();
+            splitContainer.Panel2.SuspendLayout();
+            splitContainer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvTags).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)bsTags).BeginInit();
+            mnuContext_LogText.SuspendLayout();
+            mnu.SuspendLayout();
+            tsFilters.SuspendLayout();
             SuspendLayout();
             // 
-            // toolStripContainer1
+            // tsContainer
             // 
             // 
-            // toolStripContainer1.BottomToolStripPanel
+            // tsContainer.BottomToolStripPanel
             // 
-            toolStripContainer1.BottomToolStripPanel.Controls.Add(statusStrip1);
+            tsContainer.BottomToolStripPanel.Controls.Add(status);
             // 
-            // toolStripContainer1.ContentPanel
+            // tsContainer.ContentPanel
             // 
-            toolStripContainer1.ContentPanel.Controls.Add(splitContainer1);
-            toolStripContainer1.ContentPanel.Margin = new Padding(2);
-            toolStripContainer1.ContentPanel.Size = new Size(575, 258);
-            toolStripContainer1.Dock = DockStyle.Fill;
-            toolStripContainer1.Location = new Point(0, 0);
-            toolStripContainer1.Margin = new Padding(2);
-            toolStripContainer1.Name = "toolStripContainer1";
-            toolStripContainer1.Size = new Size(575, 304);
-            toolStripContainer1.TabIndex = 0;
-            toolStripContainer1.Text = "toolStripContainer1";
+            tsContainer.ContentPanel.Controls.Add(splitContainer);
+            tsContainer.ContentPanel.Margin = new Padding(2);
+            tsContainer.ContentPanel.Size = new Size(967, 529);
+            tsContainer.Dock = DockStyle.Fill;
+            tsContainer.Location = new Point(0, 0);
+            tsContainer.Margin = new Padding(2);
+            tsContainer.Name = "tsContainer";
+            tsContainer.Size = new Size(967, 600);
+            tsContainer.TabIndex = 0;
+            tsContainer.Text = "toolStripContainer1";
             // 
-            // toolStripContainer1.TopToolStripPanel
+            // tsContainer.TopToolStripPanel
             // 
-            toolStripContainer1.TopToolStripPanel.Controls.Add(menuStrip1);
+            tsContainer.TopToolStripPanel.Controls.Add(mnu);
+            tsContainer.TopToolStripPanel.Controls.Add(tsFilters);
             // 
-            // statusStrip1
+            // status
             // 
-            statusStrip1.Dock = DockStyle.None;
-            statusStrip1.ImageScalingSize = new Size(24, 24);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripProgressBar1, toolStripTagCount, toolStripUDTCount, toolStripDeviceCount });
-            statusStrip1.Location = new Point(0, 0);
-            statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(575, 22);
-            statusStrip1.TabIndex = 0;
-            statusStrip1.Text = "statusStrip1";
+            status.Dock = DockStyle.None;
+            status.ImageScalingSize = new Size(24, 24);
+            status.Items.AddRange(new ToolStripItem[] { tsProgressBar, tsTagCount, tsUDTCount, tsDeviceCount });
+            status.Location = new Point(0, 0);
+            status.Name = "status";
+            status.Size = new Size(967, 22);
+            status.TabIndex = 0;
+            status.Text = "statusStrip1";
             // 
-            // toolStripProgressBar1
+            // tsProgressBar
             // 
-            toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(100, 16);
-            toolStripProgressBar1.Click += toolStripProgressBar1_Click;
+            tsProgressBar.Name = "tsProgressBar";
+            tsProgressBar.Size = new Size(100, 16);
+            tsProgressBar.Click += toolStripProgressBar1_Click;
             // 
-            // toolStripTagCount
+            // tsTagCount
             // 
-            toolStripTagCount.Name = "toolStripTagCount";
-            toolStripTagCount.Size = new Size(50, 17);
-            toolStripTagCount.Text = "No Tags";
+            tsTagCount.Name = "tsTagCount";
+            tsTagCount.Size = new Size(50, 17);
+            tsTagCount.Text = "No Tags";
             // 
-            // toolStripUDTCount
+            // tsUDTCount
             // 
-            toolStripUDTCount.Name = "toolStripUDTCount";
-            toolStripUDTCount.Size = new Size(52, 17);
-            toolStripUDTCount.Text = "No UDTs";
+            tsUDTCount.Name = "tsUDTCount";
+            tsUDTCount.Size = new Size(52, 17);
+            tsUDTCount.Text = "No UDTs";
             // 
-            // toolStripDeviceCount
+            // tsDeviceCount
             // 
-            toolStripDeviceCount.Name = "toolStripDeviceCount";
-            toolStripDeviceCount.Size = new Size(66, 17);
-            toolStripDeviceCount.Text = "No Devices";
-            //toolStripDeviceCount.Click += toolStripDeviceCount_Click;
+            tsDeviceCount.Name = "tsDeviceCount";
+            tsDeviceCount.Size = new Size(66, 17);
+            tsDeviceCount.Text = "No Devices";
             // 
-            // splitContainer1
+            // splitContainer
             // 
-            splitContainer1.Dock = DockStyle.Fill;
-            splitContainer1.Location = new Point(0, 0);
-            splitContainer1.Name = "splitContainer1";
-            splitContainer1.Orientation = Orientation.Horizontal;
+            splitContainer.Dock = DockStyle.Fill;
+            splitContainer.Location = new Point(0, 0);
+            splitContainer.Name = "splitContainer";
+            splitContainer.Orientation = Orientation.Horizontal;
             // 
-            // splitContainer1.Panel1
+            // splitContainer.Panel1
             // 
-            splitContainer1.Panel1.Controls.Add(TagsDataView);
+            splitContainer.Panel1.Controls.Add(dgvTags);
             // 
-            // splitContainer1.Panel2
+            // splitContainer.Panel2
             // 
-            splitContainer1.Panel2.Controls.Add(LogText);
-            splitContainer1.Size = new Size(575, 258);
-            splitContainer1.SplitterDistance = 191;
-            splitContainer1.TabIndex = 1;
+            splitContainer.Panel2.Controls.Add(txtLogText);
+            splitContainer.Size = new Size(967, 529);
+            splitContainer.SplitterDistance = 391;
+            splitContainer.TabIndex = 1;
             // 
-            // TagsDataView
+            // dgvTags
             // 
-            TagsDataView.AllowUserToAddRows = false;
-            TagsDataView.AllowUserToOrderColumns = true;
-            TagsDataView.AutoGenerateColumns = false;
+            dgvTags.AllowUserToAddRows = false;
+            dgvTags.AllowUserToOrderColumns = true;
+            dgvTags.AutoGenerateColumns = false;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Control;
             dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
@@ -183,10 +192,10 @@ namespace CnE2PLC
             dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            TagsDataView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            TagsDataView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            TagsDataView.Columns.AddRange(new DataGridViewColumn[] { equipNumDataGridViewTextBoxColumn, pathDataGridViewTextBoxColumn, dataTypeDataGridViewTextBoxColumn, nameDataGridViewTextBoxColumn, AOICalls, References, IO, descriptionDataGridViewTextBoxColumn, cfgEquipIDDataGridViewTextBoxColumn, cfgEquipDescDataGridViewTextBoxColumn });
-            TagsDataView.DataSource = Tags_DGV_Source;
+            dgvTags.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dgvTags.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvTags.Columns.AddRange(new DataGridViewColumn[] { dgvTxtCol_EquipNum, dgvTxtCol_Name, dgvTxtCol_Path, dgvTxtCol_DataType, dgvTxtCol_AOICalls, dgvTxtCol_References, dgvTxtCol_IO, dgvTxtCol_Description, dgvTxtCol_CfgEquipID, dgvTxtCol_CfgEquipDesc });
+            dgvTags.DataSource = bsTags;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
             dataGridViewCellStyle2.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -194,322 +203,375 @@ namespace CnE2PLC
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            TagsDataView.DefaultCellStyle = dataGridViewCellStyle2;
-            TagsDataView.Dock = DockStyle.Fill;
-            TagsDataView.EditMode = DataGridViewEditMode.EditProgrammatically;
-            TagsDataView.Location = new Point(0, 0);
-            TagsDataView.Name = "TagsDataView";
-            TagsDataView.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            TagsDataView.ShowEditingIcon = false;
-            TagsDataView.Size = new Size(575, 191);
-            TagsDataView.TabIndex = 1;
-            //TagsDataView.CellClick += DevicesDataView_CellContentClick;
-            TagsDataView.ColumnHeaderMouseClick += TagsDataView_ColumnHeaderMouseClick;
+            dgvTags.DefaultCellStyle = dataGridViewCellStyle2;
+            dgvTags.Dock = DockStyle.Fill;
+            dgvTags.EditMode = DataGridViewEditMode.EditProgrammatically;
+            dgvTags.Location = new Point(0, 0);
+            dgvTags.Name = "dgvTags";
+            dgvTags.SelectionMode = DataGridViewSelectionMode.CellSelect;
+            dgvTags.ShowEditingIcon = false;
+            dgvTags.Size = new Size(967, 391);
+            dgvTags.TabIndex = 1;
+            dgvTags.ColumnHeaderMouseClick += TagsDataView_ColumnHeaderMouseClick;
             // 
-            // equipNumDataGridViewTextBoxColumn
+            // dgvTxtCol_EquipNum
             // 
-            equipNumDataGridViewTextBoxColumn.DataPropertyName = "EquipNum";
-            equipNumDataGridViewTextBoxColumn.HeaderText = "Equipment Number";
-            equipNumDataGridViewTextBoxColumn.Name = "equipNumDataGridViewTextBoxColumn";
-            equipNumDataGridViewTextBoxColumn.ReadOnly = true;
-            equipNumDataGridViewTextBoxColumn.Visible = false;
+            dgvTxtCol_EquipNum.DataPropertyName = "EquipNum";
+            dgvTxtCol_EquipNum.HeaderText = "Equipment Number";
+            dgvTxtCol_EquipNum.Name = "dgvTxtCol_EquipNum";
+            dgvTxtCol_EquipNum.ReadOnly = true;
+            dgvTxtCol_EquipNum.Visible = false;
             // 
-            // pathDataGridViewTextBoxColumn
+            // dgvTxtCol_Name
             // 
-            pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
-            pathDataGridViewTextBoxColumn.HeaderText = "Tag Scope";
-            pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
+            dgvTxtCol_Name.DataPropertyName = "Name";
+            dgvTxtCol_Name.HeaderText = "Tag Name";
+            dgvTxtCol_Name.Name = "dgvTxtCol_Name";
             // 
-            // dataTypeDataGridViewTextBoxColumn
+            // dgvTxtCol_Path
             // 
-            dataTypeDataGridViewTextBoxColumn.DataPropertyName = "DataType";
-            dataTypeDataGridViewTextBoxColumn.HeaderText = "Tag Data Type";
-            dataTypeDataGridViewTextBoxColumn.Name = "dataTypeDataGridViewTextBoxColumn";
+            dgvTxtCol_Path.DataPropertyName = "Path";
+            dgvTxtCol_Path.HeaderText = "Tag Scope";
+            dgvTxtCol_Path.Name = "dgvTxtCol_Path";
             // 
-            // nameDataGridViewTextBoxColumn
+            // dgvTxtCol_DataType
             // 
-            nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
-            nameDataGridViewTextBoxColumn.HeaderText = "Tag Name";
-            nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
+            dgvTxtCol_DataType.DataPropertyName = "DataType";
+            dgvTxtCol_DataType.HeaderText = "Tag Data Type";
+            dgvTxtCol_DataType.Name = "dgvTxtCol_DataType";
             // 
-            // AOICalls
+            // dgvTxtCol_AOICalls
             // 
-            AOICalls.DataPropertyName = "AOICalls";
-            AOICalls.HeaderText = "AOICalls";
-            AOICalls.Name = "AOICalls";
+            dgvTxtCol_AOICalls.DataPropertyName = "AOICalls";
+            dgvTxtCol_AOICalls.HeaderText = "AOICalls";
+            dgvTxtCol_AOICalls.Name = "dgvTxtCol_AOICalls";
             // 
-            // References
+            // dgvTxtCol_References
             // 
-            References.DataPropertyName = "References";
-            References.HeaderText = "References";
-            References.Name = "References";
+            dgvTxtCol_References.DataPropertyName = "References";
+            dgvTxtCol_References.HeaderText = "References";
+            dgvTxtCol_References.Name = "dgvTxtCol_References";
             // 
-            // IO
+            // dgvTxtCol_IO
             // 
-            IO.DataPropertyName = "IO";
-            IO.HeaderText = "IO";
-            IO.Name = "IO";
-            IO.ReadOnly = true;
+            dgvTxtCol_IO.DataPropertyName = "IO";
+            dgvTxtCol_IO.HeaderText = "IO";
+            dgvTxtCol_IO.Name = "dgvTxtCol_IO";
+            dgvTxtCol_IO.ReadOnly = true;
             // 
-            // descriptionDataGridViewTextBoxColumn
+            // dgvTxtCol_Description
             // 
-            descriptionDataGridViewTextBoxColumn.DataPropertyName = "Description";
-            descriptionDataGridViewTextBoxColumn.HeaderText = "Tag Description";
-            descriptionDataGridViewTextBoxColumn.Name = "descriptionDataGridViewTextBoxColumn";
+            dgvTxtCol_Description.DataPropertyName = "Description";
+            dgvTxtCol_Description.HeaderText = "Tag Description";
+            dgvTxtCol_Description.Name = "dgvTxtCol_Description";
             // 
-            // cfgEquipIDDataGridViewTextBoxColumn
+            // dgvTxtCol_CfgEquipID
             // 
-            cfgEquipIDDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipID";
-            cfgEquipIDDataGridViewTextBoxColumn.HeaderText = "Equipment ID";
-            cfgEquipIDDataGridViewTextBoxColumn.Name = "cfgEquipIDDataGridViewTextBoxColumn";
+            dgvTxtCol_CfgEquipID.DataPropertyName = "Cfg_EquipID";
+            dgvTxtCol_CfgEquipID.HeaderText = "Equipment ID";
+            dgvTxtCol_CfgEquipID.Name = "dgvTxtCol_CfgEquipID";
             // 
-            // cfgEquipDescDataGridViewTextBoxColumn
+            // dgvTxtCol_CfgEquipDesc
             // 
-            cfgEquipDescDataGridViewTextBoxColumn.DataPropertyName = "Cfg_EquipDesc";
-            cfgEquipDescDataGridViewTextBoxColumn.HeaderText = "Equipment Description";
-            cfgEquipDescDataGridViewTextBoxColumn.Name = "cfgEquipDescDataGridViewTextBoxColumn";
+            dgvTxtCol_CfgEquipDesc.DataPropertyName = "Cfg_EquipDesc";
+            dgvTxtCol_CfgEquipDesc.HeaderText = "Equipment Description";
+            dgvTxtCol_CfgEquipDesc.Name = "dgvTxtCol_CfgEquipDesc";
             // 
-            // Tags_DGV_Source
+            // bsTags
             // 
-            Tags_DGV_Source.DataSource = typeof(XTO_AOI);
-            //Tags_DGV_Source.CurrentChanged += Tags_DGV_Source_CurrentChanged;
+            bsTags.DataSource = typeof(XTO_AOI);
             // 
-            // LogText
+            // txtLogText
             // 
-            LogText.ContextMenuStrip = contextMenuStrip_LogText;
-            LogText.Dock = DockStyle.Fill;
-            LogText.Location = new Point(0, 0);
-            LogText.Margin = new Padding(2);
-            LogText.Name = "LogText";
-            LogText.ReadOnly = true;
-            LogText.Size = new Size(575, 63);
-            LogText.TabIndex = 0;
-            LogText.Text = "";
-            //LogText.TextChanged += LogText_TextChanged;
+            txtLogText.ContextMenuStrip = mnuContext_LogText;
+            txtLogText.Dock = DockStyle.Fill;
+            txtLogText.Location = new Point(0, 0);
+            txtLogText.Margin = new Padding(2);
+            txtLogText.Name = "txtLogText";
+            txtLogText.ReadOnly = true;
+            txtLogText.Size = new Size(967, 134);
+            txtLogText.TabIndex = 0;
+            txtLogText.Text = "";
             // 
-            // contextMenuStrip_LogText
+            // mnuContext_LogText
             // 
-            contextMenuStrip_LogText.Items.AddRange(new ToolStripItem[] { copyToolStripMenuItem, clearLogToolStripMenuItem });
-            contextMenuStrip_LogText.Name = "contextMenuStrip1";
-            contextMenuStrip_LogText.Size = new Size(125, 48);
+            mnuContext_LogText.Items.AddRange(new ToolStripItem[] { mnuContext_Copy, mnuContext_ClearLog });
+            mnuContext_LogText.Name = "contextMenuStrip1";
+            mnuContext_LogText.Size = new Size(125, 48);
             // 
-            // copyToolStripMenuItem
+            // mnuContext_Copy
             // 
-            copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            copyToolStripMenuItem.Size = new Size(124, 22);
-            copyToolStripMenuItem.Text = "Copy";
-            copyToolStripMenuItem.Click += copyToolStripMenuItem_Click;
+            mnuContext_Copy.Name = "mnuContext_Copy";
+            mnuContext_Copy.Size = new Size(124, 22);
+            mnuContext_Copy.Text = "Copy";
+            mnuContext_Copy.Click += copyToolStripMenuItem_Click;
             // 
-            // clearLogToolStripMenuItem
+            // mnuContext_ClearLog
             // 
-            clearLogToolStripMenuItem.Name = "clearLogToolStripMenuItem";
-            clearLogToolStripMenuItem.Size = new Size(124, 22);
-            clearLogToolStripMenuItem.Text = "Clear Log";
-            clearLogToolStripMenuItem.Click += clearLogToolStripMenuItem_Click;
+            mnuContext_ClearLog.Name = "mnuContext_ClearLog";
+            mnuContext_ClearLog.Size = new Size(124, 22);
+            mnuContext_ClearLog.Text = "Clear Log";
+            mnuContext_ClearLog.Click += clearLogToolStripMenuItem_Click;
             // 
-            // menuStrip1
+            // mnu
             // 
-            menuStrip1.Dock = DockStyle.None;
-            menuStrip1.ImageScalingSize = new Size(24, 24);
-            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, pLCToolStripMenuItem, outputToolStripMenuItem, helpToolStripMenuItem, filterToolStripMenuItem });
-            menuStrip1.Location = new Point(0, 0);
-            menuStrip1.Name = "menuStrip1";
-            menuStrip1.Size = new Size(575, 24);
-            menuStrip1.TabIndex = 0;
-            menuStrip1.Text = "menuStrip1";
+            mnu.AllowMerge = false;
+            mnu.Dock = DockStyle.None;
+            mnu.ImageScalingSize = new Size(24, 24);
+            mnu.Items.AddRange(new ToolStripItem[] { mnuFile, mnuPLC, mnuOutput, mnuFilter, mnuHelp });
+            mnu.Location = new Point(0, 0);
+            mnu.Name = "mnu";
+            mnu.Size = new Size(967, 24);
+            mnu.TabIndex = 0;
+            mnu.Text = "menuStrip1";
             // 
-            // fileToolStripMenuItem
+            // mnuFile
             // 
-            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { toolStripMenuItem_CnE, openFileToolStripMenuItem_L5X, quitToolStripMenuItem });
-            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            fileToolStripMenuItem.Size = new Size(37, 20);
-            fileToolStripMenuItem.Text = "File";
+            mnuFile.DropDownItems.AddRange(new ToolStripItem[] { mnuFile_OpenCnE, mnuFileOpenL5X, mnuFile_Quit });
+            mnuFile.Name = "mnuFile";
+            mnuFile.Size = new Size(37, 20);
+            mnuFile.Text = "File";
             // 
-            // toolStripMenuItem_CnE
+            // mnuFile_OpenCnE
             // 
-            toolStripMenuItem_CnE.Enabled = false;
-            toolStripMenuItem_CnE.Name = "toolStripMenuItem_CnE";
-            toolStripMenuItem_CnE.Size = new Size(148, 22);
-            toolStripMenuItem_CnE.Text = "Open CnE File";
-            toolStripMenuItem_CnE.Click += toolStripMenuItem_CnE_Click;
+            mnuFile_OpenCnE.Enabled = false;
+            mnuFile_OpenCnE.Name = "mnuFile_OpenCnE";
+            mnuFile_OpenCnE.Size = new Size(148, 22);
+            mnuFile_OpenCnE.Text = "Open CnE File";
+            mnuFile_OpenCnE.Click += toolStripMenuItem_CnE_Click;
             // 
-            // openFileToolStripMenuItem_L5X
+            // mnuFileOpenL5X
             // 
-            openFileToolStripMenuItem_L5X.Name = "openFileToolStripMenuItem_L5X";
-            openFileToolStripMenuItem_L5X.Size = new Size(148, 22);
-            openFileToolStripMenuItem_L5X.Text = "Open L5X File";
-            openFileToolStripMenuItem_L5X.Click += openFileToolStripMenuItem_Click;
+            mnuFileOpenL5X.Name = "mnuFileOpenL5X";
+            mnuFileOpenL5X.Size = new Size(148, 22);
+            mnuFileOpenL5X.Text = "Open L5X File";
+            mnuFileOpenL5X.Click += openFileToolStripMenuItem_Click;
             // 
-            // quitToolStripMenuItem
+            // mnuFile_Quit
             // 
-            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            quitToolStripMenuItem.Size = new Size(148, 22);
-            quitToolStripMenuItem.Text = "Quit";
-            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
+            mnuFile_Quit.Name = "mnuFile_Quit";
+            mnuFile_Quit.Size = new Size(148, 22);
+            mnuFile_Quit.Text = "Quit";
+            mnuFile_Quit.Click += quitToolStripMenuItem_Click;
             // 
-            // pLCToolStripMenuItem
+            // mnuPLC
             // 
-            pLCToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { getUDTsToolStripMenuItem, getTagsToolStripMenuItem, connectToPLCToolStripMenuItem });
-            pLCToolStripMenuItem.Name = "pLCToolStripMenuItem";
-            pLCToolStripMenuItem.Size = new Size(40, 20);
-            pLCToolStripMenuItem.Text = "PLC";
+            mnuPLC.DropDownItems.AddRange(new ToolStripItem[] { mnuPLC_GetUDTs, mnuPLC_GetTags, mnuPLC_Connect });
+            mnuPLC.Name = "mnuPLC";
+            mnuPLC.Size = new Size(40, 20);
+            mnuPLC.Text = "PLC";
             // 
-            // getUDTsToolStripMenuItem
+            // mnuPLC_GetUDTs
             // 
-            getUDTsToolStripMenuItem.Name = "getUDTsToolStripMenuItem";
-            getUDTsToolStripMenuItem.Size = new Size(157, 22);
-            getUDTsToolStripMenuItem.Text = "Get UDTs";
-            getUDTsToolStripMenuItem.Click += getUDTsToolStripMenuItem_Click;
+            mnuPLC_GetUDTs.Name = "mnuPLC_GetUDTs";
+            mnuPLC_GetUDTs.Size = new Size(157, 22);
+            mnuPLC_GetUDTs.Text = "Get UDTs";
+            mnuPLC_GetUDTs.Click += getUDTsToolStripMenuItem_Click;
             // 
-            // getTagsToolStripMenuItem
+            // mnuPLC_GetTags
             // 
-            getTagsToolStripMenuItem.Name = "getTagsToolStripMenuItem";
-            getTagsToolStripMenuItem.Size = new Size(157, 22);
-            getTagsToolStripMenuItem.Text = "Get Tags";
-            getTagsToolStripMenuItem.Click += getTagsToolStripMenuItem_Click;
+            mnuPLC_GetTags.Name = "mnuPLC_GetTags";
+            mnuPLC_GetTags.Size = new Size(157, 22);
+            mnuPLC_GetTags.Text = "Get Tags";
+            mnuPLC_GetTags.Click += getTagsToolStripMenuItem_Click;
             // 
-            // connectToPLCToolStripMenuItem
+            // mnuPLC_Connect
             // 
-            connectToPLCToolStripMenuItem.Name = "connectToPLCToolStripMenuItem";
-            connectToPLCToolStripMenuItem.Size = new Size(157, 22);
-            connectToPLCToolStripMenuItem.Text = "Connect to PLC";
+            mnuPLC_Connect.Name = "mnuPLC_Connect";
+            mnuPLC_Connect.Size = new Size(157, 22);
+            mnuPLC_Connect.Text = "Connect to PLC";
             // 
-            // outputToolStripMenuItem
+            // mnuOutput
             // 
-            outputToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { updateCnEToolStripMenuItem, exportTagsToolStripMenuItem, aiReportToolStripMenuItem, inUseSummaryToolStripMenuItem });
-            outputToolStripMenuItem.Name = "outputToolStripMenuItem";
-            outputToolStripMenuItem.Size = new Size(57, 20);
-            outputToolStripMenuItem.Text = "Output";
+            mnuOutput.DropDownItems.AddRange(new ToolStripItem[] { mnuOutput_UpdateCnE, mnuOutput_ExportTags, mnuOutput_IOReport, mnuOutput_InUseSummary });
+            mnuOutput.Name = "mnuOutput";
+            mnuOutput.Size = new Size(57, 20);
+            mnuOutput.Text = "Output";
             // 
-            // updateCnEToolStripMenuItem
+            // mnuOutput_UpdateCnE
             // 
-            updateCnEToolStripMenuItem.Name = "updateCnEToolStripMenuItem";
-            updateCnEToolStripMenuItem.Size = new Size(180, 22);
-            updateCnEToolStripMenuItem.Text = "Update CnE";
-            updateCnEToolStripMenuItem.Click += updateCnEToolStripMenuItem_Click;
+            mnuOutput_UpdateCnE.Name = "mnuOutput_UpdateCnE";
+            mnuOutput_UpdateCnE.Size = new Size(160, 22);
+            mnuOutput_UpdateCnE.Text = "Update CnE";
+            mnuOutput_UpdateCnE.Click += updateCnEToolStripMenuItem_Click;
             // 
-            // exportTagsToolStripMenuItem
+            // mnuOutput_ExportTags
             // 
-            exportTagsToolStripMenuItem.Name = "exportTagsToolStripMenuItem";
-            exportTagsToolStripMenuItem.Size = new Size(180, 22);
-            exportTagsToolStripMenuItem.Text = "Export Tags";
-            exportTagsToolStripMenuItem.Click += exportTagsToolStripMenuItem_Click;
+            mnuOutput_ExportTags.Name = "mnuOutput_ExportTags";
+            mnuOutput_ExportTags.Size = new Size(160, 22);
+            mnuOutput_ExportTags.Text = "Export Tags";
+            mnuOutput_ExportTags.Click += exportTagsToolStripMenuItem_Click;
             // 
-            // aiReportToolStripMenuItem
+            // mnuOutput_IOReport
             // 
-            aiReportToolStripMenuItem.Name = "aiReportToolStripMenuItem";
-            aiReportToolStripMenuItem.Size = new Size(180, 22);
-            aiReportToolStripMenuItem.Text = "IO Report";
-            aiReportToolStripMenuItem.Click += aiReportToolStripMenuItem_Click;
+            mnuOutput_IOReport.Name = "mnuOutput_IOReport";
+            mnuOutput_IOReport.Size = new Size(160, 22);
+            mnuOutput_IOReport.Text = "IO Report";
+            mnuOutput_IOReport.Click += aiReportToolStripMenuItem_Click;
             // 
-            // inUseSummaryToolStripMenuItem
+            // mnuOutput_InUseSummary
             // 
-            inUseSummaryToolStripMenuItem.Name = "inUseSummaryToolStripMenuItem";
-            inUseSummaryToolStripMenuItem.Size = new Size(180, 22);
-            inUseSummaryToolStripMenuItem.Text = "In Use Summary";
-            inUseSummaryToolStripMenuItem.Click += inUseSummaryToolStripMenuItem_Click;
+            mnuOutput_InUseSummary.Name = "mnuOutput_InUseSummary";
+            mnuOutput_InUseSummary.Size = new Size(160, 22);
+            mnuOutput_InUseSummary.Text = "In Use Summary";
+            mnuOutput_InUseSummary.Click += inUseSummaryToolStripMenuItem_Click;
             // 
-            // helpToolStripMenuItem
+            // mnuFilter
             // 
-            helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { About_MenuItem });
-            helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            helpToolStripMenuItem.Size = new Size(44, 20);
-            helpToolStripMenuItem.Text = "Help";
+            mnuFilter.DropDownItems.AddRange(new ToolStripItem[] { mnuFilter_InUse, mnuFilter_Simmed, mnuFilter_Bypassed, mnuFilter_Alarmed, mnuFilter_Placeholder });
+            mnuFilter.Name = "mnuFilter";
+            mnuFilter.Size = new Size(45, 20);
+            mnuFilter.Text = "Filter";
             // 
-            // About_MenuItem
+            // mnuFilter_InUse
             // 
-            About_MenuItem.Name = "About_MenuItem";
-            About_MenuItem.Size = new Size(107, 22);
-            About_MenuItem.Text = "About";
-            About_MenuItem.Click += About_MenuItem_Click;
+            mnuFilter_InUse.Name = "mnuFilter_InUse";
+            mnuFilter_InUse.Size = new Size(136, 22);
+            mnuFilter_InUse.Text = "In Use";
+            mnuFilter_InUse.Click += inUseToolStripMenuItem_Click;
             // 
-            // filterToolStripMenuItem
+            // mnuFilter_Simmed
             // 
-            filterToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { inUseToolStripMenuItem, simmedToolStripMenuItem, bypassedToolStripMenuItem, alarmedToolStripMenuItem, placeholderToolStripMenuItem });
-            filterToolStripMenuItem.Name = "filterToolStripMenuItem";
-            filterToolStripMenuItem.Size = new Size(45, 20);
-            filterToolStripMenuItem.Text = "Filter";
+            mnuFilter_Simmed.Name = "mnuFilter_Simmed";
+            mnuFilter_Simmed.Size = new Size(136, 22);
+            mnuFilter_Simmed.Text = "Simmed";
+            mnuFilter_Simmed.Click += simmedToolStripMenuItem_Click;
             // 
-            // inUseToolStripMenuItem
+            // mnuFilter_Bypassed
             // 
-            inUseToolStripMenuItem.Name = "inUseToolStripMenuItem";
-            inUseToolStripMenuItem.Size = new Size(136, 22);
-            inUseToolStripMenuItem.Text = "In Use";
-            inUseToolStripMenuItem.Click += inUseToolStripMenuItem_Click;
+            mnuFilter_Bypassed.Name = "mnuFilter_Bypassed";
+            mnuFilter_Bypassed.Size = new Size(136, 22);
+            mnuFilter_Bypassed.Text = "Bypassed";
+            mnuFilter_Bypassed.Click += bypassedToolStripMenuItem_Click;
             // 
-            // simmedToolStripMenuItem
+            // mnuFilter_Alarmed
             // 
-            simmedToolStripMenuItem.Name = "simmedToolStripMenuItem";
-            simmedToolStripMenuItem.Size = new Size(136, 22);
-            simmedToolStripMenuItem.Text = "Simmed";
-            simmedToolStripMenuItem.Click += simmedToolStripMenuItem_Click;
+            mnuFilter_Alarmed.Name = "mnuFilter_Alarmed";
+            mnuFilter_Alarmed.Size = new Size(136, 22);
+            mnuFilter_Alarmed.Text = "Alarmed";
+            mnuFilter_Alarmed.Click += alarmedToolStripMenuItem_Click;
             // 
-            // bypassedToolStripMenuItem
+            // mnuFilter_Placeholder
             // 
-            bypassedToolStripMenuItem.Name = "bypassedToolStripMenuItem";
-            bypassedToolStripMenuItem.Size = new Size(136, 22);
-            bypassedToolStripMenuItem.Text = "Bypassed";
-            bypassedToolStripMenuItem.Click += bypassedToolStripMenuItem_Click;
+            mnuFilter_Placeholder.Name = "mnuFilter_Placeholder";
+            mnuFilter_Placeholder.Size = new Size(136, 22);
+            mnuFilter_Placeholder.Text = "Placeholder";
+            mnuFilter_Placeholder.Click += placeholderToolStripMenuItem_Click;
             // 
-            // alarmedToolStripMenuItem
+            // mnuHelp
             // 
-            alarmedToolStripMenuItem.Name = "alarmedToolStripMenuItem";
-            alarmedToolStripMenuItem.Size = new Size(136, 22);
-            alarmedToolStripMenuItem.Text = "Alarmed";
-            alarmedToolStripMenuItem.Click += alarmedToolStripMenuItem_Click;
+            mnuHelp.DropDownItems.AddRange(new ToolStripItem[] { mnuHelp_About });
+            mnuHelp.Name = "mnuHelp";
+            mnuHelp.Size = new Size(44, 20);
+            mnuHelp.Text = "Help";
             // 
-            // placeholderToolStripMenuItem
+            // mnuHelp_About
             // 
-            placeholderToolStripMenuItem.Name = "placeholderToolStripMenuItem";
-            placeholderToolStripMenuItem.Size = new Size(136, 22);
-            placeholderToolStripMenuItem.Text = "Placeholder";
-            placeholderToolStripMenuItem.Click += placeholderToolStripMenuItem_Click;
+            mnuHelp_About.Name = "mnuHelp_About";
+            mnuHelp_About.Size = new Size(107, 22);
+            mnuHelp_About.Text = "About";
+            mnuHelp_About.Click += About_MenuItem_Click;
+            // 
+            // tsFilters
+            // 
+            tsFilters.Dock = DockStyle.None;
+            tsFilters.Items.AddRange(new ToolStripItem[] { tslblFilters, tslblFilter_InUse, tsbtnFilter_InUse });
+            tsFilters.Location = new Point(3, 24);
+            tsFilters.Name = "tsFilters";
+            tsFilters.Size = new Size(129, 25);
+            tsFilters.TabIndex = 1;
+            // 
+            // tslblFilters
+            // 
+            tslblFilters.Name = "tslblFilters";
+            tslblFilters.Size = new Size(41, 22);
+            tslblFilters.Text = "Filters:";
+            // 
+            // tslblFilter_InUse
+            // 
+            tslblFilter_InUse.Name = "tslblFilter_InUse";
+            tslblFilter_InUse.Size = new Size(42, 22);
+            tslblFilter_InUse.Text = "In Use:";
+            // 
+            // tsbtnFilter_InUse
+            // 
+            tsbtnFilter_InUse.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            tsbtnFilter_InUse.DropDownItems.AddRange(new ToolStripItem[] { tsmnuFilter_InUse_All, tsmnuFilter_InUse_Only, tsmnuFilter_InUse_Not });
+            tsbtnFilter_InUse.Image = (Image)resources.GetObject("tsbtnFilter_InUse.Image");
+            tsbtnFilter_InUse.ImageTransparentColor = Color.Magenta;
+            tsbtnFilter_InUse.Name = "tsbtnFilter_InUse";
+            tsbtnFilter_InUse.Size = new Size(34, 22);
+            tsbtnFilter_InUse.Text = "All";
+            // 
+            // tsmnuFilter_InUse_All
+            // 
+            tsmnuFilter_InUse_All.Checked = true;
+            tsmnuFilter_InUse_All.CheckState = CheckState.Checked;
+            tsmnuFilter_InUse_All.Name = "tsmnuFilter_InUse_All";
+            tsmnuFilter_InUse_All.Size = new Size(157, 22);
+            tsmnuFilter_InUse_All.Text = "All";
+            tsmnuFilter_InUse_All.Click += tsmnuFilter_InUse_All_Click;
+            // 
+            // tsmnuFilter_InUse_Only
+            // 
+            tsmnuFilter_InUse_Only.Name = "tsmnuFilter_InUse_Only";
+            tsmnuFilter_InUse_Only.Size = new Size(157, 22);
+            tsmnuFilter_InUse_Only.Text = "In Use Only";
+            tsmnuFilter_InUse_Only.Click += tsmnuFilter_InUse_Only_Click;
+            // 
+            // tsmnuFilter_InUse_Not
+            // 
+            tsmnuFilter_InUse_Not.Name = "tsmnuFilter_InUse_Not";
+            tsmnuFilter_InUse_Not.Size = new Size(157, 22);
+            tsmnuFilter_InUse_Not.Text = "Not In Use Only";
+            tsmnuFilter_InUse_Not.Click += tsmnuFilter_InUse_Not_Click;
             // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(575, 304);
-            Controls.Add(toolStripContainer1);
-            MainMenuStrip = menuStrip1;
+            ClientSize = new Size(967, 600);
+            Controls.Add(tsContainer);
+            MainMenuStrip = mnu;
             Margin = new Padding(2);
             Name = "frmMain";
+            StartPosition = FormStartPosition.Manual;
             Text = "CnE2PLC";
             FormClosing += FormIsClosing;
-            toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
-            toolStripContainer1.BottomToolStripPanel.PerformLayout();
-            toolStripContainer1.ContentPanel.ResumeLayout(false);
-            toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
-            toolStripContainer1.TopToolStripPanel.PerformLayout();
-            toolStripContainer1.ResumeLayout(false);
-            toolStripContainer1.PerformLayout();
-            statusStrip1.ResumeLayout(false);
-            statusStrip1.PerformLayout();
-            splitContainer1.Panel1.ResumeLayout(false);
-            splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
-            splitContainer1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)TagsDataView).EndInit();
-            ((System.ComponentModel.ISupportInitialize)Tags_DGV_Source).EndInit();
-            contextMenuStrip_LogText.ResumeLayout(false);
-            menuStrip1.ResumeLayout(false);
-            menuStrip1.PerformLayout();
+            tsContainer.BottomToolStripPanel.ResumeLayout(false);
+            tsContainer.BottomToolStripPanel.PerformLayout();
+            tsContainer.ContentPanel.ResumeLayout(false);
+            tsContainer.TopToolStripPanel.ResumeLayout(false);
+            tsContainer.TopToolStripPanel.PerformLayout();
+            tsContainer.ResumeLayout(false);
+            tsContainer.PerformLayout();
+            status.ResumeLayout(false);
+            status.PerformLayout();
+            splitContainer.Panel1.ResumeLayout(false);
+            splitContainer.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
+            splitContainer.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvTags).EndInit();
+            ((System.ComponentModel.ISupportInitialize)bsTags).EndInit();
+            mnuContext_LogText.ResumeLayout(false);
+            mnu.ResumeLayout(false);
+            mnu.PerformLayout();
+            tsFilters.ResumeLayout(false);
+            tsFilters.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private ToolStripContainer toolStripContainer1;
-        private StatusStrip statusStrip1;
-        private MenuStrip menuStrip1;
-        private ToolStripMenuItem fileToolStripMenuItem;
-        private ToolStripMenuItem quitToolStripMenuItem;
-        private RichTextBox LogText;
-        private ToolStripMenuItem openFileToolStripMenuItem_L5X;
-        private ToolStripProgressBar toolStripProgressBar1;
-        private ToolStripStatusLabel toolStripTagCount;
-        private ToolStripStatusLabel toolStripDeviceCount;
-        private SplitContainer splitContainer1;
+        private ToolStripContainer tsContainer;
+        private StatusStrip status;
+        private MenuStrip mnu;
+        private ToolStripMenuItem mnuFile;
+        private ToolStripMenuItem mnuFile_Quit;
+        private ToolStripMenuItem mnuFileOpenL5X;
+        private ToolStripProgressBar tsProgressBar;
+        private ToolStripStatusLabel tsTagCount;
+        private ToolStripStatusLabel tsDeviceCount;
         //private DataGridViewCheckBoxColumn maximizeBoxDataGridViewCheckBoxColumn;
         //private DataGridViewCheckBoxColumn mdiChildrenMinimizedAnchorBottomDataGridViewCheckBoxColumn;
         //private DataGridViewCheckBoxColumn minimizeBoxDataGridViewCheckBoxColumn;
@@ -547,40 +609,49 @@ namespace CnE2PLC
         //private DataGridViewCheckBoxColumn visibleDataGridViewCheckBoxColumn;
         //private DataGridViewTextBoxColumn paddingDataGridViewTextBoxColumn;
         //private DataGridViewTextBoxColumn imeModeDataGridViewTextBoxColumn;
-        private ContextMenuStrip contextMenuStrip_LogText;
-        private ToolStripMenuItem copyToolStripMenuItem;
-        private ToolStripMenuItem clearLogToolStripMenuItem;
-        private ToolStripMenuItem pLCToolStripMenuItem;
-        private ToolStripMenuItem getUDTsToolStripMenuItem;
-        private ToolStripMenuItem getTagsToolStripMenuItem;
-        private ToolStripStatusLabel toolStripUDTCount;
-        private ToolStripMenuItem connectToPLCToolStripMenuItem;
-        private ToolStripMenuItem toolStripMenuItem_CnE;
+        private ContextMenuStrip mnuContext_LogText;
+        private ToolStripMenuItem mnuContext_Copy;
+        private ToolStripMenuItem mnuContext_ClearLog;
+        private ToolStripMenuItem mnuPLC;
+        private ToolStripMenuItem mnuPLC_GetUDTs;
+        private ToolStripMenuItem mnuPLC_GetTags;
+        private ToolStripStatusLabel tsUDTCount;
+        private ToolStripMenuItem mnuPLC_Connect;
+        private ToolStripMenuItem mnuFile_OpenCnE;
         //private BindingSource TagsBindingSource;
-        private ToolStripMenuItem outputToolStripMenuItem;
-        private ToolStripMenuItem updateCnEToolStripMenuItem;
-        private ToolStripMenuItem exportTagsToolStripMenuItem;
-        public DataGridView TagsDataView;
-        public BindingSource Tags_DGV_Source;
-        private ToolStripMenuItem helpToolStripMenuItem;
-        private ToolStripMenuItem About_MenuItem;
-        private ToolStripMenuItem aiReportToolStripMenuItem;
-        private DataGridViewTextBoxColumn equipNumDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn dataTypeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn AOICalls;
-        private DataGridViewTextBoxColumn References;
-        private DataGridViewTextBoxColumn IO;
-        private DataGridViewTextBoxColumn descriptionDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cfgEquipIDDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cfgEquipDescDataGridViewTextBoxColumn;
-        private ToolStripMenuItem filterToolStripMenuItem;
-        private ToolStripMenuItem inUseSummaryToolStripMenuItem;
-        private ToolStripMenuItem inUseToolStripMenuItem;
-        private ToolStripMenuItem simmedToolStripMenuItem;
-        private ToolStripMenuItem bypassedToolStripMenuItem;
-        private ToolStripMenuItem alarmedToolStripMenuItem;
-        private ToolStripMenuItem placeholderToolStripMenuItem;
+        private ToolStripMenuItem mnuOutput;
+        private ToolStripMenuItem mnuOutput_UpdateCnE;
+        private ToolStripMenuItem mnuOutput_ExportTags;
+        public BindingSource bsTags;
+        private ToolStripMenuItem mnuHelp;
+        private ToolStripMenuItem mnuHelp_About;
+        private ToolStripMenuItem mnuOutput_IOReport;
+        private ToolStripMenuItem mnuFilter;
+        private ToolStripMenuItem mnuOutput_InUseSummary;
+        private ToolStripMenuItem mnuFilter_InUse;
+        private ToolStripMenuItem mnuFilter_Simmed;
+        private ToolStripMenuItem mnuFilter_Bypassed;
+        private ToolStripMenuItem mnuFilter_Alarmed;
+        private ToolStripMenuItem mnuFilter_Placeholder;
+        private SplitContainer splitContainer;
+        public DataGridView dgvTags;
+        private DataGridViewTextBoxColumn dgvTxtCol_EquipNum;
+        private DataGridViewTextBoxColumn dgvTxtCol_Name;
+        private DataGridViewTextBoxColumn dgvTxtCol_Path;
+        private DataGridViewTextBoxColumn dgvTxtCol_DataType;
+        private DataGridViewTextBoxColumn dgvTxtCol_AOICalls;
+        private DataGridViewTextBoxColumn dgvTxtCol_References;
+        private DataGridViewTextBoxColumn dgvTxtCol_IO;
+        private DataGridViewTextBoxColumn dgvTxtCol_Description;
+        private DataGridViewTextBoxColumn dgvTxtCol_CfgEquipID;
+        private DataGridViewTextBoxColumn dgvTxtCol_CfgEquipDesc;
+        private RichTextBox txtLogText;
+        private ToolStrip tsFilters;
+        private ToolStripLabel tslblFilters;
+        private ToolStripLabel tslblFilter_InUse;
+        private ToolStripDropDownButton tsbtnFilter_InUse;
+        private ToolStripMenuItem tsmnuFilter_InUse_All;
+        private ToolStripMenuItem tsmnuFilter_InUse_Only;
+        private ToolStripMenuItem tsmnuFilter_InUse_Not;
     }
 }
