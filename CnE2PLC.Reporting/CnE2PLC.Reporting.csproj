@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CnE2PLC.Helpers\CnE2PLC.Helpers.csproj" />
+    <ProjectReference Include="..\CnE2PLC.PLC\CnE2PLC.PLC.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="CnE_Template.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

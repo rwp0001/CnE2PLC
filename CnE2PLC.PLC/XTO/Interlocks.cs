@@ -36,58 +36,6 @@ public class Intlk_8 : XTO_AOI
     public string[] Cfg_IntlkDesc { get; set; } = new string[8];
     #endregion
 
-
-    //public static void ToHeaderRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = "Scope";
-    //    row.Cells[1, i++].Value = "Tag Name";
-    //    row.Cells[1, i++].Value = "Tag Description";
-    //    row.Cells[1, i++].Value = "HMI EquipID";
-    //    row.Cells[1, i++].Value = "HMI EquipDesc";
-    //    row.Cells[1, i++].Value = "Bypass";
-    //    row.Cells[1, i++].Value = "OK State";
-    //    row.Cells[1, i++].Value = "Intlk Active";
-    //    row.Cells[1, i++].Value = "Intlk Latched";
-    //    row.Cells[1, i++].Value = "Intlk First Out";
-    //    row.Cells[1, i++].Value = "Intlk OK";
-    //    row.Cells[1, i++].Value = "Byp Active";
-    //    row.Cells[1, i++].Value = "Reset Rdy";
-    //    row.Cells[1, i++].Value = "First Out";
-
-    //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = $"Intlk{x:D2}";
-    //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = $"Interlock: {x}";
-    //}
-
-    //public virtual void ToDataRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = Path;
-    //    row.Cells[1, i++].Value = Name;
-    //    row.Cells[1, i++].Value = Description;
-    //    row.Cells[1, i++].Value = Cfg_EquipID;
-    //    row.Cells[1, i++].Value = Cfg_EquipDesc;
-    //    row.Cells[1, i++].Value = IntlkBypass;
-    //    row.Cells[1, i++].Value = Cfg_OKState;
-    //    row.Cells[1, i++].Value = IntlkActive;
-    //    row.Cells[1, i++].Value = IntlkLatched;
-    //    row.Cells[1, i++].Value = IntlkFirstOut;
-    //    row.Cells[1, i++].Value = IntlkOK;
-    //    row.Cells[1, i++].Value = BypActive;
-    //    row.Cells[1, i++].Value = ResetRdy;
-    //    row.Cells[1, i++].Value = FirstOut;
-    //    row.Cells[1, i++].Value = Intlk00;
-    //    row.Cells[1, i++].Value = Intlk01;
-    //    row.Cells[1, i++].Value = Intlk02;
-    //    row.Cells[1, i++].Value = Intlk03;
-    //    row.Cells[1, i++].Value = Intlk04;
-    //    row.Cells[1, i++].Value = Intlk05;
-    //    row.Cells[1, i++].Value = Intlk06;
-    //    row.Cells[1, i++].Value = Intlk07;
-
-    //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = Cfg_IntlkDesc[x];
-    //}
-
     private string AlarmText
     {
         get
@@ -124,65 +72,6 @@ public class Intlk_16 : Intlk_8
         Cfg_IntlkDesc = new string[16];
         for (int i = 0; i < 15; i++) Cfg_IntlkDesc[i] = L5K_strings[i];
     }
-
-    //public static new void ToHeaderRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = "Scope";
-    //    row.Cells[1, i++].Value = "Tag Name";
-    //    row.Cells[1, i++].Value = "Tag Description";
-    //    row.Cells[1, i++].Value = "HMI EquipID";
-    //    row.Cells[1, i++].Value = "HMI EquipDesc";
-    //    row.Cells[1, i++].Value = "Bypass";
-    //    row.Cells[1, i++].Value = "Auto Ack";
-    //    row.Cells[1, i++].Value = "Intlk Active";
-    //    row.Cells[1, i++].Value = "Intlk Latched";
-    //    row.Cells[1, i++].Value = "Intlk First Out";
-    //    row.Cells[1, i++].Value = "Intlk OK";
-    //    row.Cells[1, i++].Value = "Byp Active";
-    //    row.Cells[1, i++].Value = "Reset Rdy";
-    //    row.Cells[1, i++].Value = "First Out";
-
-    //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = $"Intlk{x:D2}";
-    //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = $"Interlock: {x}";
-    //}
-
-    //public override void ToDataRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = Path;
-    //    row.Cells[1, i++].Value = Name;
-    //    row.Cells[1, i++].Value = Description;
-    //    row.Cells[1, i++].Value = Cfg_EquipID;
-    //    row.Cells[1, i++].Value = Cfg_EquipDesc;
-    //    row.Cells[1, i++].Value = IntlkBypass;
-    //    row.Cells[1, i++].Value = Cfg_OKState;
-    //    row.Cells[1, i++].Value = IntlkActive;
-    //    row.Cells[1, i++].Value = IntlkLatched;
-    //    row.Cells[1, i++].Value = IntlkFirstOut;
-    //    row.Cells[1, i++].Value = IntlkOK;
-    //    row.Cells[1, i++].Value = BypActive;
-    //    row.Cells[1, i++].Value = ResetRdy;
-    //    row.Cells[1, i++].Value = FirstOut;
-    //    row.Cells[1, i++].Value = Intlk00;
-    //    row.Cells[1, i++].Value = Intlk01;
-    //    row.Cells[1, i++].Value = Intlk02;
-    //    row.Cells[1, i++].Value = Intlk03;
-    //    row.Cells[1, i++].Value = Intlk04;
-    //    row.Cells[1, i++].Value = Intlk05;
-    //    row.Cells[1, i++].Value = Intlk06;
-    //    row.Cells[1, i++].Value = Intlk07;
-    //    row.Cells[1, i++].Value = Intlk08;
-    //    row.Cells[1, i++].Value = Intlk09;
-    //    row.Cells[1, i++].Value = Intlk10;
-    //    row.Cells[1, i++].Value = Intlk11;
-    //    row.Cells[1, i++].Value = Intlk12;
-    //    row.Cells[1, i++].Value = Intlk13;
-    //    row.Cells[1, i++].Value = Intlk14;
-    //    row.Cells[1, i++].Value = Intlk15;
-
-    //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = Cfg_IntlkDesc[x];
-    //}
 
     public bool? Intlk08 { get; set; }
     public bool? Intlk09 { get; set; }
@@ -288,45 +177,6 @@ public class Intlk_64 : XTO_AOI
     public string? BlankSTR { get; set; }
     #endregion
 
-    //public static void ToHeaderRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = "Scope";
-    //    row.Cells[1, i++].Value = "Tag Name";
-    //    row.Cells[1, i++].Value = "Tag Description";
-    //    row.Cells[1, i++].Value = "HMI EquipID";
-    //    row.Cells[1, i++].Value = "HMI EquipDesc";
-    //    row.Cells[1, i++].Value = "Bypass";
-    //    row.Cells[1, i++].Value = "Auto Ack";
-    //    row.Cells[1, i++].Value = "Intlk Active";
-    //    row.Cells[1, i++].Value = "Intlk Latched";
-    //    row.Cells[1, i++].Value = "Intlk First Out";
-    //    row.Cells[1, i++].Value = "Intlk OK";
-    //    row.Cells[1, i++].Value = "Byp Active";
-    //    row.Cells[1, i++].Value = "Reset Rdy";
-    //    row.Cells[1, i++].Value = "First Out";
-
-    //}
-
-    //public void ToDataRow(Excel.Range row)
-    //{
-    //    int i = 1;
-    //    row.Cells[1, i++].Value = Path;
-    //    row.Cells[1, i++].Value = Name;
-    //    row.Cells[1, i++].Value = Description;
-    //    row.Cells[1, i++].Value = Cfg_EquipID;
-    //    row.Cells[1, i++].Value = Cfg_EquipDesc;
-    //    //row.Cells[1, i++].Value = IntlkBypass;
-    //    //row.Cells[1, i++].Value = Cfg_OKState;
-    //    //row.Cells[1, i++].Value = IntlkActive;
-    //    //row.Cells[1, i++].Value = IntlkLatched;
-    //    //row.Cells[1, i++].Value = IntlkFirstOut;
-    //    //row.Cells[1, i++].Value = IntlkOK;
-    //    //row.Cells[1, i++].Value = BypActive;
-    //    //row.Cells[1, i++].Value = ResetRdy;
-    //    //row.Cells[1, i++].Value = FirstOut;
-
-    //}
     public override void ClearCounts() { }
 
     private string AlarmText
