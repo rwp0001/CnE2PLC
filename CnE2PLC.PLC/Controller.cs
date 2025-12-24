@@ -14,7 +14,7 @@ public class Controller
     {
         try
         {
-            LogHelper.DebugPrint("Creating Controller");
+            LogHelper.DebugPrint("Creating Controller.");
 
             if (node == null) throw new ArgumentNullException(nameof(node));
 
@@ -42,6 +42,8 @@ public class Controller
             foreach (XmlNode p_node in programs.ChildNodes) Programs.Add(new Program(p_node));
 
             UpdateCounts();
+
+            LogHelper.DebugPrint($"Controller {ToString()} was imported.");
         }
         catch (Exception ex)
         {

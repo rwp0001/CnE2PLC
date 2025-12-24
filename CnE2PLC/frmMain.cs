@@ -1,16 +1,12 @@
-﻿using CnE2PLC.PLC;
+﻿using CnE2PLC.Helpers;
+using CnE2PLC.PLC;
 using CnE2PLC.PLC.XTO;
 using CnE2PLC.Properties;
 using CnE2PLC.Reporting;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using System.Windows.Forms;
 using System.Xml;
-
-using CnE2PLC.PLC;
-using CnE2PLC.PLC.XTO;
-using CnE2PLC.Helpers;
 
 namespace CnE2PLC;
 
@@ -273,25 +269,27 @@ public partial class frmMain : Form
 
     }
 
-        private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
+    private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        if (PLC.AllTags.Count == 0) return;
+
+        SaveFileDialog saveFileDialog1 = new SaveFileDialog
         {
-            if (PLC.AllTags.Count == 0) return;
+            Title = "Select C&E File",
+            Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+            FileName = $"{PLC.Name}_CnE_Report.xlsx",
+            RestoreDirectory = true,
+            FilterIndex = 1
 
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog
-            {
-                Title = "Select C&E File",
-                Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
-                FileName = $"{PLC.Name}_CnE_Report.xlsx",
-                RestoreDirectory = true,
-                FilterIndex = 1
+        };
 
-            };
-
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+        if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+        {
+            try
             {
                 Stream myStream = saveFileDialog1.OpenFile();
                 if (myStream == null) return;
-                
+
                 CnE_Report.CreateReport(PLC, myStream);
                 myStream.Close();
 
@@ -300,23 +298,29 @@ public partial class frmMain : Form
                     FileName = saveFileDialog1.FileName,
                     UseShellExecute = true
                 });
+            }
 
+            catch (Exception ex)
+            {
+                LogHelper.DebugPrint($"Error creating C&E Report: {ex.Message}");
+                MessageBox.Show($"Error creating C&E Report: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+    }
 
 
 
 
-        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+    private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        OpenFileDialog openFileDialog1 = new OpenFileDialog
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
-            {
-                Title = "Browse L5X Files",
-                Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Multiselect = false
-            };
+            Title = "Browse L5X Files",
+            Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
+            CheckFileExists = true,
+            CheckPathExists = true,
+            Multiselect = false
+        };
 
         if (openFileDialog1.ShowDialog() == DialogResult.OK)
         {
@@ -366,10 +370,10 @@ public partial class frmMain : Form
         return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
     }
 
-        private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Reporting.CreateIOReport();
-        }
+    private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        //Reporting.CreateIOReport();
+    }
 
     private void inUseSummaryToolStripMenuItem_Click(object sender, EventArgs e)
     {
