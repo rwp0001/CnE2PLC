@@ -1,14 +1,20 @@
-﻿using CnE2PLC.PLC;
+﻿using CnE2PLC.Helpers;
+using CnE2PLC.PLC;
 using CnE2PLC.PLC.XTO;
 using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
+using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
-using System.Diagnostics;
+
 
 namespace CnE2PLC.Reporting;
 
 public static class CnE_Report
 {
+    private static byte[] row00_bg_rgb = new byte[] { 196, 189, 151 };
+    private static byte[] row01_bg_rgb = new byte[] { 242, 242, 242 };
+    private static byte[] row12_bg_rgb = new byte[] { 192, 80, 77 };
+    private static byte[] row13_bg_rgb = new byte[] { 242, 242, 242 };
 
     /// <summary>
     /// Exports the Tags to a Excel Templete.
@@ -19,6 +25,7 @@ public static class CnE_Report
     {
         try
         {
+            DateTime StartTime = DateTime.Now;
 
             XSSFWorkbook CnE_Workbook = new XSSFWorkbook("CnE_Template.xlsx");
             CnE_Workbook.SetSheetName(0, plc.Name);
@@ -37,166 +44,75 @@ public static class CnE_Report
 
                     switch (tag.DataType.ToLower())
                     {
-                        /*
-                        case "dodata":
-                            DOData DoTag = (DOData)tag;
-                            
+
+                        case "dodata":                          
                             InsertCol(CnE_Sheet, ColumnOffset);
-                            DoTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                            Excel.Range r1 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                            MergeAndCenter(r1);
-                            ColumnOffset++;
+                            ToColumn((DOData)tag, CnE_Workbook, ColumnOffset++);
                             break;
-                        */
+
                         case "aodata":
                             AOData AoTag = (AOData)tag;
                             
                             InsertCol(CnE_Sheet, ColumnOffset);
-                            ToColumn((AOData)tag, CnE_Workbook, ColumnOffset);
-                            ColumnOffset++;
+                            ToColumn((AOData)tag, CnE_Workbook, ColumnOffset++);
                             break;
-                    /*
+
                         case "didata":
                         case "didata_fims":
-                            DIData DiTag = (DIData)tag;
-                            
                             InsertRow(CnE_Sheet, RowOffset);
-                            DiTag.ToValueRow(CnE_Sheet.Rows[RowOffset++]);
-
-                            if (DiTag.AlmEnable == true)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                DiTag.ToAlarmRow(CnE_Sheet.Rows[RowOffset++]);
-
-                                if (DiTag.SD_Count != 0)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    DiTag.ToShutdownRow(CnE_Sheet.Rows[RowOffset++]);
-                                }
-                            }
+                            ToValueRow((DIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToAlarmRow((DIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToShutdownRow((DIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
                             break;
-
-                        */
 
                         case "aidata":
                         case "aidata_fims":
                             InsertRow(CnE_Sheet, RowOffset);
                             ToPVRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-
-                            if (((AIData)tag).HiHiEnable == true)
-                            {
-                                if (((AIData)tag).HSD_Count != 0)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    ToHSDRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                                }
-
-                                InsertRow(CnE_Sheet, RowOffset);
-                                ToHiHiAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                            }
-                            if (((AIData)tag).HiEnable == true)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                ToHiAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                            }
-                            if (((AIData)tag).LoEnable == true)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                ToLoAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                            }
-                            if (((AIData)tag).LoLoEnable == true)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                ToLoLoAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-
-                                if (((AIData)tag).LSD_Count != 0)
-                                {
-                                    InsertRow(CnE_Sheet, RowOffset);
-                                    ToLSDRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                                }
-
-                            }
-                            if (((AIData)tag).BadPVEnable == true)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                ToBadPVAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
-                            }
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToHSDRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToHiHiAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToHiAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToLoAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToLoLoAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToLSDRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToBadPVAlarmRow((AIData)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
                             break;
 
-                        /*
-                    case "twopositionvalve":
-                    case "twopositionvalvev2":
-                        TwoPositionValveV2 TPV2Tag = (TwoPositionValveV2)tag;
+                        case "twopositionvalve":
+                        case "twopositionvalvev2":
+                            InsertCol(CnE_Sheet, ColumnOffset);
+                            ToColumn((TwoPositionValveV2)tag, CnE_Workbook, ColumnOffset++);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToOpenRow((TwoPositionValveV2)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToCloseRow((TwoPositionValveV2)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToFailedToOpenRow((TwoPositionValveV2)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToFailedToCloseRow((TwoPositionValveV2)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            break;
 
-                        InsertCol(CnE_Sheet, ColumnOffset);
-                        TPV2Tag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                        Excel.Range r3 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                        MergeAndCenter(r3);
-                        ColumnOffset++;
+                        case "valveanalog":
+                            InsertCol(CnE_Sheet, ColumnOffset);
+                            ToColumn((ValveAnalog)tag, CnE_Workbook, ColumnOffset++);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToPosRow((ValveAnalog)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            InsertRow(CnE_Sheet, RowOffset);
+                            ToPosFailRow((ValveAnalog)tag, CnE_Sheet.GetRow(RowOffset++), CnE_Workbook);
+                            break;
 
-                        if (TPV2Tag.DisableFB != true)
-                        {
+                        case "motor_vfd":
 
-
-                            //if (TPV2Tag.Open_Count != 0)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-
-                            //if (TPV2Tag.Close_Count != 0)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToCloseRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-
-                            //if (TPV2Tag.FTO_Count != 0)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToFailedToOpenRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-
-                            //if (TPV2Tag.FTO_Count != 0)
-                            {
-                                InsertRow(CnE_Sheet, RowOffset);
-                                TPV2Tag.ToFailedToCloseRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-                        }
-
-
-                        break;
-
-                    case "valveanalog":
-                        ValveAnalog AAVTag = (ValveAnalog)tag;
-                        CnE_Sheet.Columns[ColumnOffset].Insert();
-                        AAVTag.ToColumn(CnE_Sheet.Columns[ColumnOffset]);
-                        Excel.Range r4 = CnE_Sheet.Range[CnE_Sheet.Cells[2, ColumnOffset], CnE_Sheet.Cells[12, ColumnOffset]];
-                        MergeAndCenter(r4);
-                        ColumnOffset++;
-
-                        if (AAVTag.DisableFB != true)
-                        {
-                            //if (AAVTag.Pos_Count != 0)
-                            {
-                                CnE_Sheet.Rows[RowOffset].Insert();
-                                AAVTag.ToPosRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-                            //if (AAVTag.PosFail_Count != 0)
-                            {
-                                CnE_Sheet.Rows[RowOffset].Insert();
-                                AAVTag.ToPosFailRow(CnE_Sheet.Rows[RowOffset++]);
-                            }
-                        }
-                        break;
-
-                    case "motor_vfd":
-                        Motor_VFD motor_VFD = (Motor_VFD)tag;
-
-
-
-                        break;
-
-                        */
+                            break;
 
                         default:
                             break;
@@ -204,24 +120,28 @@ public static class CnE_Report
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"CnE: Tag Exception Error: {ex.Message}\nTage Name: {tag.Name}");
+                    LogHelper.DebugPrint($"CnE: Tag Exception Error: {ex.Message}\nTage Name: {tag.Name}");
                 }
 
             }
 
             // clean up for filtering.
-            //CnE_Sheet.Rows[16].Delete();
+            CnE_Sheet.RemoveRow(CnE_Sheet.GetRow(15));
+            CnE_Sheet.ShiftRows(16, CnE_Sheet.LastRowNum, -1);
+
             //CnE_Sheet.Columns[18].Delete();
 
 
             CnE_Workbook.Write(File, true);
 
+            DateTime EndTime = DateTime.Now;
 
+            LogHelper.DebugPrint($"CnE Report for {plc.Name} was Generated taking {EndTime-StartTime} secs.");
 
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"CnE: Create Report Exception: {e.Message}");
+            LogHelper.DebugPrint($"CnE: Create Report Exception: {e.Message}");
         }
 
         static void InsertRow(ISheet ws, int offset)
@@ -232,8 +152,33 @@ public static class CnE_Report
 
         static void InsertCol(ISheet ws, int offset)
         {
-            
-            CopyColumn(ws, offset, offset + 1);
+            int startRow = ws.FirstRowNum;
+            int endRow = ws.LastRowNum;
+
+            for(int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
+            {
+                
+                IRow row = ws.GetRow(rowIndex);
+                if (row == null) continue;
+                
+                ICell cell = row.CreateCell(offset);
+                if (cell == null) continue;
+                
+                ICell p_cell = row.GetCell(offset - 1);
+                if (p_cell == null) continue;
+
+                ICellStyle style = p_cell.CellStyle;
+                if (style == null) continue; 
+
+                cell.CellStyle = style;
+            }
+
+            CellRangeAddress cellRange = new CellRangeAddress(1, 11, offset, offset);
+            ws.AddMergedRegion(cellRange);
+
+            ws.SetColumnWidth(offset, ws.GetColumnWidth(offset-1));
+
+            //CopyColumn(ws, offset, offset + 1);
         }
 
         static void CopyColumn(ISheet sheet, int sourceColumnIndex, int destinationColumnIndex)
@@ -796,7 +741,6 @@ public static class CnE_Report
         row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue("");
-        row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue(tag.BadPVAutoAck == true ? "Y" : "");
         row.GetCell(i++).SetCellValue("");
 
@@ -810,12 +754,18 @@ public static class CnE_Report
     {
 
         ISheet s = WB.GetSheetAt(0);
+        
+        // row 1
+
+        // row 2 - 12
         IRow row = s.GetRow(1);
         row.GetCell(col).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
 
+        // row 13
         row = s.GetRow(12);
         row.GetCell(col).SetCellValue(tag.InUse == true ? "Yes" : "No");
 
+        // row 14
         row = s.GetRow(13);
         row.GetCell(col).SetCellValue(tag.Name);
 
@@ -920,7 +870,7 @@ public static class CnE_Report
         IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
         IClientAnchor anchor_Delay = WB.GetCreationHelper().CreateClientAnchor();
         IComment comment_Delay = patriarch.CreateCellComment(anchor_Delay);
-        comment_Delay.String = new XSSFRichTextString($"HiHi Delay: {tag.Cfg_AlmDlyTmr} Sec.");
+        comment_Delay.String = new XSSFRichTextString($"Delay: {tag.Cfg_AlmDlyTmr} Sec.");
         comment_Delay.Author = "CnE2PLC";
         row.GetCell(i).CellComment = comment_Delay;
 
@@ -956,7 +906,6 @@ public static class CnE_Report
 
         row.GetCell(i++).SetCellValue($"{tag.Name}.Shutdown");
         row.GetCell(i++).SetCellValue("AOI Output");
-        row.GetCell(i++).SetCellValue("Not In Use");
         row.GetCell(i++).SetCellValue((tag.AlmEnable == true & tag.InUse == true) ? "Standard IO" : "Not In Use");
         row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue("Bool");
@@ -1018,274 +967,408 @@ public static class CnE_Report
 
     #region Motor_VFD
 
-    //public void ToRunFailRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.FailToRun";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = "";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+    public static void ToFailToRunRow(Motor_VFD tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue($"{tag.Name} Fail to Run");
 
-    //    //if (PosFail_Count == 0)
-    //    //{
-    //    //    {
-    //    //        row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //    //        row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //    //    }
-    //    //}
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
 
-    //}
+        if (tag.FTR_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.AlarmFTR");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue("Standard IO");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
+
+    public static void ToFailToStopRow(Motor_VFD tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue($"{tag.Name} Fail to Stop");
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.FTS_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.AlarmFTS");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue("Standard IO");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
 
     #endregion
 
-    #region AnalogValve
-    //private string ColComment
-    //{
-    //    get
-    //    {
-    //        string c = $"PLC Tag Description: {Description}\n";
-    //        c += $"PLC Tag DataType: {DataType}\n";
-    //        if (DisableFB == true) c += "No Feedback.\n";
-    //        if (Cmd_Invert == true) c += "Command Inverted.\n";
-    //        if (FBInv == true) c += "Feedback Inverted.\n";
-    //        return c;
-    //    }
-    //}
+    #region ValveAnalog
 
-    //private string RowComment
-    //{
-    //    get
-    //    {
-    //        string c = $"PLC Tag Description: {Description}\n";
-    //        c += $"PLC Data Type: {DataType}\n";
-    //        return c;
-    //    }
-    //}
+    public static void ToColumn(ValveAnalog tag, IWorkbook WB, int col)
+    {
 
-    //public void ToColumn(Excel.Range col)
-    //{
-    //    col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    col.Cells[13, 1].Value = InUse == true ? "Yes" : "No";
-    //    col.Cells[14, 1].Value = Name;
+        string c = $"Plc Tag Description: {tag.Description}\n";
+        c += $"Plc Tag Datatype: {tag.DataType}\n";
+        if (tag.DisableFB == true) c += "No Feedback.\n";
+        if (tag.Cmd_Invert == true) c += "Command Inverted.\n";
+        if (tag.FBInv == true) c += "Feedback Inverted.\n";
 
-    //    col.Cells[14, 1].AddComment(ColComment);
+        ISheet s = WB.GetSheetAt(0);
+        IRow row = s.GetRow(1);
+        row.GetCell(col).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
 
-    //}
+        row = s.GetRow(12);
+        row.GetCell(col).SetCellValue(tag.InUse == true ? "Yes" : "No");
 
-    //public void ToPosRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.Pos";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "%";
-    //    row.Cells[1, 9].Value = "";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+        row = s.GetRow(13);
+        row.GetCell(col).SetCellValue(tag.Name);
 
-    //    if (Pos_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
+        ICellStyle style = row.GetCell(col).CellStyle;
+        IFont font = style.GetFont(WB);
 
-    //    row.Cells[1, 3].AddComment(RowComment);
-    //}
+        if (tag.References == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
 
-    //public void ToPosFailRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.PosFail";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = $"{PosFaultTime} Sec.";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+        style.SetFont(font);
+        row.GetCell(col).CellStyle = style;
 
-    //    if (PosFail_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString(c);
+        comment.Author = "CnE2PLC";
+        row.GetCell(col).CellComment = comment;
 
-    //}
+    }
+
+    public static void ToPosRow(ValveAnalog tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID); 
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.Pos_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString($"Plc Tag Description: {tag.Description}\nPlc Data Type: {tag.DataType}\n");
+        comment.Author = "CnE2PLC";
+        row.GetCell(i).CellComment = comment;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.Pos");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("%");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
+
+    public static void ToPosFailRow(ValveAnalog tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.PosFail_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.PosFail");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue($"{tag.PosFaultTime} sec.");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
 
     #endregion
 
     #region TwoPositionValve
 
-    //public void ToColumn(Excel.Range col)
-    //{
-    //    col.Cells[2, 1].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    col.Cells[13, 1].Value = InUse == true ? "Yes" : "No";
-    //    col.Cells[14, 1].Value = Name;
+    public static void ToColumn(TwoPositionValveV2 tag, IWorkbook WB, int col)
+    {
+        string c = $"Plc Tag Description:\n{tag.Description}\n";
+        c += $"Plc Tag Datatype: {tag.DataType}\n";
+        if (tag.DisableFB == true) c += "No Feedback.\n";
+        if (tag.FBInv == true) c += "Feedback Inverted.\n";
 
-    //    //comments
-    //    string c = $"PLC Tag Description:\n{Description}\n";
-    //    c += $"PLC Tag DataType: {DataType}\n";
-    //    if (DisableFB == true) c += "No Feedback.\n";
-    //    if (FBInv == true) c += "Feedback Inverted.\n";
-    //    col.Cells[14, 1].AddComment(c);
+        ISheet s = WB.GetSheetAt(0);
+        IRow row = s.GetRow(1);
+        row.GetCell(col).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
 
-    //}
+        row = s.GetRow(12);
+        row.GetCell(col).SetCellValue(tag.InUse == true ? "Yes" : "No");
 
-    //public void ToOpenRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = string.Format("{0}.Open", Name);
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = "";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+        row = s.GetRow(13);
+        row.GetCell(col).SetCellValue(tag.Name);
 
-    //    if (Open_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
+        ICellStyle style = row.GetCell(col).CellStyle;
+        IFont font = style.GetFont(WB);
 
-    //    // comments
-    //    string c = $"PLC Tag Description:\n{Description}\n";
-    //    c += $"PLC Data Type:\n{DataType}\n";
-    //    row.Cells[1, 3].AddComment(c);
-    //}
+        if (tag.References == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
 
-    //public void ToCloseRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.Close";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = "";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+        style.SetFont(font);
+        row.GetCell(col).CellStyle = style;
 
-    //    if (Close_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString(c);
+        comment.Author = "CnE2PLC";
+        row.GetCell(col).CellComment = comment;
 
-    //}
+    }
 
-    //public void ToFailedToOpenRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.FailedToOpen";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = string.Format("{0} Sec.", OpenFaultTime);
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+    public static void ToOpenRow(TwoPositionValveV2 tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
 
-    //    if (FTO_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
-    //}
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
 
-    //public void ToFailedToCloseRow(Excel.Range row)
-    //{
-    //    row.Cells[1, 1].Value = Cfg_EquipID;
-    //    row.Cells[1, 2].Value = Cfg_EquipDesc != string.Empty ? Cfg_EquipDesc : Description;
-    //    row.Cells[1, 3].Value = Name;
-    //    row.Cells[1, 4].Value = $"{Name}.FailedToClose";
-    //    row.Cells[1, 5].Value = "AOI Output";
-    //    row.Cells[1, 6].Value = InUse == true ? "Standard IO" : "Not In Use";
-    //    row.Cells[1, 7].Value = "";
-    //    row.Cells[1, 8].Value = "Bool";
-    //    row.Cells[1, 9].Value = $"{CloseFaultTime} Sec.";
-    //    row.Cells[1, 10].Value = "";
-    //    row.Cells[1, 11].Value = "";
-    //    row.Cells[1, 12].Value = "";
-    //    row.Cells[1, 13].Value = "";
-    //    row.Cells[1, 14].Value = "";
-    //    row.Cells[1, 15].Value = "";
-    //    row.Cells[1, 16].Value = "";
+        if (tag.Open_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
 
-    //    if (FTC_Count == 0)
-    //    {
-    //        {
-    //            row.Cells[1, 4].Interior.Color = ColorTranslator.ToOle(Color.Yellow);
-    //            row.Cells[1, 4].Font.Color = ColorTranslator.ToOle(Color.Black);
-    //        }
-    //    }
-    //}
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString($"Plc Tag Description:\n{tag.Description}\nPlc Tag Datatype: {tag.DataType}\n");
+        comment.Author = "CnE2PLC";
+        row.GetCell(i).CellComment = comment;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.Open");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
+
+    public static void ToCloseRow(TwoPositionValveV2 tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.Close_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString($"Plc Tag Description:\n{tag.Description}\nPlc Tag Datatype: {tag.DataType}\n");
+        comment.Author = "CnE2PLC";
+        row.GetCell(i).CellComment = comment;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.Close");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+        }
+
+    public static void ToFailedToOpenRow(TwoPositionValveV2 tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.FTO_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString($"Plc Tag Description:\n{tag.Description}\nPlc Tag Datatype: {tag.DataType}\n");
+        comment.Author = "CnE2PLC";
+        row.GetCell(i).CellComment = comment;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.FailedToOpen");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue($"{tag.OpenFaultTime} Sec.");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
+
+    public static void ToFailedToCloseRow(TwoPositionValveV2 tag, IRow row, IWorkbook WB)
+    {
+        int i = 0;
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc != string.Empty ? tag.Cfg_EquipDesc : tag.Description);
+        row.GetCell(i++).SetCellValue(tag.Name);
+
+        ICellStyle style = row.GetCell(i).CellStyle;
+        IFont font = style.GetFont(WB);
+
+        if (tag.FTC_Count == 0)
+        {
+            style.FillBackgroundColor = HSSFColor.Yellow.Index;
+            font.Color = HSSFColor.Black.Index;
+        }
+
+        style.SetFont(font);
+        row.GetCell(i).CellStyle = style;
+
+        IDrawing<IShape> patriarch = WB.GetSheetAt(0).CreateDrawingPatriarch();
+        IClientAnchor anchor = WB.GetCreationHelper().CreateClientAnchor();
+        IComment comment = patriarch.CreateCellComment(anchor);
+        comment.String = new XSSFRichTextString($"Plc Tag Description:\n{tag.Description}\nPlc Tag Datatype: {tag.DataType}\n");
+        comment.Author = "CnE2PLC";
+        row.GetCell(i).CellComment = comment;
+
+        row.GetCell(i++).SetCellValue($"{tag.Name}.FailedToClose");
+        row.GetCell(i++).SetCellValue("AOI Output");
+        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Standard IO" : "Not in Use");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("Bool");
+        row.GetCell(i++).SetCellValue($"{tag.CloseFaultTime} Sec.");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+        row.GetCell(i++).SetCellValue("");
+
+    }
 
     #endregion
-
-
-
-
-
-
 
 
 }
