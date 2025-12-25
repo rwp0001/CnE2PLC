@@ -1,260 +1,188 @@
-﻿using CnE2PLC.PLC.XTO;
-using NPOI.SS.Formula.Functions;
+﻿using CnE2PLC.Helpers;
+using CnE2PLC.PLC;
+using CnE2PLC.PLC.XTO;
 using NPOI.SS.UserModel;
-using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
-using System.Security.Cryptography.Xml;
-using System.Xml.Linq;
+using NPOI.XSSF.UserModel;
 
 namespace CnE2PLC.Reporting;
 
 public static class IO_Report
 {
 
-    public static void CreateIOReport()
+    public static void CreateReport(Controller plc, Stream File)
     {
-        //Excel.Application? excelApp = null;
-        //try
-        //{
+        try
+        {
+            XSSFWorkbook IO_Workbook = new XSSFWorkbook();
 
-        //    excelApp = new Excel.Application();
-        //    excelApp.Visible = false;
-        //    excelApp.ScreenUpdating = false;
+            CreateAiReport(IO_Workbook, plc);
+            CreateAoReport(IO_Workbook, plc);
+            CreateDiReport(IO_Workbook, plc);
+            CreateDoReport(IO_Workbook, plc);
 
-        //    if (Settings.Default.Debug)
-        //    {
-        //        excelApp.Visible = true;
-        //        excelApp.ScreenUpdating = true;
-        //        excelApp.Top = 0;
-        //        excelApp.Left = 0;
-        //        excelApp.Height = Screen.PrimaryScreen.WorkingArea.Height;
-        //        excelApp.Width = Screen.PrimaryScreen.WorkingArea.Width;
-        //    }
+            IO_Workbook.Write(File);
 
-
-        //    Excel.Workbook Workbook = excelApp.Application.Workbooks.Add();
-        //    Excel.Worksheet Sheet = Workbook.ActiveSheet;
-        //    excelApp.Calculation = Excel.XlCalculation.xlCalculationManual;
-        //    Sheet.Name = "AiData";
-        //    CreateAiReport(Sheet);
-
-        //    Sheet = Workbook.Sheets.Add();
-        //    Sheet.Name = "DiData";
-        //    Sheet.Activate();
-        //    CreateDiReport(Sheet);
-
-        //    Sheet = Workbook.Sheets.Add();
-        //    Sheet.Name = "AoData";
-        //    Sheet.Activate();
-        //    CreateAoReport(Sheet);
-
-        //    Sheet = Workbook.Sheets.Add();
-        //    Sheet.Name = "DoData";
-        //    Sheet.Activate();
-        //    CreateDoReport(Sheet);
-
-        //    Sheet = Workbook.Sheets.Add();
-        //    Sheet.Name = "Intlk_8";
-        //    Sheet.Activate();
-        //    CreateIntlk8Report(Sheet);
-
-        //    Sheet = Workbook.Sheets.Add();
-        //    Sheet.Name = "Intlk_16";
-        //    Sheet.Activate();
-        //    CreateIntlk16Report(Sheet);
-
-        //    excelApp.Visible = true;
-        //    excelApp.ScreenUpdating = true;
-        //    excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-
-        //}
-        //catch (Exception ex)
-        //{
-        //    if (excelApp != null)
-        //    {
-        //        excelApp.Visible = true;
-        //        excelApp.ScreenUpdating = true;
-        //        excelApp.Calculation = Excel.XlCalculation.xlCalculationAutomatic;
-        //    }
-        //    var result = MessageBox.Show(ex.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-        //}
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"Create IO Report Error: {ex.Message}\n");
+        }
     }
 
 
     #region AIData
 
-    public static void CreateAiReport()//Excel.Worksheet Sheet)
+    public static void CreateAiReport(IWorkbook wb, Controller plc)
     {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    AIData.ToHeaderRow(Sheet.Rows[RowOffset++]);
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("AIData");
+            int RowOffset = 0; // first row to use.
 
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "AIData") continue;
-        //            AIData AI = (AIData)tag;
-        //            AI.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "AIData"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((AIData)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((AIData)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report AI Error: {ex.Message}\n");
+        }
     }
 
-    public static void ToHeaderRow(AIData tag)// (Excel.Range row)
+    public static void ToHeaderRow(AIData tag, IRow row)
     {
-        //    int i = 1;
-        //    row.Cells[1, i++].Value = "Scope";
-        //    row.Cells[1, i++].Value = "Tag Name";
-        //    row.Cells[1, i++].Value = "IO";
-        //    row.Cells[1, i++].Value = "Tag Description";
-        //    row.Cells[1, i++].Value = "HMI EquipID";
-        //    row.Cells[1, i++].Value = "HMI EquipDesc";
-        //    row.Cells[1, i++].Value = "HMI EU";
-        //    row.Cells[1, i++].Value = "AOI Calls";
-        //    row.Cells[1, i++].Value = "Tag References";
-        //    row.Cells[1, i++].Value = "InUse";
-        //    row.Cells[1, i++].Value = "Raw";
-        //    row.Cells[1, i++].Value = "Min Raw";
-        //    row.Cells[1, i++].Value = "Max Raw";
-        //    row.Cells[1, i++].Value = "Min EU";
-        //    row.Cells[1, i++].Value = "Max EU";
-        //    row.Cells[1, i++].Value = "PV";
-        //    row.Cells[1, i++].Value = "HiHi Enable";
-        //    row.Cells[1, i++].Value = "HiHi Auto Ack";
-        //    row.Cells[1, i++].Value = "HiHi SP Limit";
-        //    row.Cells[1, i++].Value = "HiHi SP";
-        //    row.Cells[1, i++].Value = "HiHi On Time";
-        //    row.Cells[1, i++].Value = "HiHi Off Time";
-        //    row.Cells[1, i++].Value = "HiHi Dly Time";
-        //    row.Cells[1, i++].Value = "HiHi SD Time";
-        //    row.Cells[1, i++].Value = "HiHi Alarm";
-        //    row.Cells[1, i++].Value = "HiHi Count";
-        //    row.Cells[1, i++].Value = "HSD Count";
-        //    row.Cells[1, i++].Value = "Hi Enable";
-        //    row.Cells[1, i++].Value = "Hi Auto Ack";
-        //    row.Cells[1, i++].Value = "Hi SP";
-        //    row.Cells[1, i++].Value = "Hi On Time";
-        //    row.Cells[1, i++].Value = "Hi Off Time";
-        //    row.Cells[1, i++].Value = "Hi Dly Time";
-        //    row.Cells[1, i++].Value = "Hi Alarm";
-        //    row.Cells[1, i++].Value = "Hi Count";
-        //    row.Cells[1, i++].Value = "Lo Enable";
-        //    row.Cells[1, i++].Value = "Lo Auto Ack";
-        //    row.Cells[1, i++].Value = "Lo SP";
-        //    row.Cells[1, i++].Value = "Lo On Time";
-        //    row.Cells[1, i++].Value = "Lo Off Time";
-        //    row.Cells[1, i++].Value = "Lo Dly Time";
-        //    row.Cells[1, i++].Value = "Lo Alarm";
-        //    row.Cells[1, i++].Value = "Lo Count";
-        //    row.Cells[1, i++].Value = "LoLo Enable";
-        //    row.Cells[1, i++].Value = "LoLo Auto Ack";
-        //    row.Cells[1, i++].Value = "LoLo SP Limit";
-        //    row.Cells[1, i++].Value = "LoLo SP";
-        //    row.Cells[1, i++].Value = "LoLo On Time";
-        //    row.Cells[1, i++].Value = "LoLo Off Time";
-        //    row.Cells[1, i++].Value = "LoLo Dly Time";
-        //    row.Cells[1, i++].Value = "LoLo SD Time";
-        //    row.Cells[1, i++].Value = "LoLo Alarm";
-        //    row.Cells[1, i++].Value = "LoLo Count";
-        //    row.Cells[1, i++].Value = "LSD Count";
-        //    row.Cells[1, i++].Value = "Sim";
-        //    row.Cells[1, i++].Value = "Sim PV";
-        //    row.Cells[1, i++].Value = "Bad PV Enable";
-        //    row.Cells[1, i++].Value = "Bad PV Auto Ack";
-        //    row.Cells[1, i++].Value = "Bad PV Alarm";
+        int i = 0;
+        row.CreateCell(i++).SetCellValue("Scope");
+        row.CreateCell(i++).SetCellValue("Tag Name");
+        row.CreateCell(i++).SetCellValue("IO");
+        row.CreateCell(i++).SetCellValue("Tag Description");
+        row.CreateCell(i++).SetCellValue("HMI EquipID");
+        row.CreateCell(i++).SetCellValue("HMI EquipDesc");
+        row.CreateCell(i++).SetCellValue("HMI EU");
+        row.CreateCell(i++).SetCellValue("AOI Calls");
+        row.CreateCell(i++).SetCellValue("Tag References");
+        row.CreateCell(i++).SetCellValue("InUse");
+        row.CreateCell(i++).SetCellValue("Raw");
+        row.CreateCell(i++).SetCellValue("Min Raw");
+        row.CreateCell(i++).SetCellValue("Max Raw");
+        row.CreateCell(i++).SetCellValue("Min EU");
+        row.CreateCell(i++).SetCellValue("Max EU");
+        row.CreateCell(i++).SetCellValue("PV");
+        row.CreateCell(i++).SetCellValue("HiHi Enable");
+        row.CreateCell(i++).SetCellValue("HiHi Auto Ack");
+        row.CreateCell(i++).SetCellValue("HiHi SP Limit");
+        row.CreateCell(i++).SetCellValue("HiHi SP");
+        row.CreateCell(i++).SetCellValue("HiHi On Time");
+        row.CreateCell(i++).SetCellValue("HiHi Off Time");
+        row.CreateCell(i++).SetCellValue("HiHi Dly Time");
+        row.CreateCell(i++).SetCellValue("HiHi SD Time");
+        row.CreateCell(i++).SetCellValue("HiHi Alarm");
+        row.CreateCell(i++).SetCellValue("HiHi Count");
+        row.CreateCell(i++).SetCellValue("HSD Count");
+        row.CreateCell(i++).SetCellValue("Hi Enable");
+        row.CreateCell(i++).SetCellValue("Hi Auto Ack");
+        row.CreateCell(i++).SetCellValue("Hi SP");
+        row.CreateCell(i++).SetCellValue("Hi On Time");
+        row.CreateCell(i++).SetCellValue("Hi Off Time");
+        row.CreateCell(i++).SetCellValue("Hi Dly Time");
+        row.CreateCell(i++).SetCellValue("Hi Alarm");
+        row.CreateCell(i++).SetCellValue("Hi Count");
+        row.CreateCell(i++).SetCellValue("Lo Enable");
+        row.CreateCell(i++).SetCellValue("Lo Auto Ack");
+        row.CreateCell(i++).SetCellValue("Lo SP");
+        row.CreateCell(i++).SetCellValue("Lo On Time");
+        row.CreateCell(i++).SetCellValue("Lo Off Time");
+        row.CreateCell(i++).SetCellValue("Lo Dly Time");
+        row.CreateCell(i++).SetCellValue("Lo Alarm");
+        row.CreateCell(i++).SetCellValue("Lo Count");
+        row.CreateCell(i++).SetCellValue("LoLo Enable");
+        row.CreateCell(i++).SetCellValue("LoLo Auto Ack");
+        row.CreateCell(i++).SetCellValue("LoLo SP Limit");
+        row.CreateCell(i++).SetCellValue("LoLo SP");
+        row.CreateCell(i++).SetCellValue("LoLo On Time");
+        row.CreateCell(i++).SetCellValue("LoLo Off Time");
+        row.CreateCell(i++).SetCellValue("LoLo Dly Time");
+        row.CreateCell(i++).SetCellValue("LoLo SD Time");
+        row.CreateCell(i++).SetCellValue("LoLo Alarm");
+        row.CreateCell(i++).SetCellValue("LoLo Count");
+        row.CreateCell(i++).SetCellValue("LSD Count");
+        row.CreateCell(i++).SetCellValue("Sim");
+        row.CreateCell(i++).SetCellValue("Sim PV");
+        row.CreateCell(i++).SetCellValue("Bad PV Enable");
+        row.CreateCell(i++).SetCellValue("Bad PV Auto Ack");
+        row.CreateCell(i++).SetCellValue("Bad PV Alarm");
     }
 
-    public static void ToDataRow(AIData tag)//Excel.Range row)
+    public static void ToDataRow(AIData tag, IRow row)
     {
-        //    int i = 1;
-        //    row.Cells[1, i++].Value = Path;
-        //    row.Cells[1, i++].Value = Name;
-        //    row.Cells[1, i++].Value = IO;
-        //    row.Cells[1, i++].Value = Description;
-
-        //    row.Cells[1, i++].Value = Cfg_EquipID;
-        //    row.Cells[1, i++].Value = Cfg_EquipDesc;
-        //    row.Cells[1, i++].Value = Cfg_EU;
-
-        //    row.Cells[1, i++].Value = AOICalls;
-        //    row.Cells[1, i++].Value = References;
-
-        //    row.Cells[1, i++].Value = InUse == true ? "Yes" : "No";
-
-        //    row.Cells[1, i++].Value = Raw;
-        //    row.Cells[1, i++].Value = MinRaw;
-        //    row.Cells[1, i++].Value = MaxRaw;
-        //    row.Cells[1, i++].Value = MinEU;
-        //    row.Cells[1, i++].Value = MaxEU;
-        //    row.Cells[1, i++].Value = PV;
-
-        //    row.Cells[1, i++].Value = HiHiEnable == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = HiHiAutoAck == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = HiHiSPLimit;
-        //    row.Cells[1, i++].Value = HiHiSP;
-        //    row.Cells[1, i++].Value = Cfg_HiHiOnTmr;
-        //    row.Cells[1, i++].Value = Cfg_HiHiOffTmr;
-        //    row.Cells[1, i++].Value = Cfg_HiHiDlyTmr;
-        //    row.Cells[1, i++].Value = Cfg_HiHiSDTmr;
-        //    row.Cells[1, i++].Value = HiHiAlarm == true ? "Alarm" : "Ok";
-        //    row.Cells[1, i++].Value = HiHi_Count;
-        //    row.Cells[1, i++].Value = HSD_Count;
-
-        //    row.Cells[1, i++].Value = HiEnable == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = HiAutoAck == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = HiSP;
-        //    row.Cells[1, i++].Value = Cfg_HiOnTmr;
-        //    row.Cells[1, i++].Value = Cfg_HiOffTmr;
-        //    row.Cells[1, i++].Value = Cfg_HiDlyTmr;
-        //    row.Cells[1, i++].Value = HiAlarm == true ? "Alarm" : "Ok";
-        //    row.Cells[1, i++].Value = Hi_Count;
-
-        //    row.Cells[1, i++].Value = LoEnable == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = LoAutoAck == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = LoSP;
-        //    row.Cells[1, i++].Value = Cfg_LoOnTmr;
-        //    row.Cells[1, i++].Value = Cfg_LoOffTmr;
-        //    row.Cells[1, i++].Value = Cfg_LoDlyTmr;
-        //    row.Cells[1, i++].Value = LoAlarm == true ? "Alarm" : "Ok";
-        //    row.Cells[1, i++].Value = Lo_Count;
-
-        //    row.Cells[1, i++].Value = LoLoEnable == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = LoLoAutoAck == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = LoLoSPLimit;
-        //    row.Cells[1, i++].Value = LoLoSP;
-        //    row.Cells[1, i++].Value = Cfg_LoLoOnTmr;
-        //    row.Cells[1, i++].Value = Cfg_LoLoOffTmr;
-        //    row.Cells[1, i++].Value = Cfg_LoLoDlyTmr;
-        //    row.Cells[1, i++].Value = Cfg_LoLoSDTmr;
-        //    row.Cells[1, i++].Value = LoLoAlarm == true ? "Alarm" : "Ok";
-        //    row.Cells[1, i++].Value = LoLo_Count;
-        //    row.Cells[1, i++].Value = LSD_Count;
-
-        //    row.Cells[1, i++].Value = Sim == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = SimPV;
-
-        //    row.Cells[1, i++].Value = BadPVEnable == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = BadPVAutoAck == true ? "Yes" : "No";
-        //    row.Cells[1, i++].Value = BadPVAlarm == true ? "Alarm" : "Ok";
+        int i = 0;
+        row.CreateCell(i++).SetCellValue(tag.Path);
+        row.CreateCell(i++).SetCellValue(tag.Name);
+        row.CreateCell(i++).SetCellValue(tag.IO);
+        row.CreateCell(i++).SetCellValue(tag.Description);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipDesc);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EU);
+        row.CreateCell(i++).SetCellValue(tag.AOICalls);
+        row.CreateCell(i++).SetCellValue(tag.References);
+        row.CreateCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.Raw);
+        row.CreateCell(i++).SetCellValue((double)tag.MinRaw);
+        row.CreateCell(i++).SetCellValue((double)tag.MaxRaw);
+        row.CreateCell(i++).SetCellValue((double)tag.MinEU);
+        row.CreateCell(i++).SetCellValue((double)tag.MaxEU);
+        row.CreateCell(i++).SetCellValue((double)tag.PV);
+        row.CreateCell(i++).SetCellValue(tag.HiHiEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.HiHiAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.HiHiSPLimit);
+        row.CreateCell(i++).SetCellValue((double)tag.HiHiSP);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiHiOnTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiHiOffTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiHiDlyTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiHiSDTmr);
+        row.CreateCell(i++).SetCellValue(tag.HiHiAlarm == true ? "Alarm" : "Ok");
+        row.CreateCell(i++).SetCellValue(tag.HiHi_Count);
+        row.CreateCell(i++).SetCellValue(tag.HSD_Count);
+        row.CreateCell(i++).SetCellValue(tag.HiEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.HiAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.HiSP);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiOnTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiOffTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_HiDlyTmr);
+        row.CreateCell(i++).SetCellValue(tag.HiAlarm == true ? "Alarm" : "Ok");
+        row.CreateCell(i++).SetCellValue(tag.Hi_Count);
+        row.CreateCell(i++).SetCellValue(tag.LoEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.LoAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.LoSP);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoOnTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoOffTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoDlyTmr);
+        row.CreateCell(i++).SetCellValue(tag.LoAlarm == true ? "Alarm" : "Ok");
+        row.CreateCell(i++).SetCellValue(tag.Lo_Count);
+        row.CreateCell(i++).SetCellValue(tag.LoLoEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.LoLoAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.LoLoSPLimit);
+        row.CreateCell(i++).SetCellValue((double)tag.LoLoSP);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoLoOnTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoLoOffTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoLoDlyTmr);
+        row.CreateCell(i++).SetCellValue((double)tag.Cfg_LoLoSDTmr);
+        row.CreateCell(i++).SetCellValue(tag.LoLoAlarm == true ? "Alarm" : "Ok");
+        row.CreateCell(i++).SetCellValue(tag.LoLo_Count);
+        row.CreateCell(i++).SetCellValue(tag.LSD_Count);
+        row.CreateCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue((double)tag.SimPV);
+        row.CreateCell(i++).SetCellValue(tag.BadPVEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.BadPVAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.BadPVAlarm == true ? "Alarm" : "Ok");
 
     }
 
@@ -262,338 +190,260 @@ public static class IO_Report
 
     #region AOData
 
-    public static void CreateAoReport()//Excel.Worksheet Sheet)
+    public static void CreateAoReport(IWorkbook wb, Controller plc)
     {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    AOData.ToHeaderRow(Sheet.Rows[RowOffset++]);
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("AOData");
+            int RowOffset = 0; // first row to use.
 
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "AOData") continue;
-        //            AOData I = (AOData)tag;
-        //            I.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
-
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "AOData"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((AOData)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((AOData)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report AO Error: {ex.Message}\n");
+        }
     }
 
-    public static void ToIOReportHeaderRow(AOData tag, IRow row)
+    public static void ToHeaderRow(AOData tag, IRow row)
     {
-        int i = 1;
-        row.GetCell(i++).SetCellValue("Scope");
-        row.GetCell(i++).SetCellValue("Tag Name");
-        row.GetCell(i++).SetCellValue("IO");
-        row.GetCell(i++).SetCellValue("Tag Description");
-        row.GetCell(i++).SetCellValue("HMI EquipID");
-        row.GetCell(i++).SetCellValue("HMI EquipDesc");
-        row.GetCell(i++).SetCellValue("HMI EU");
-        row.GetCell(i++).SetCellValue("AOI Calls");
-        row.GetCell(i++).SetCellValue("Tag References");
-        row.GetCell(i++).SetCellValue("InUse");
-        row.GetCell(i++).SetCellValue("Raw");
-        row.GetCell(i++).SetCellValue("Min Raw");
-        row.GetCell(i++).SetCellValue("Max Raw");
-        row.GetCell(i++).SetCellValue("Min EU");
-        row.GetCell(i++).SetCellValue("Max EU");
-        row.GetCell(i++).SetCellValue("CV");
-        row.GetCell(i++).SetCellValue("Inc To Close");
-        row.GetCell(i++).SetCellValue("Sim");
-        row.GetCell(i++).SetCellValue("Sim CV");
-
+        int i = 0;
+        row.CreateCell(i++).SetCellValue("Scope");
+        row.CreateCell(i++).SetCellValue("Tag Name");
+        row.CreateCell(i++).SetCellValue("IO");
+        row.CreateCell(i++).SetCellValue("Tag Description");
+        row.CreateCell(i++).SetCellValue("HMI EquipID");
+        row.CreateCell(i++).SetCellValue("HMI EquipDesc");
+        row.CreateCell(i++).SetCellValue("HMI EU");
+        row.CreateCell(i++).SetCellValue("AOI Calls");
+        row.CreateCell(i++).SetCellValue("Tag References");
+        row.CreateCell(i++).SetCellValue("InUse");
+        row.CreateCell(i++).SetCellValue("Raw");
+        row.CreateCell(i++).SetCellValue("Min Raw");
+        row.CreateCell(i++).SetCellValue("Max Raw");
+        row.CreateCell(i++).SetCellValue("Min EU");
+        row.CreateCell(i++).SetCellValue("Max EU");
+        row.CreateCell(i++).SetCellValue("CV");
+        row.CreateCell(i++).SetCellValue("Inc To Close");
+        row.CreateCell(i++).SetCellValue("Sim");
+        row.CreateCell(i++).SetCellValue("Sim CV");
     }
 
-    public static void ToIOReportDataRow(AOData tag, IRow row)
+    public static void ToDataRow(AOData tag, IRow row)
     {
-        int i = 1;
-        row.GetCell(i++).SetCellValue(tag.Path);
-        row.GetCell(i++).SetCellValue(tag.Name);
-        row.GetCell(i++).SetCellValue(tag.IO);
-        row.GetCell(i++).SetCellValue(tag.Description);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EU);
-        row.GetCell(i++).SetCellValue(tag.AOICalls);
-        row.GetCell(i++).SetCellValue(tag.References);
-        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue($"{tag.Raw}");
-        row.GetCell(i++).SetCellValue($"{tag.MinRaw}");
-        row.GetCell(i++).SetCellValue($"{tag.MaxRaw}");
-        row.GetCell(i++).SetCellValue($"{tag.MinEU}");
-        row.GetCell(i++).SetCellValue($"{tag.MaxEU}");
-        row.GetCell(i++).SetCellValue($"{tag.CV}");
-        row.GetCell(i++).SetCellValue(tag.Cfg_IncToClose == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue($"{tag.SimCV}");
-
+        int i = 0;
+        row.CreateCell(i++).SetCellValue(tag.Path);
+        row.CreateCell(i++).SetCellValue(tag.Name);
+        row.CreateCell(i++).SetCellValue(tag.IO);
+        row.CreateCell(i++).SetCellValue(tag.Description);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipDesc);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EU);
+        row.CreateCell(i++).SetCellValue(tag.AOICalls);
+        row.CreateCell(i++).SetCellValue(tag.References);
+        row.CreateCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue($"{tag.Raw}");
+        row.CreateCell(i++).SetCellValue($"{tag.MinRaw}");
+        row.CreateCell(i++).SetCellValue($"{tag.MaxRaw}");
+        row.CreateCell(i++).SetCellValue($"{tag.MinEU}");
+        row.CreateCell(i++).SetCellValue($"{tag.MaxEU}");
+        row.CreateCell(i++).SetCellValue($"{tag.CV}");
+        row.CreateCell(i++).SetCellValue(tag.Cfg_IncToClose == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue($"{tag.SimCV}");
     }
 
     #endregion
 
     #region DIData
 
+    public static void CreateDiReport(IWorkbook wb, Controller plc)
+    {
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("DIData");
+            int RowOffset = 0; // first row to use.
+
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "DIData"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((DIData)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((DIData)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report DI Error: {ex.Message}\n");
+        }
+    }
+
     public static void ToHeaderRow(DIData tag, IRow row)
     {
-        int i = 1;
-        row.GetCell(i++).SetCellValue("Scope");
-        row.GetCell(i++).SetCellValue("Tag Name");
-        row.GetCell(i++).SetCellValue("IO");
-        row.GetCell(i++).SetCellValue("Tag Description");
-        row.GetCell(i++).SetCellValue("HMI EquipID");
-        row.GetCell(i++).SetCellValue("HMI EquipDesc");
-        row.GetCell(i++).SetCellValue("AOI Calls");
-        row.GetCell(i++).SetCellValue("Tag References");
-        row.GetCell(i++).SetCellValue("InUse");
-        row.GetCell(i++).SetCellValue("Raw");
-        row.GetCell(i++).SetCellValue("Value");
-        row.GetCell(i++).SetCellValue("Alarm Enable");
-        row.GetCell(i++).SetCellValue("Alarm Auto Ack");
-        row.GetCell(i++).SetCellValue("Alarm State");
-        row.GetCell(i++).SetCellValue("Alarm On Time");
-        row.GetCell(i++).SetCellValue("Alarm Off Time");
-        row.GetCell(i++).SetCellValue("Alarm Dly Time");
-        row.GetCell(i++).SetCellValue("Alarm SD Time");
-        row.GetCell(i++).SetCellValue("Alarm");
-        row.GetCell(i++).SetCellValue("Alarm Count");
-        row.GetCell(i++).SetCellValue("SD Count");
-        row.GetCell(i++).SetCellValue("Sim");
-        row.GetCell(i++).SetCellValue("Sim Value");
+        int i = 0;
+        row.CreateCell(i++).SetCellValue("Scope");
+        row.CreateCell(i++).SetCellValue("Tag Name");
+        row.CreateCell(i++).SetCellValue("IO");
+        row.CreateCell(i++).SetCellValue("Tag Description");
+        row.CreateCell(i++).SetCellValue("HMI EquipID");
+        row.CreateCell(i++).SetCellValue("HMI EquipDesc");
+        row.CreateCell(i++).SetCellValue("AOI Calls");
+        row.CreateCell(i++).SetCellValue("Tag References");
+        row.CreateCell(i++).SetCellValue("InUse");
+        row.CreateCell(i++).SetCellValue("Raw");
+        row.CreateCell(i++).SetCellValue("Value");
+        row.CreateCell(i++).SetCellValue("Alarm Enable");
+        row.CreateCell(i++).SetCellValue("Alarm Auto Ack");
+        row.CreateCell(i++).SetCellValue("Alarm State");
+        row.CreateCell(i++).SetCellValue("Alarm On Time");
+        row.CreateCell(i++).SetCellValue("Alarm Off Time");
+        row.CreateCell(i++).SetCellValue("Alarm Dly Time");
+        row.CreateCell(i++).SetCellValue("Alarm SD Time");
+        row.CreateCell(i++).SetCellValue("Alarm");
+        row.CreateCell(i++).SetCellValue("Alarm Count");
+        row.CreateCell(i++).SetCellValue("SD Count");
+        row.CreateCell(i++).SetCellValue("Sim");
+        row.CreateCell(i++).SetCellValue("Sim Value");
     }
 
     public static void ToDataRow(DIData tag, IRow row)
     {
-        int i = 1;
-        row.GetCell(i++).SetCellValue(tag.Path);
-        row.GetCell(i++).SetCellValue(tag.Name);
-        row.GetCell(i++).SetCellValue(tag.IO);
-        row.GetCell(i++).SetCellValue(tag.Description);
-
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc);
-
-        row.GetCell(i++).SetCellValue(tag.AOICalls);
-        row.GetCell(i++).SetCellValue(tag.References);
-
-        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
-
-        row.GetCell(i++).SetCellValue(tag.Raw == true ? "On" : "Off");
-        row.GetCell(i++).SetCellValue(tag.Value == true ? "On" : "Off");
-
-        row.GetCell(i++).SetCellValue(tag.AlmEnable == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.AlmAutoAck == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.AlmState == 1 ? "On" : "Off");
-        row.GetCell(i++).SetCellValue($"{tag.Cfg_AlmOnTmr}");
-        row.GetCell(i++).SetCellValue($"{tag.Cfg_AlmOffTmr}");
-        row.GetCell(i++).SetCellValue($"{tag.Cfg_AlmDlyTmr}");
-        row.GetCell(i++).SetCellValue($"{tag.Cfg_SDDlyTmr}");
-        row.GetCell(i++).SetCellValue(tag.  Alarm == true ? "Alarm" : "Ok");
-        row.GetCell(i++).SetCellValue(tag.Alm_Count);
-        row.GetCell(i++).SetCellValue(tag.SD_Count);
-
-        row.GetCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.SimValue == true ? "On" : "Off");
-
-
+        int i = 0;
+        row.CreateCell(i++).SetCellValue(tag.Path);
+        row.CreateCell(i++).SetCellValue(tag.Name);
+        row.CreateCell(i++).SetCellValue(tag.IO);
+        row.CreateCell(i++).SetCellValue(tag.Description);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipDesc);
+        row.CreateCell(i++).SetCellValue(tag.AOICalls);
+        row.CreateCell(i++).SetCellValue(tag.References);
+        row.CreateCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.Raw == true ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue(tag.Value == true ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue(tag.AlmEnable == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.AlmAutoAck == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.AlmState == 1 ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue($"{tag.Cfg_AlmOnTmr}");
+        row.CreateCell(i++).SetCellValue($"{tag.Cfg_AlmOffTmr}");
+        row.CreateCell(i++).SetCellValue($"{tag.Cfg_AlmDlyTmr}");
+        row.CreateCell(i++).SetCellValue($"{tag.Cfg_SDDlyTmr}");
+        row.CreateCell(i++).SetCellValue(tag.  Alarm == true ? "Alarm" : "Ok");
+        row.CreateCell(i++).SetCellValue(tag.Alm_Count);
+        row.CreateCell(i++).SetCellValue(tag.SD_Count);
+        row.CreateCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.SimValue == true ? "On" : "Off");
     }
 
     #endregion
 
     #region DOData
 
+    public static void CreateDoReport(IWorkbook wb, Controller plc)
+    {
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("DOData");
+            int RowOffset = 0; // first row to use.
+
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "DOData"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((DOData)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((DOData)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report DO Error: {ex.Message}\n");
+        }
+    }
+
     public static void ToHeaderRow(DOData tag, IRow row)
     {
         int i = 0;
-        row.GetCell(i++).SetCellValue("Scope");
-        row.GetCell(i++).SetCellValue("Tag Name");
-        row.GetCell(i++).SetCellValue("IO");
-        row.GetCell(i++).SetCellValue("Tag Description");
-        row.GetCell(i++).SetCellValue("HMI EquipID");
-        row.GetCell(i++).SetCellValue("HMI EquipDesc");
-        row.GetCell(i++).SetCellValue("AOI Calls");
-        row.GetCell(i++).SetCellValue("Tag References");
-        row.GetCell(i++).SetCellValue("InUse");
-        row.GetCell(i++).SetCellValue("Raw");
-        row.GetCell(i++).SetCellValue("Value");
-        row.GetCell(i++).SetCellValue("Sim");
-        row.GetCell(i++).SetCellValue("Sim Value");
+        row.CreateCell(i++).SetCellValue("Scope");
+        row.CreateCell(i++).SetCellValue("Tag Name");
+        row.CreateCell(i++).SetCellValue("IO");
+        row.CreateCell(i++).SetCellValue("Tag Description");
+        row.CreateCell(i++).SetCellValue("HMI EquipID");
+        row.CreateCell(i++).SetCellValue("HMI EquipDesc");
+        row.CreateCell(i++).SetCellValue("AOI Calls");
+        row.CreateCell(i++).SetCellValue("Tag References");
+        row.CreateCell(i++).SetCellValue("InUse");
+        row.CreateCell(i++).SetCellValue("Raw");
+        row.CreateCell(i++).SetCellValue("Value");
+        row.CreateCell(i++).SetCellValue("Sim");
+        row.CreateCell(i++).SetCellValue("Sim Value");
     }
 
     public static void ToDataRow(DOData tag, IRow row)
     {
         int i = 0;
-        row.GetCell(i++).SetCellValue(tag.Path);
-        row.GetCell(i++).SetCellValue(tag.Name);
-        row.GetCell(i++).SetCellValue(tag.IO);
-        row.GetCell(i++).SetCellValue(tag.Description);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipID);
-        row.GetCell(i++).SetCellValue(tag.Cfg_EquipDesc);
-        row.GetCell(i++).SetCellValue(tag.AOICalls);
-        row.GetCell(i++).SetCellValue(tag.References);
-        row.GetCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.Raw == true ? "On" : "Off");
-        row.GetCell(i++).SetCellValue(tag.Value == true ? "On" : "Off");
-        row.GetCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
-        row.GetCell(i++).SetCellValue(tag.SimVal == 1 ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue(tag.Path);
+        row.CreateCell(i++).SetCellValue(tag.Name);
+        row.CreateCell(i++).SetCellValue(tag.IO);
+        row.CreateCell(i++).SetCellValue(tag.Description);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipID);
+        row.CreateCell(i++).SetCellValue(tag.Cfg_EquipDesc);
+        row.CreateCell(i++).SetCellValue(tag.AOICalls);
+        row.CreateCell(i++).SetCellValue(tag.References);
+        row.CreateCell(i++).SetCellValue(tag.InUse == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.Raw == true ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue(tag.Value == true ? "On" : "Off");
+        row.CreateCell(i++).SetCellValue(tag.Sim == true ? "Yes" : "No");
+        row.CreateCell(i++).SetCellValue(tag.SimVal == 1 ? "On" : "Off");
     }
 
     #endregion
 
-
-
-    public static void CreateDiReport()//Excel.Worksheet Sheet)
-    {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    DIData.ToHeaderRow(Sheet.Rows[RowOffset++]);
-
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "DIData") continue;
-        //            DIData DI = (DIData)tag;
-        //            DI.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
-    }
-
-    public static void CreateIntlk8Report()//Excel.Worksheet Sheet)
-    {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    Intlk_8.ToHeaderRow(Sheet.Rows[RowOffset++]);
-
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "Intlk_8") continue;
-        //            Intlk_8 I = (Intlk_8)tag;
-        //            I.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
-
-    }
-
-    public static void CreateIntlk16Report()//Excel.Worksheet Sheet)
-    {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    Intlk_16.ToHeaderRow(Sheet.Rows[RowOffset++]);
-
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "Intlk_16") continue;
-        //            Intlk_16 I = (Intlk_16)tag;
-        //            I.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
-
-    }
-
-    public static void CreateDoReport()//Excel.Worksheet Sheet)
-    {
-        //try
-        //{
-        //    int RowOffset = 1; // first row to use.
-        //    DOData.ToHeaderRow(Sheet.Rows[RowOffset++]);
-
-        //    foreach (XTO_AOI tag in AllTags)
-        //    {
-        //        try
-        //        {
-        //            if (tag.DataType != "DOData") continue;
-        //            DOData I = (DOData)tag;
-        //            I.ToDataRow(Sheet.Rows[RowOffset++]);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            var r = MessageBox.Show($"Error: {ex.Message}\nTage Name: {tag.Name} ", $"Tag Exception", MessageBoxButtons.OK);
-        //        }
-
-        //    }
-        //}
-        //catch (Exception e)
-        //{
-        //    var result = MessageBox.Show(e.Message, "Exception",
-        //                    MessageBoxButtons.OK,
-        //                    MessageBoxIcon.Error);
-        //    if (result == DialogResult.OK) return;
-
-        //}
-
-    }
-
-
     #region INTK_8
 
-    //public static void ToHeaderRow(Excel.Range row)
-    //{
+    public static void CreateIntlk8Report(IWorkbook wb, Controller plc)
+    {
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("Intlk_8");
+            int RowOffset = 0; // first row to use.
+
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "Intlk_8"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((Intlk_8)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((Intlk_8)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report Intlk_8 Error: {ex.Message}\n");
+        }
+    }
+
+    public static void ToHeaderRow(Intlk_8 tag, IRow row)
+    {
     //    int i = 1;
     //    row.Cells[1, i++].Value = "Scope";
     //    row.Cells[1, i++].Value = "Tag Name";
@@ -612,10 +462,10 @@ public static class IO_Report
 
     //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = $"Intlk{x:D2}";
     //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = $"Interlock: {x}";
-    //}
+    }
 
-    //public virtual void ToDataRow(Excel.Range row)
-    //{
+    public static void ToDataRow(Intlk_8 tag, IRow row)
+    {
     //    int i = 1;
     //    row.Cells[1, i++].Value = Path;
     //    row.Cells[1, i++].Value = Name;
@@ -641,15 +491,42 @@ public static class IO_Report
     //    row.Cells[1, i++].Value = Intlk07;
 
     //    for (int x = 0; x < 7; x++) row.Cells[1, i++].Value = Cfg_IntlkDesc[x];
-    //}
+    }
 
 
     #endregion
 
     #region INTK_16
 
-    //public static new void ToHeaderRow(Excel.Range row)
-    //{
+
+    public static void CreateIntlk16Report(IWorkbook wb, Controller plc)
+    {
+        try
+        {
+            ISheet Sheet = wb.CreateSheet("Intlk_16");
+            int RowOffset = 0; // first row to use.
+
+            foreach (XTO_AOI tag in plc.AllTags.Where(t => t.DataType == "Intlk_16"))
+            {
+                IRow row;
+                if (RowOffset == 0)
+                {
+                    row = Sheet.CreateRow(RowOffset++);
+                    ToHeaderRow((Intlk_16)tag, row);
+                }
+                row = Sheet.CreateRow(RowOffset++);
+                ToDataRow((Intlk_16)tag, row);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"IO Report Intlk_16 Error: {ex.Message}\n");
+        }
+    }
+
+
+    public static void ToHeaderRow(Intlk_16 tag, IRow row)
+    {
     //    int i = 1;
     //    row.Cells[1, i++].Value = "Scope";
     //    row.Cells[1, i++].Value = "Tag Name";
@@ -668,10 +545,10 @@ public static class IO_Report
 
     //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = $"Intlk{x:D2}";
     //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = $"Interlock: {x}";
-    //}
+    }
 
-    //public override void ToDataRow(Excel.Range row)
-    //{
+    public static void ToDataRow(Intlk_16 tag, IRow row)
+    {
     //    int i = 1;
     //    row.Cells[1, i++].Value = Path;
     //    row.Cells[1, i++].Value = Name;
@@ -705,7 +582,7 @@ public static class IO_Report
     //    row.Cells[1, i++].Value = Intlk15;
 
     //    for (int x = 0; x < 15; x++) row.Cells[1, i++].Value = Cfg_IntlkDesc[x];
-    //}
+    }
 
     #endregion
 
@@ -753,6 +630,6 @@ public static class IO_Report
 
     #endregion
 
-   
+
 
 }

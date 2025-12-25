@@ -273,41 +273,67 @@ public partial class frmMain : Form
 
     }
 
-        private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
+    private void exportTagsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        if (PLC.AllTags.Count == 0) return;
+
+        SaveFileDialog saveFileDialog1 = new SaveFileDialog
         {
-            if (PLC.AllTags.Count == 0) return;
+            Title = "Select C&E File",
+            Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+            FileName = $"{PLC.Name}_CnE_Report.xlsx",
+            RestoreDirectory = true,
+            FilterIndex = 1
 
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog
-            {
-                Title = "Select C&E File",
-                Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
-                FileName = $"{PLC.Name}_CnE_Report.xlsx",
-                RestoreDirectory = true,
-                FilterIndex = 1
+        };
 
-            };
-
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                Stream myStream = saveFileDialog1.OpenFile();
-                if (myStream == null) return;
+        if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+        {
+            Stream myStream = saveFileDialog1.OpenFile();
+            if (myStream == null) return;
                 
-                CnE_Report.CreateReport(PLC, myStream);
-                myStream.Close();
+            CnE_Report.CreateReport(PLC, myStream);
+            myStream.Close();
 
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = saveFileDialog1.FileName,
-                    UseShellExecute = true
-                });
-
-            }
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = saveFileDialog1.FileName,
+                UseShellExecute = true
+            });
         }
+    }
+
+    private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        if (PLC.AllTags.Count == 0) return;
+
+        SaveFileDialog saveFileDialog1 = new SaveFileDialog
+        {
+            Title = "Select IO Report File",
+            Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+            FileName = $"{PLC.Name}_IO_Report.xlsx",
+            RestoreDirectory = true,
+            FilterIndex = 1
+        };
+
+        if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+        {
+            Stream myStream = saveFileDialog1.OpenFile();
+            if (myStream == null) return;
+
+            IO_Report.CreateReport(PLC, myStream);
+            myStream.Close();
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = saveFileDialog1.FileName,
+                UseShellExecute = true
+            });
+        }
+    }
 
 
-
-
-        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+    private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog
             {
@@ -365,11 +391,6 @@ public partial class frmMain : Form
         }
         return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
     }
-
-        private void aiReportToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //Reporting.CreateIOReport();
-        }
 
     private void inUseSummaryToolStripMenuItem_Click(object sender, EventArgs e)
     {
