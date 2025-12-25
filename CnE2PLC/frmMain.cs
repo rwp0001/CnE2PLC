@@ -285,13 +285,6 @@ public partial class frmMain : Form
 
         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
         {
-            Stream myStream = saveFileDialog1.OpenFile();
-            if (myStream == null) return;
-                
-            CnE_Report.CreateReport(PLC, myStream);
-            myStream.Close();
-        if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-        {
             try
             {
                 Stream myStream = saveFileDialog1.OpenFile();
@@ -300,13 +293,6 @@ public partial class frmMain : Form
                 CnE_Report.CreateReport(PLC, myStream);
                 myStream.Close();
 
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = saveFileDialog1.FileName,
-                UseShellExecute = true
-            });
-        }
-    }
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = saveFileDialog1.FileName,
@@ -337,17 +323,25 @@ public partial class frmMain : Form
 
         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
         {
-            Stream myStream = saveFileDialog1.OpenFile();
-            if (myStream == null) return;
-
-            IO_Report.CreateReport(PLC, myStream);
-            myStream.Close();
-
-            Process.Start(new ProcessStartInfo
+            try
             {
-                FileName = saveFileDialog1.FileName,
-                UseShellExecute = true
-            });
+                Stream myStream = saveFileDialog1.OpenFile();
+                if (myStream == null) return;
+
+                IO_Report.CreateReport(PLC, myStream);
+                myStream.Close();
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = saveFileDialog1.FileName,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.DebugPrint($"Error creating IO Report: {ex.Message}");
+                MessageBox.Show($"Error creating IO Report: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 
