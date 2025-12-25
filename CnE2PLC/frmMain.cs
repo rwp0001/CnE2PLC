@@ -1,16 +1,12 @@
-﻿using CnE2PLC.PLC;
+﻿using CnE2PLC.Helpers;
+using CnE2PLC.PLC;
 using CnE2PLC.PLC.XTO;
 using CnE2PLC.Properties;
 using CnE2PLC.Reporting;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
-using System.Windows.Forms;
 using System.Xml;
-
-using CnE2PLC.PLC;
-using CnE2PLC.PLC.XTO;
-using CnE2PLC.Helpers;
 
 namespace CnE2PLC;
 
@@ -294,12 +290,35 @@ public partial class frmMain : Form
                 
             CnE_Report.CreateReport(PLC, myStream);
             myStream.Close();
+        if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+        {
+            try
+            {
+                Stream myStream = saveFileDialog1.OpenFile();
+                if (myStream == null) return;
+
+                CnE_Report.CreateReport(PLC, myStream);
+                myStream.Close();
 
             Process.Start(new ProcessStartInfo
             {
                 FileName = saveFileDialog1.FileName,
                 UseShellExecute = true
             });
+        }
+    }
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = saveFileDialog1.FileName,
+                    UseShellExecute = true
+                });
+            }
+
+            catch (Exception ex)
+            {
+                LogHelper.DebugPrint($"Error creating C&E Report: {ex.Message}");
+                MessageBox.Show($"Error creating C&E Report: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 

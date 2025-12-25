@@ -111,6 +111,7 @@ namespace CnE2PLC
             // 
             // tsContainer.ContentPanel
             // 
+            tsContainer.ContentPanel.AutoScroll = true;
             tsContainer.ContentPanel.Controls.Add(splitContainer);
             tsContainer.ContentPanel.Margin = new Padding(2);
             tsContainer.ContentPanel.Size = new Size(967, 529);

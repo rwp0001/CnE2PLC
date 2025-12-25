@@ -51,7 +51,18 @@ public class Motor_VFD : XTO_AOI
     public bool? AutoFixedSpd { get; set; }
     #endregion
 
-    public override void ClearCounts() { }
+    #region Tag Counts
+    
+    public int FTR_Count { get; set; }
+    public int FTS_Count { get; set; }
+
+    #endregion
+
+    public override void ClearCounts() 
+    {
+        FTR_Count = 0;
+        FTS_Count = 0;
+    }
 
 }
 
@@ -263,7 +274,7 @@ public class Pump_1Spd : XTO_AOI
     /// <summary>
     /// Run-Time Hours
     /// </summary>
-	    public float? RT_Hours { get; set; }
+	public float? RT_Hours { get; set; }
 
     /// <summary>
     /// Reset Run-time hours
