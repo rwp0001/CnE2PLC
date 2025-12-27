@@ -337,7 +337,7 @@ public partial class frmMain : Form
         };
 
         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-        { 
+        {
             try
             {
                 Stream myStream = saveFileDialog1.OpenFile();
@@ -398,15 +398,15 @@ public partial class frmMain : Form
 
 
     private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        OpenFileDialog openFileDialog1 = new OpenFileDialog
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
-            {
-                Title = "Browse L5X Files",
-                Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Multiselect = false
-            };
+            Title = "Browse L5X Files",
+            Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
+            CheckFileExists = true,
+            CheckPathExists = true,
+            Multiselect = false
+        };
 
         if (openFileDialog1.ShowDialog() == DialogResult.OK)
         {
@@ -606,7 +606,6 @@ public partial class frmMain : Form
                 throw new NotImplementedException($"{((ToolStripMenuItem)sender).Name} is not handled.");
         }
     }
-
 
 }
 

@@ -85,6 +85,7 @@ namespace CnE2PLC
             tsm_DebugWarn = new ToolStripMenuItem();
             tsm_DebugError = new ToolStripMenuItem();
             tsm_DebugNone = new ToolStripMenuItem();
+            tsm_disableDebug = new ToolStripMenuItem();
             tsFilters = new ToolStrip();
             tslblFilters = new ToolStripLabel();
             tslblFilter_InUse = new ToolStripLabel();
@@ -92,7 +93,6 @@ namespace CnE2PLC
             tsmnuFilter_InUse_All = new ToolStripMenuItem();
             tsmnuFilter_InUse_Only = new ToolStripMenuItem();
             tsmnuFilter_InUse_Not = new ToolStripMenuItem();
-            tsm_disableDebug = new ToolStripMenuItem();
             tsContainer.BottomToolStripPanel.SuspendLayout();
             tsContainer.ContentPanel.SuspendLayout();
             tsContainer.TopToolStripPanel.SuspendLayout();
@@ -498,26 +498,37 @@ namespace CnE2PLC
             // tsm_DebugInfo
             // 
             tsm_DebugInfo.Name = "tsm_DebugInfo";
-            tsm_DebugInfo.Size = new Size(103, 22);
+            tsm_DebugInfo.Size = new Size(180, 22);
             tsm_DebugInfo.Text = "Info";
+            tsm_DebugInfo.Click += tsm_DebugChange_Click;
             // 
             // tsm_DebugWarn
             // 
             tsm_DebugWarn.Name = "tsm_DebugWarn";
-            tsm_DebugWarn.Size = new Size(103, 22);
+            tsm_DebugWarn.Size = new Size(180, 22);
             tsm_DebugWarn.Text = "Warn";
+            tsm_DebugWarn.Click += tsm_DebugChange_Click;
             // 
             // tsm_DebugError
             // 
             tsm_DebugError.Name = "tsm_DebugError";
-            tsm_DebugError.Size = new Size(103, 22);
+            tsm_DebugError.Size = new Size(180, 22);
             tsm_DebugError.Text = "Error";
+            tsm_DebugError.Click += tsm_DebugChange_Click;
             // 
             // tsm_DebugNone
             // 
             tsm_DebugNone.Name = "tsm_DebugNone";
-            tsm_DebugNone.Size = new Size(103, 22);
+            tsm_DebugNone.Size = new Size(180, 22);
             tsm_DebugNone.Text = "None";
+            tsm_DebugNone.Click += tsm_DebugChange_Click;
+            // 
+            // tsm_disableDebug
+            // 
+            tsm_disableDebug.Name = "tsm_disableDebug";
+            tsm_disableDebug.Size = new Size(184, 22);
+            tsm_disableDebug.Text = "Disable Debug Mode";
+            tsm_disableDebug.Click += ToggleDebug;
             // 
             // tsFilters
             // 
@@ -572,13 +583,6 @@ namespace CnE2PLC
             tsmnuFilter_InUse_Not.Size = new Size(157, 22);
             tsmnuFilter_InUse_Not.Text = "Not In Use Only";
             tsmnuFilter_InUse_Not.Click += tsmnuFilter_InUse_Not_Click;
-            // 
-            // tsm_disableDebug
-            // 
-            tsm_disableDebug.Name = "tsm_disableDebug";
-            tsm_disableDebug.Size = new Size(184, 22);
-            tsm_disableDebug.Text = "Disable Debug Mode";
-            tsm_disableDebug.Click += ToggleDebug;
             // 
             // frmMain
             // 
