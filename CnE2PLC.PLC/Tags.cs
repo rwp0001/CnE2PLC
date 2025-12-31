@@ -55,7 +55,7 @@ public class PLCTag
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Node Exception: Error: {ex.Message}\nNode: {node.Name}");
+            LogHelper.DebugPrint($"ERROR: PLCTag: Create Tag {node.Name} failed. - Exception: {ex.Message}");
         }
     }
 
@@ -302,9 +302,9 @@ public class PLCTag
 
             return;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Set Property Exception: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {e.Message}");
+            LogHelper.DebugPrint($"ERROR: SetProperty: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {ex.Message}");
         }
 
 
@@ -391,19 +391,16 @@ public class PLC_Base : PLCTag
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.DebugPrint($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}\n{item.InnerText}");
+                        LogHelper.DebugPrint($"ERROR: PLC_Base: Import Child Node {node.Name} Exception: {ex.Message}");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Child Node Exception: Error: {ex.Message}\nNode: {node.Name}");
+            LogHelper.DebugPrint($"ERROR: PLC_Base: Ceate Tag {node.Name} failed. Exception: {ex.Message}");
         }
     }
-
-    //[DebuggerStepThrough]
-    //public override void CellFormatting(object sender, DataGridViewCellFormattingEventArgs e) { }
 }
 
 public class PLC_Bool : PLC_Base

@@ -4,6 +4,7 @@ using libplctag.DataTypes;
 using System.ComponentModel;
 using System.Xml;
 using CnE2PLC.Helpers;
+using System.Data;
 
 namespace CnE2PLC.PLC;
 
@@ -12,9 +13,10 @@ public class Controller
     public Controller() { }
     public Controller(XmlNode node)
     {
-        try
-        {
-            LogHelper.DebugPrint("Creating Controller.");
+        //try
+        //{
+            DateTime Start = DateTime.Now; 
+            LogHelper.DebugPrint("INFO: Creating Controller.");
 
             if (node == null) throw new ArgumentNullException(nameof(node));
 
@@ -43,12 +45,13 @@ public class Controller
 
             UpdateCounts();
 
-            LogHelper.DebugPrint($"Controller {ToString()} was imported.");
-        }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"Controller Import Error: {ex.Message}");
-        }
+            DateTime End = DateTime.Now;
+            LogHelper.DebugPrint($"Controller: {ToString()} was imported. Time {(End - Start).TotalMilliseconds} ms.");
+        //}
+        //catch (Exception ex)
+        //{
+        //    LogHelper.DebugPrint($"ERROR: Controller: Import failed with {ex.Message}");
+        //}
     }
 
     #region L5X Properties
@@ -129,6 +132,7 @@ public class Controller
     /// <returns>List of converted tags.</returns>
     public static List<PLCTag> ProcessTags(XmlNode XMLTags)
     {
+        DateTime Start = DateTime.Now;
         List<PLCTag> Tags = new();
         try
         {
@@ -186,7 +190,7 @@ public class Controller
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.DebugPrint($"Tag Import Exception: Error Processing node.\nEroor: {ex.Message}\nName: {item?.Name}\nNode:\n{item?.InnerText}\n");
+                    LogHelper.DebugPrint($"ERROR: ProcessTags: Processing node {item?.Name} failed. {ex.Message}");
                 }
 
             }
@@ -194,13 +198,14 @@ public class Controller
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Process Tags Exception: Error: {ex.Message}\nFrom: {XMLTags}");
+            LogHelper.DebugPrint($"ERROR: ProcessTags: Failed to procress node {XMLTags.Name} with {ex.Message}");
         }
 
         // Apply sort.
 
         Tags.Sort(CompareTAGS);
-
+        DateTime End = DateTime.Now;
+        LogHelper.DebugPrint($"INFO: Created {Tags.Count} Tags. Time {(End-Start).TotalMilliseconds} ms.");
         return Tags;
     }
 
@@ -332,6 +337,9 @@ public class Controller
 
     public void UpdateCounts()
     {
+        DateTime Start = DateTime.Now;
+        //LogHelper.DebugPrint($"INFO: Updating Tag Usage Counts.");
+
         foreach (Task task in Tasks)
         {
 
@@ -341,8 +349,8 @@ public class Controller
         // count the number of time a tag is used.
         foreach (XTO_AOI tag in AOI_Tags)
         {
-            try
-            {
+            //try
+            //{
                 tag.ClearCounts();
                 tag.IOs.Clear();
 
@@ -351,60 +359,65 @@ public class Controller
                     if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
 
                     int c, r;
-                    c = program.AOICount(tag.DataType, tag.Name);
-                    r = program.TagCount($"{tag.Name}");
+                    c = program.RefCount($"{tag.DataType}({tag.Name},");
+                    r = program.RefCount($"{tag.Name}.");
                     tag.AOICalls += c;
                     tag.References += r - c;
 
                     // record the io points found.
-                    if (c != 0) tag.IOs.AddRange(program.GetIO(tag.DataType, tag.Name));
+                    if (c != 0) tag.IOs.AddRange(program.GetIO($"{tag.DataType}({tag.Name}"));
 
-                    if (tag.DataType == "AIData" || tag.DataType == "AIData_FIMS")
+                    switch (tag.DataType)
                     {
-                        AIData AI = (AIData)tag;
-                        AI.HSD_Count += program.TagCount($"{tag.Name}.HSD");
-                        AI.LSD_Count += program.TagCount($"{tag.Name}.LSD");
-                        AI.HiHi_Count += program.TagCount($"{tag.Name}.HiHiAlarm");
-                        AI.Hi_Count += program.TagCount($"{tag.Name}.HiAlarm");
-                        AI.Lo_Count += program.TagCount($"{tag.Name}.LoAlarm");
-                        AI.LoLo_Count += program.TagCount($"{tag.Name}.LoLoAlarm");
-                        AI.PV_Count += program.TagCount($"{tag.Name}.PV");
-                        AI.BadPV_Count += program.TagCount($"{tag.Name}.BadPVAlarm");
-                        AI.Raw_Count += program.TagCount($"{tag.Name}.Raw");
-                    }
+                        case "AIData":
+                        case "AIData_FIMS":
+                            ((AIData)tag).HSD_Count += program.RefCount($"{tag.Name}.HSD");
+                            ((AIData)tag).LSD_Count += program.RefCount($"{tag.Name}.LSD");
+                            ((AIData)tag).HiHi_Count += program.RefCount($"{tag.Name}.HiHiAlarm");
+                            ((AIData)tag).Hi_Count += program.RefCount($"{tag.Name}.HiAlarm");
+                            ((AIData)tag).Lo_Count += program.RefCount($"{tag.Name}.LoAlarm");
+                            ((AIData)tag).LoLo_Count += program.RefCount($"{tag.Name}.LoLoAlarm");
+                            ((AIData)tag).PV_Count += program.RefCount($"{tag.Name}.PV");
+                            ((AIData)tag).BadPV_Count += program.RefCount($"{tag.Name}.BadPVAlarm");
+                            ((AIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                            break;
 
-                    if (tag.DataType == "DIData" || tag.DataType == "DIData_FIMS")
-                    {
-                        DIData DI = (DIData)tag;
-                        DI.SD_Count += program.TagCount($"{tag.Name}.Shutdown");
-                        DI.Val_Count += program.TagCount($"{tag.Name}.Value");
-                        DI.Alm_Count += program.TagCount($"{tag.Name}.Alarm");
-                        DI.Raw_Count += program.TagCount($"{tag.Name}.Raw");
-                    }
+                        case "DIData":
+                        case "DIData_FIMS":
+                            ((DIData)tag).SD_Count += program.RefCount($"{tag.Name}.Shutdown");
+                            ((DIData)tag).Val_Count += program.RefCount($"{tag.Name}.Value");
+                            ((DIData)tag).Alm_Count += program.RefCount($"{tag.Name}.Alarm");
+                            ((DIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                            break;
 
-                    if (tag.DataType == "TwoPositionValveV2" || tag.DataType == "TwoPositionValve")
-                    {
-                        TwoPositionValveV2 TPV2 = (TwoPositionValveV2)tag;
-                        TPV2.Open_Count += program.TagCount($"{tag.Name}.Open");
-                        TPV2.Close_Count += program.TagCount($"{tag.Name}.Close");
-                        TPV2.FTO_Count += program.TagCount($"{tag.Name}.FailedToOpen");
-                        TPV2.FTC_Count += program.TagCount($"{tag.Name}.FailedToClose");
-                    }
+                        case "TwoPositionValveV2":
+                        case "TwoPositionValve":
+                            ((TwoPositionValveV2)tag).Open_Count += program.RefCount($"{tag.Name}.Open");
+                            ((TwoPositionValveV2)tag).Close_Count += program.RefCount($"{tag.Name}.Close");
+                            ((TwoPositionValveV2)tag).FTO_Count += program.RefCount($"{tag.Name}.FailedToOpen");
+                            ((TwoPositionValveV2)tag).FTC_Count += program.RefCount($"{tag.Name}.FailedToClose");
+                            break;
 
-                    if (tag.DataType == "ValveAnalog")
-                    {
-                        ValveAnalog AV = (ValveAnalog)tag;
-                        AV.Pos_Count += program.TagCount($"{tag.Name}.Pos");
-                        AV.PosFail_Count += program.TagCount($"{tag.Name}.PosFail");
+                        case "ValveAnalog":
+                            ((ValveAnalog)tag).Pos_Count += program.RefCount($"{tag.Name}.Pos");
+                            ((ValveAnalog)tag).PosFail_Count += program.RefCount($"{tag.Name}.PosFail");
+                            break;
+
+                        default:
+                            LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");
+                            break;
                     }
                 }
 
-            }
-            catch (Exception ex)
-            {
-                LogHelper.DebugPrint($"Update Counts Exception: Error: {ex.Message}\nFrom: {tag.Name}");
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    LogHelper.DebugPrint($"ERROR: UpdateCounts: Failed updating {tag.Name} with {ex.Message}");
+            //}
         }
+
+        DateTime End = DateTime.Now;
+        LogHelper.DebugPrint($"INFO: UpdateCounts: Completed. Time {(End - Start).TotalMilliseconds} ms.");
 
     }
 
@@ -627,54 +640,5 @@ public class Controller
     }
 
     #endregion
-
-}
-
-public class Task { 
-    public Task() { }
-    public Task(XmlNode node) 
-    {
-        try
-        {
-            int n;
-
-            Name = node.GetNamedAttributeItemInnerText("Name");
-            Type = node.GetNamedAttributeItemInnerText("Type");
-            Description = node.GetNamedAttributeItemInnerText("Description");
-
-            int.TryParse(node.GetNamedAttributeItemInnerText("Rate"), out n);
-            Rate = n;
-
-            int.TryParse(node.GetNamedAttributeItemInnerText("Priority"), out n);
-            Priority = n;
-            
-            int.TryParse(node.GetNamedAttributeItemInnerText("Watchdog"), out n);
-            Watchdog = n;
-            
-            // get all the program names
-            XmlNode sched = node.SelectSingleNode("ScheduledPrograms", XMLHelper.CreateGenericXmlNode());
-            foreach (XmlNode p_node in sched.ChildNodes)
-            {
-                string it = p_node.GetNamedAttributeItemInnerText("Name");
-                if ( it.Length > 0 ) ScheduledPrograms.Add(it);
-            }
-        }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"Contoller Import Error: {ex.Message}");
-        }
-    }
-
-    public string? Name { get; set; }
-    public string? Type { get; set; }
-    public int? Rate { get; set; }
-    public int? Priority { get; set; }
-    public int? Watchdog { get; set; }
-    public bool? DisableUpdateOutputs { get; set; }
-    public bool? InhibitTask { get; set; }
-    public string? Description { get; set; }
-    public List<string> ScheduledPrograms { get; set; } = new();
-
-    public override string ToString() { return $"{Name} {Description} Count:{ScheduledPrograms.Count}"; }
 
 }

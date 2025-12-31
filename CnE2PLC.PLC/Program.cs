@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Xml;
 using CnE2PLC.Helpers;
 using CnE2PLC.PLC.XTO;
@@ -13,6 +12,8 @@ public class Program
     {
         try
         {
+            DateTime Start = DateTime.Now;
+
             Name = node.GetNamedAttributeItemValue("Name");
             TestEdits = node.GetNamedAttributeItemValue("TestEdits");
             Disabled = node.GetNamedAttributeItemValue("Disabled");
@@ -72,13 +73,15 @@ public class Program
                         break;
                 }
             }
+
+            DateTime End = DateTime.Now;
+            LogHelper.DebugPrint($"INFO: Program created. {ToString()} Time {(End - Start).TotalMilliseconds} ms.");
+
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Program Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Program: Import of node {node.Name} failed with {ex.Message}");
         }
-
-
     }
 
 
@@ -96,69 +99,25 @@ public class Program
 
     public override string ToString() { return $"{Name} Routines: {Routines.Count} Tags: {LocalTags.Count}"; }
 
-    public int TagCount(string tag)
+    public int RefCount(string tag)
     {
         int r = 0;
-        foreach (Routine routine in Routines) r += routine.TagCount(tag);
+        foreach (Routine routine in Routines) r += routine.RefCount(tag);
         return r;
     }
 
-    public int AOICount(string type,string tag)
-    {
-        int r = 0;
-        foreach (Routine routine in Routines) r += routine.AOICount(type,tag);
-        return r;
-    }
-
-    public List<string> GetIO(string type,string tag)
+    public List<string> GetIO(string tag)
     {
         List<string> r = new();
-        foreach (Routine routine in Routines) foreach (string s in routine.GetIO(type, tag)) if(!r.Contains(s)) r.Add(s);
+        foreach (Routine routine in Routines)
+        {
+            foreach (string s in routine.GetIO(tag))
+            {
+                if (!r.Contains(s)) r.Add(s);
+            }
+        }
         return r;
     }
 
-
-}
-
-public class Routine
-{
-    public Routine() { }
-
-    public Routine(XmlNode node)
-    {
-        try
-        {
-            Name = node.GetNamedAttributeItemValue("Name");
-            Type = node.GetNamedAttributeItemValue("Type");
-        }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"Import Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
-        }
-    }
-
-    #region Public Properties
-    public string Name { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    #endregion
-
-    public override string ToString() { return $"Name: {Name} Type: {Type}"; }
-
-    /// <summary>
-    /// Used to find the number of times a tag is used in the program.
-    /// </summary>
-    /// <param name="tag">Tag name to count.</param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public virtual int TagCount(string tag) { throw new NotImplementedException(); }
-
-    public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
-
-    public virtual List<string> GetIO(string type, string tag) {
-        return new List<string>();
-        //throw new NotImplementedException(); 
-    }
-
-    public virtual string ToText() { throw new NotImplementedException(); }
 
 }

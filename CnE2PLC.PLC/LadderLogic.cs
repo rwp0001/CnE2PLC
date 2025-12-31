@@ -1,5 +1,4 @@
 ﻿using CnE2PLC.Helpers;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -11,14 +10,16 @@ namespace CnE2PLC.PLC;
 /// </summary>
 internal class RLL_Routine : Routine
 {
+
     /// <summary>
     /// Rockwell Ladder Logic
     /// </summary>
     /// <param name="node"></param>
-    public RLL_Routine(XmlNode node)
+    public RLL_Routine(XmlNode node) : base(node)
     {
         try
         {
+            DateTime Start = DateTime.Now;
             Name = node.GetNamedAttributeItemValue("Name");
             Type = node.GetNamedAttributeItemValue("Type");
             XmlNodeList? RLLContent = node.SelectNodes("RLLContent");
@@ -29,10 +30,12 @@ internal class RLL_Routine : Routine
                     foreach (XmlNode rung in node2.ChildNodes) Rungs.Add(new Rung(rung));
                 }
             }
+            DateTime End = DateTime.Now;
+            LogHelper.DebugPrint($"INFO: RLL_Routine {ToString()} Time {(End-Start).TotalMilliseconds} ms.");
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import LL Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: RLL_Routine: Import node {node.Name} failed with {ex.Message}");
         }
 
 
@@ -40,7 +43,7 @@ internal class RLL_Routine : Routine
 
     public List<Rung> Rungs { get; set; } = new();
 
-    public override int TagCount(string tag)
+    public override int RefCount(string tag)
     {
         int count = 0;
         foreach (Rung rung in Rungs)
@@ -51,17 +54,13 @@ internal class RLL_Routine : Routine
         return count;
     }
 
-    public override int AOICount(string type, string tag)
-    {
-        int count = 0;
-        foreach (Rung rung in Rungs) count += rung.AOICount(type, tag);
-        return count;
-    }
-
-    public override List<string> GetIO(string type, string tag)
+    public override List<string> GetIO(string tag)
     {
         List<string> r = new();
-        foreach (Rung rung in Rungs) r.AddRange(rung.GetIO(type, tag));
+        foreach (Rung rung in Rungs)
+        {
+            r.AddRange(rung.GetIO(tag));
+        }
         return r;
     }
 
@@ -73,7 +72,7 @@ internal class RLL_Routine : Routine
         return s;
     }
 
-    public override string ToString() { return $"Name:{Name} Rungs: {Rungs.Count}"; }
+    public override string ToString() { return $"Name: {Name} Rungs: {Rungs.Count}"; }
 }
 
 /// <summary>
@@ -100,7 +99,7 @@ internal class Rung
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Rung Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Rung: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
@@ -112,58 +111,33 @@ internal class Rung
     public string Text { get; set; } = string.Empty;
     #endregion
 
-    public int TagCount(string tag) { return Regex.Matches(Text, Regex.Escape(tag)).Count; }
-
-    public int AOICount(string type, string tag)
-    {
-        try
-        {
-            string s = $"{type}({tag}";
-            if (!Text.Contains(s)) return 0;
-            int count = 0;
-            string[] rs = Text.Split(s);
-            foreach (string r in rs)
-            {
-                if (r.Length == 0) continue;
-                if (r[0] == ')' || r[0] == ',') count += 1;
-            }
-            return count;
-        }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"AOICount Error: {ex.Message}");
-            throw;
-        }
-
+    public int RefCount(string tag) 
+    { 
+        return Regex.Matches(Text, Regex.Escape(tag)).Count; 
     }
 
-    public List<string> GetIO(string type, string tag)
+
+
+    public List<string> GetIO(string tag)
     {
+        if (!Text.Contains(tag)) return new List<string>();
+
         List<string> r = new();
-        try
+        string[] rs = Text.Split(tag);
+
+        foreach (string s in rs)
         {
-            if (AOICount(type, tag) == 0) return r;
-
-            string ts = $"{type}({tag}";
-            string[] rs = Text.Split(ts);
-
-            foreach (string s in rs)
-            {
-                if (s.Length == 0) continue;
-                if (s[0] == ')') continue;
-                if ( s[0] == ',') {
-                    string[] s2 = s.Split(')');
-                    string[] s3 = s2[0].Split(',');
-                    r.Add(s3[1]);
-                }
+            if (s.Length == 0) continue;
+            if (s[0] == ')') continue;
+            if ( s[0] == ',') {
+                string[] s2 = s.Split(')');
+                string[] s3 = s2[0].Split(',');
+                r.Add(s3[1]);
             }
-            return r;
         }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"GetIO Error: {ex.Message}");
-            throw;
-        }
+        return r;
+        
+
 
     }
 

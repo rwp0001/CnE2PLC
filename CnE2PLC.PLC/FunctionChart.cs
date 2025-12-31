@@ -1,5 +1,4 @@
 ﻿using CnE2PLC.Helpers;
-using System.Diagnostics;
 using System.Xml;
 
 namespace CnE2PLC.PLC;
@@ -7,26 +6,19 @@ namespace CnE2PLC.PLC;
 // SFC classes
 public class SFC_Routine : Routine
 {
-    public SFC_Routine() { }
     public SFC_Routine(XmlNode node) : base(node) 
     {
+        throw new NotImplementedException();
     }
 
     public string? Description { get; set; }
 
     public List<ChartElement> Elements { get; set; } = new();
 
-    public override int TagCount(string tag)
+    public override int RefCount(string tag)
     {
         int r = 0;
-        foreach (ChartElement element in Elements) r += element.TagCount(tag);
-        return r;
-    }
-
-    public override int AOICount(string type,string tag)
-    {
-        int r = 0;
-        foreach (ChartElement element in Elements) r += element.AOICount(type,tag);
+        foreach (ChartElement element in Elements) r += element.RefCount(tag);
         return r;
     }
 
@@ -39,9 +31,11 @@ public class SFC_Routine : Routine
 
     public override string ToString() { return $"Chart Name:{Name} Elements: {Elements.Count} Desc: {Description}"; }
 }
+
 public class ChartElement
 {
     public ChartElement() { }
+
     public ChartElement(XmlNode node)
     {
         try
@@ -71,16 +65,23 @@ public class ChartElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: ChartElement: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
-    public int? ID { get; set; } = 0;
-    public int? X { get; set; } = 0;
-    public int? Y { get; set; } = 0;
+    
 
-    public virtual int TagCount(string tag) { throw new NotImplementedException(); }
-    public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
+    
+    public int ID { get; set; } = 0;
+    public int X { get; set; } = 0;
+    public int Y { get; set; } = 0;
+
+
+
+    public virtual int RefCount(string tag) 
+    { 
+        throw new NotImplementedException(); 
+    }
 
     public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
 }
@@ -88,7 +89,6 @@ public class ChartElement
 
 public class Step : ChartElement 
 { 
-    public Step() { }
     public Step(XmlNode node) : base(node)
     {
         try
@@ -141,7 +141,7 @@ public class Step : ChartElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Step: Import node {node.Name} failed with {ex.Message}");
         }
     }
 
@@ -156,13 +156,15 @@ public class Step : ChartElement
     public bool? LimitLowUsesExpr { get; set; }
     public bool? ShowActions { get; set; }
 
-    public override int TagCount(string tag) { throw new NotImplementedException(); }
-    public override int AOICount(string type, string tag) { throw new NotImplementedException(); }
-
+    public override int RefCount(string tag) 
+    { 
+        throw new NotImplementedException(); 
+    }
+    
 }
+
 public class Transition : ChartElement 
 {
-    public Transition() { }
     public Transition(XmlNode node) : base(node) {
         try
         {
@@ -213,7 +215,7 @@ public class Transition : ChartElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Step Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Transition: Import node {node.Name} failed with {ex.Message}");
         }
     }
     public string? Operand { get; set; }
@@ -223,24 +225,37 @@ public class Transition : ChartElement
     public int? DescWidth { get; set; }
     public List<Line> Conditions { get; set; } = new();
     
-    public override int TagCount(string tag) 
+    public override int RefCount(string tag) 
     {
         int count = 0;
         foreach (Line line in Conditions) count += line.TagCount(tag);
         return count;
     }
 
-    public override int AOICount(string type, string tag) { return 0; }
-
 }
 
 
-public class Branch : ChartElement { }
-public class DirectedLink : ChartElement { }
+public class Branch : ChartElement 
+{ 
+    public Branch(XmlNode node) : base()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class DirectedLink : ChartElement 
+{
+    public DirectedLink(XmlNode node) : base()
+    {
+        throw new NotImplementedException();
+    }
+}
+
+
+
 
 public class SFC_TextBox : ChartElement
 {
-    public SFC_TextBox() { }
     public SFC_TextBox(XmlNode node) : base(node)
     {
         try
@@ -259,16 +274,22 @@ public class SFC_TextBox : ChartElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Branch: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
+
+
     public int? Width { get; set; }
     public string? Text { get; set; }
 
-    public override int TagCount(string tag) { return 0; }
-    public override int AOICount(string type, string tag) { return 0; }
+
+
+    public override int RefCount(string tag) 
+    { 
+        return 0; 
+    }
 
     public override string ToString() { return $"{base.ToString()} - Text: {Text}"; }
 

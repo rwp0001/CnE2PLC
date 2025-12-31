@@ -1,8 +1,6 @@
-﻿using libplctag;
-using System.Diagnostics;
+﻿using CnE2PLC.Helpers;
 using System.Xml;
 using System.Xml.Linq;
-using CnE2PLC.Helpers;
 
 namespace CnE2PLC.PLC;
 
@@ -11,11 +9,11 @@ namespace CnE2PLC.PLC;
 // FBD Classes
 public class FBD_Routine : Routine
 {
-    FBD_Routine() { }
     public FBD_Routine(XmlNode node) : base(node)
     {
         try
         {
+            DateTime Start = DateTime.Now;
             XmlNodeList? FBDContent = node.SelectNodes("FBDContent");
             if (FBDContent != null)
             {
@@ -24,26 +22,31 @@ public class FBD_Routine : Routine
                     foreach (XmlNode sheet in node2.ChildNodes) Sheets.Add(new Sheet(sheet));
                 }
             }
+            DateTime End = DateTime.Now;
+            LogHelper.DebugPrint($"INFO: FBD_Routine {ToString()} Time {(End - Start).TotalMilliseconds} ms.");
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import ST Routine Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: FBD_Routine: Import node {node.Name} failed with {ex.Message}");
         }
     }
 
     public List<Sheet> Sheets { get; set; } = new();
 
-    public override int TagCount(string tag)
+    public override int RefCount(string tag)
     {
         int r = 0;
-        foreach (Sheet sheet in Sheets) r += sheet.TagCount(tag);
+        foreach (Sheet sheet in Sheets) r += sheet.RefCount(tag);
         return r;
     }
 
-    public override int AOICount(string type, string tag)
+    public override List<string> GetIO(string tag)
     {
-        int r = 0;
-        foreach (Sheet sheet in Sheets) r += sheet.AOICount(type,tag);
+        List<string> r = new();
+        foreach (Sheet sheet in Sheets)
+        {
+            r.AddRange(sheet.GetIO(tag));
+        }
         return r;
     }
 
@@ -54,15 +57,13 @@ public class FBD_Routine : Routine
         return s;
     }
 
-    public override string ToString() { return $"Name:{Name} Sheets: {Sheets.Count}"; }
+    public override string ToString() { return $"Name: {Name} Sheets: {Sheets.Count}"; }
 
 
 }
 
 public class Sheet
 {
-
-    public Sheet() { }
 
     public Sheet(XmlNode node)
     {
@@ -94,21 +95,21 @@ public class Sheet
                         Elements.Add(new Block(element));
                         break;
 
-                    //case "Wire":
-                    //    Elements.Add(new Wire(element));
-                    //    break;
+                    case "Wire":
+                        Elements.Add(new Wire(element));
+                        break;
 
                     case "AddOnInstruction":
                         Elements.Add(new AddOnInstruction(element));
                         break;
 
-                    //case "TextBox":
-                    //    Elements.Add(new TextBox(element));
-                    //    break;
+                    case "TextBox":
+                        Elements.Add(new FBD_TextBox(element));
+                        break;
 
-                    //case "Attachment":
-                    //    Elements.Add(new Attachment(element));
-                    //    break;
+                    case "Attachment":
+                        Elements.Add(new Attachment(element));
+                        break;
 
                     default:
                         break;
@@ -118,30 +119,53 @@ public class Sheet
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Sheet Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Sheet: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
-    public int? Number { get; set; }        
-    public string? Description { get; set; }
+    public int Number { get; set; } = -1;   
+    public string Description { get; set; } = string.Empty;
 
     public List<SheetElement> Elements { get; set; } = new();
 
-    public int TagCount(string tag) {
-        int r = 0;
-        foreach(SheetElement element in Elements) r += element.TagCount(tag);
-        return r;
-    }
+    public string Name { get; set; } = string.Empty;
 
-    public int AOICount(string type,string tag)
+
+
+    public int RefCount(string tag)
     {
         int r = 0;
-        foreach (SheetElement element in Elements) r += element.AOICount(type,tag);
+        if (tag.Contains('(')) // aoi count
+        {
+            string[] s = tag.Split('(');
+            foreach (SheetElement element in Elements)
+            {
+                if (element is not AddOnInstruction) continue;
+                if ( s[0] == ((AddOnInstruction)element).Operand & s[1] == ((AddOnInstruction)element).Name ) r++;
+            }
+        } 
+        else // ref count
+        {
+            foreach (SheetElement element in Elements)
+            {
+                r += element.RefCount(tag);
+            }
+        }
         return r;
     }
 
-    public string? Name { get; set; }
+    public List<string> GetIO(string tag)
+    {
+
+
+        List<string> r = new();
+        foreach (SheetElement element in Elements)
+        {
+            //r.AddRange(element.GetIO(tag));
+        }
+        return r;
+    }
 
     public override string ToString() { return $"Sheet Number:{Number} Element: {Elements.Count} Desc: {Description}"; }
 
@@ -180,19 +204,24 @@ public class SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Sheet Element Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: SheetElement: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
     #region Public Propreties
+
     public int ID { get; set; } = 0;
     public int X { get; set; } = 0;
     public int Y { get; set; } = 0;
+
     #endregion
 
-    public virtual int TagCount(string tag) { throw new NotImplementedException(); }
-    public virtual int AOICount(string type, string tag) { throw new NotImplementedException(); }
+    public virtual int RefCount(string tag) 
+    { 
+        throw new NotImplementedException(); 
+    }
+
     public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
 
 }
@@ -209,23 +238,28 @@ public class IRef : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import IRef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: IRef: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
-    public string? Operand { get; set; }
-    public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
-    public override int AOICount(string type, string tag) { return 0; }
+
+    public string Operand { get; set; } = string.Empty;
+    public bool HideDesc { get; set; } = false;
+
+
+
+    public override int RefCount(string tag) 
+    { 
+        return Operand.Contains(tag) ? 1 : 0; 
+    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
 }
 
 public class ORef : SheetElement
 {
-    public ORef() { }
 
     public ORef(XmlNode node) : base(node)
     {
@@ -237,24 +271,28 @@ public class ORef : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import ORef Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: ORef: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
-    public string? Operand { get; set; }
-    public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
-    public override int AOICount(string type, string tag) { return 0; }
+    public string Operand { get; set; } = string.Empty ;
+    public bool HideDesc { get; set; } = false;
+
+
+
+    public override int RefCount(string tag)
+    {
+        return Operand.Contains(tag) ? 1 : 0;
+    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
 }
 
 public class Block : SheetElement 
 {
-    public Block() { }
     public Block(XmlNode node) : base(node)
     {
         try
@@ -267,19 +305,24 @@ public class Block : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Block Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Block: Import node {node.Name} failed with {ex.Message}");
         }
 
     }
 
-    public string? Type { get; set; }
-    public string? Operand { get; set; }
-    public string? VisiblePins { get; set; }
-    public bool? HideDesc { get; set; }
 
-    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
-    public override int AOICount(string type, string tag) { return 0; }
+    public string Type { get; set; } = string.Empty;
+    public string Operand { get; set; } = string.Empty;
+    public string VisiblePins { get; set; } = string.Empty;
+    public bool HideDesc { get; set; } = false;
+
+
+
+    public override int RefCount(string tag)
+    {
+        return Operand.Contains(tag) ? 1 : 0;
+    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Type: {Type}"; }
 }
@@ -308,35 +351,48 @@ public class Wire : SheetElement
                 FromID = n;
             }
 
-            try { ToParam = node.GetNamedAttributeItemValue("ToParam"); } catch (Exception ex ){ LogHelper.DebugPrint($"Wire Error: {ex.Message}"); }
+            try { 
+                ToParam = node.GetNamedAttributeItemValue("ToParam"); 
+            } 
+            catch (Exception ex )
+            { 
+                LogHelper.DebugPrint($"ERROR: Wire: ToParam: Error: {ex.Message}"); 
+            }
 
-            try { FromParam = node.GetNamedAttributeItemValue("FromParam"); } catch (Exception ex) { LogHelper.DebugPrint($"Wire Error: {ex.Message}"); }
+            try { 
+                FromParam = node.GetNamedAttributeItemValue("FromParam"); 
+            } 
+            catch (Exception ex) 
+            { 
+                LogHelper.DebugPrint($"ERROR: Wire: FromParam: Error: {ex.Message}"); 
+            }
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Wire Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Wire: Import node {node.Name} failed with {ex.Message}");
         }
 
 
 
     }
 
-    public int? ToID { get; set; }
-    public int? FromID { get; set; }
-    public string? ToParam { get; set; }
-    public string? FromParam { get; set; }
 
-    public override int TagCount(string tag) { return 0; }
-    public override int AOICount(string type, string tag) { return 0; }
+
+    public int ToID { get; set; } = -1;
+    public int FromID { get; set; } = -1;
+    public string ToParam { get; set; } = string.Empty;
+    public string FromParam { get; set; } = string.Empty;
+
+
+
+    public override int RefCount(string tag)
+    { 
+        return 0; 
+    }
 
     public override string ToString()
     {
-        string s = base.ToString();
-        s += FromID == null ? "" : $" From: {FromID}";
-        s += FromParam == null ? "" : $" From: {FromParam}";
-        s += ToID == null ? "" : $" To: {ToID}";
-        s += ToParam == null ? "" : $" To: {ToParam}";
-        return s;
+        return $"{base.ToString()} Wire From: {FromID} {FromParam} to {ToID} {ToParam}";
     }
 }
 
@@ -352,20 +408,22 @@ public class AddOnInstruction : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import AOI Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: AddOnInstruction: Import node {node.Name} Failed with {ex.Message}");
         }
 
     }
 
-    public string? Name { get; set; }
-    public string? Operand { get; set; }
-    public string? VisiblePins { get; set; }
 
-    public override int TagCount(string tag) { return Operand.ContainsAsBit(tag); }
 
-    public override int AOICount(string type, string tag) { 
-        if( Name != type ) return 0;
-        return Operand.ContainsAsBit(tag); 
+    public string Name { get; set; } = string.Empty;
+    public string Operand { get; set; } = string.Empty;
+    public string VisiblePins { get; set; } = string.Empty;
+
+
+
+    public override int RefCount(string tag)
+    {
+        return Operand.Contains(tag) ? 1 : 0;
     }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
@@ -389,16 +447,22 @@ public class FBD_TextBox : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Textbox Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: FBD_TextBox: Import node {node.Name} Failed with {ex.Message}");
         }
 
     }
 
-    public int? Width { get; set; }
-    public string? Text { get; set; }
 
-    public override int TagCount(string tag) { return 0; }
-    public override int AOICount(string type, string tag) { return 0; }
+
+    public int Width { get; set; } = -1;
+    public string Text { get; set; } = string.Empty;
+
+
+
+    public override int RefCount(string tag) 
+    { 
+        return 0; 
+    }
 
     public override string ToString() { return $"{base.ToString()} - Text: {Text}"; }
 
@@ -429,21 +493,25 @@ public class Attachment : SheetElement
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"Import Attachment Error: Name: {node.Name}\nError: {ex.Message}\n{node.InnerText}");
+            LogHelper.DebugPrint($"ERROR: Attachment: Import node {node.Name} Failed with {ex.Message}");
         }
 
     }
 
-    public int? ToID { get; set; }
-    public int? FromID { get; set; }
-    public override int TagCount(string tag) { return 0; }
-    public override int AOICount(string type, string tag) { return 0; }
+
+
+    public int ToID { get; set; } = -1;
+    public int FromID { get; set; } = -1;
+
+
+
+    public override int RefCount(string tag) 
+    { 
+        return 0; 
+    }
 
     public override string ToString()
     {
-        string s = base.ToString();
-        s += FromID == null ? "" : $" From: {FromID}";
-        s += ToID == null ? "" : $" To: {ToID}";
-        return s;
+        return $"{base.ToString()} From: {FromID} To: {ToID}";
     }
 }

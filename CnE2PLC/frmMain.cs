@@ -23,10 +23,8 @@ public partial class frmMain : Form
 
     public frmMain()
     {
-
         InitializeComponent();
-        Program.DebugLevel = Properties.Settings.Default.DebugLevel;
-        tsm_debug.Visible = Settings.Default.Debug;
+        tsm_debug.Visible = Program.Debug;
 
         switch (Program.DebugLevel)
         {
@@ -73,7 +71,7 @@ public partial class frmMain : Form
 
         if (Settings.Default.WindowMaximizedState) this.WindowState = FormWindowState.Maximized;
 
-        splitContainer.Panel2Collapsed = !Settings.Default.Debug;
+        splitContainer.Panel2Collapsed = !Program.Debug;
 
     }
 
@@ -272,9 +270,9 @@ public partial class frmMain : Form
 
     private void ToggleDebug(object sender, EventArgs e)
     {
-        Settings.Default.Debug = !Settings.Default.Debug;
-        splitContainer.Panel2Collapsed = !Settings.Default.Debug;
-        tsm_debug.Visible = Settings.Default.Debug;
+        Program.Debug = !Program.Debug;
+        splitContainer.Panel2Collapsed = !Program.Debug;
+        tsm_debug.Visible = Program.Debug;
     }
 
     private void copyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -303,6 +301,7 @@ public partial class frmMain : Form
         Settings.Default.WindowSize = this.Size;
         Settings.Default.WindowMaximizedState = this.WindowState == FormWindowState.Maximized;
         Settings.Default.DebugLevel = Program.DebugLevel;
+        Settings.Default.Debug = Program.Debug;
         Settings.Default.Save();
 
     }
@@ -337,7 +336,7 @@ public partial class frmMain : Form
         };
 
         if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-        { 
+        {
             try
             {
                 Stream myStream = saveFileDialog1.OpenFile();
@@ -398,43 +397,46 @@ public partial class frmMain : Form
 
 
     private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        OpenFileDialog openFileDialog1 = new OpenFileDialog
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
-            {
-                Title = "Browse L5X Files",
-                Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Multiselect = false
-            };
+            Title = "Browse L5X Files",
+            Filter = "Logix L5X files (*.l5x)|*.l5x|All files (*.*)|*.*",
+            CheckFileExists = true,
+            CheckPathExists = true,
+            Multiselect = false
+        };
 
         if (openFileDialog1.ShowDialog() == DialogResult.OK)
         {
-            try
+            //try
+            //{
+            // clear the debug log if a plc was already loaded.
+            if (!string.IsNullOrEmpty(PLC.Name)) txtLogText.Clear();
+
+            string FileData = File.ReadAllText(openFileDialog1.FileName);
+            XmlDocument XmlDoc = new XmlDocument();
+            XmlDoc.LoadXml(FileData);
+
+            XmlNodeList? controllerNodes = XmlDoc?.SelectNodes("/RSLogix5000Content/Controller");
+            XmlNode? ControllerNode = (controllerNodes != null && controllerNodes.Count > 0) ? controllerNodes[0] : null;
+            if (ControllerNode == null)
             {
-                string FileData = File.ReadAllText(openFileDialog1.FileName);
-                XmlDocument XmlDoc = new XmlDocument();
-                XmlDoc.LoadXml(FileData);
-
-                XmlNodeList? controllerNodes = XmlDoc?.SelectNodes("/RSLogix5000Content/Controller");
-                XmlNode? ControllerNode = (controllerNodes != null && controllerNodes.Count > 0) ? controllerNodes[0] : null;
-                if (ControllerNode == null)
-                {
-                    throw new InvalidOperationException("Controller node not found in the L5X file.");
-                }
-                PLC = new(ControllerNode);
-
-                bsTags.DataSource = PLC.AOI_Tags;
-                this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
-                tsTagCount.Text = $"Tags: {PLC.AllTags.Count}";
-
+                throw new InvalidOperationException("Controller node not found in the L5X file.");
             }
-            catch (Exception ex)
-            {
-                string s = $"Error: Import L5X Error: {ex.Message}";
-                LogHelper.DebugPrint(s);
-                MessageBox.Show(s, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            PLC = new(ControllerNode);
+
+            bsTags.DataSource = PLC.AOI_Tags;
+            this.Text = $"{AssemblyTitle()}  {PLC.ToString()}";
+            tsTagCount.Text = $"Tags: {PLC.AllTags.Count}";
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    string s = $"Error: Import L5X Error: {ex.Message}";
+            //    LogHelper.DebugPrint(s);
+            //    MessageBox.Show(s, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
 
 
         }
@@ -571,6 +573,7 @@ public partial class frmMain : Form
         switch (((ToolStripMenuItem)sender).Name)
         {
             case "tsm_DebugInfo":
+                Program.Debug = true;
                 Program.DebugLevel = 3;
                 tsm_DebugError.Checked = false;
                 tsm_DebugWarn.Checked = false;
@@ -579,6 +582,7 @@ public partial class frmMain : Form
                 break;
 
             case "tsm_DebugWarn":
+                Program.Debug = true;
                 Program.DebugLevel = 2;
                 tsm_DebugError.Checked = false;
                 tsm_DebugWarn.Checked = true;
@@ -587,6 +591,7 @@ public partial class frmMain : Form
                 break;
 
             case "tsm_DebugError":
+                Program.Debug = true;
                 Program.DebugLevel = 1;
                 tsm_DebugError.Checked = true;
                 tsm_DebugWarn.Checked = false;
@@ -595,6 +600,7 @@ public partial class frmMain : Form
                 break;
 
             case "tsm_DebugNone":
+                Program.Debug = true;
                 Program.DebugLevel = 0;
                 tsm_DebugError.Checked = false;
                 tsm_DebugWarn.Checked = false;
@@ -607,6 +613,9 @@ public partial class frmMain : Form
         }
     }
 
-
+    private void tsm_breakPoint_Click(object sender, EventArgs e)
+    {
+        Application.DoEvents();
+    }
 }
 

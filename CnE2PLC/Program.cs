@@ -20,10 +20,21 @@ internal static class Program
                 LogHelper.DebugPrint($"ERROR: Changing Debug Level to {value} is not supported.");
                 return;
             }
+            if(field != value) LogHelper.DebugPrint($"Changing Debug Level to {LevelName[value]}.");
             field = value;
-            LogHelper.DebugPrint($"Changing Debug Level to {LevelName[value]}.");
+            
         }
 
+    }
+
+    public static bool Debug
+    {
+        get { return field; }
+        set
+        {
+            if( field != value) LogHelper.DebugPrint($"Debug {(value ? $"enabled" : $"disabled")}.");
+            field = value;
+        } 
     }
 
     public static UiTraceListener UITraceListener = new();
@@ -34,6 +45,9 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        DebugLevel = Properties.Settings.Default.DebugLevel;
+        Debug = Properties.Settings.Default.Debug;
+
         Trace.Listeners.Add( UITraceListener );
         
         // To customize application configuration such as set high DPI settings or default font,
