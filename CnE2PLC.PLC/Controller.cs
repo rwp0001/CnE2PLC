@@ -1,10 +1,10 @@
-﻿using CnE2PLC.PLC.XTO;
+﻿using CnE2PLC.Helpers;
 using libplctag;
 using libplctag.DataTypes;
 using System.ComponentModel;
-using System.Xml;
-using CnE2PLC.Helpers;
 using System.Data;
+using System.Xml;
+
 
 namespace CnE2PLC.PLC;
 
@@ -41,7 +41,7 @@ public class Controller
 
             // get all the programs
             XmlNode programs = node?.SelectSingleNode("Programs") ?? XMLHelper.CreateGenericXmlNode();
-            foreach (XmlNode p_node in programs.ChildNodes) Programs.Add(new Program(p_node));
+            foreach (XmlNode p_node in programs.ChildNodes) Programs.Add(new Programs(p_node));
 
             UpdateCounts();
 
@@ -74,14 +74,14 @@ public class Controller
 
     public List<Task> Tasks { get; set; } = new();
 
-    public List<Program> Programs { get; set; } = new();
+    public List<Programs> Programs { get; set; } = new();
 
     public BindingList<PLCTag> AllTags
     {
         get {
             BindingList<PLCTag> list = new();
             foreach (PLCTag tag in Tags) list.Add(tag);
-            foreach (Program program in Programs) foreach (PLCTag tag in program.LocalTags) list.Add(tag);
+            foreach (Programs program in Programs) foreach (PLCTag tag in program.LocalTags) list.Add(tag);
             return list;
         }
     }
@@ -92,7 +92,7 @@ public class Controller
         {
             BindingList<XTO_AOI> list = new();
             
-            foreach (XTO_AOI tag in Tags)
+            foreach (XTO_AOI tag in Tags )
             {
                 if (Filter_Alarmed & !tag.Alarmed) continue;
                 if (Filter_Bypassed & !tag.Bypassed) continue;
@@ -104,7 +104,7 @@ public class Controller
 
             if (Filter_LocalTags) return list;
 
-            foreach (Program program in Programs)
+            foreach (Programs program in Programs)
             {
                 foreach (XTO_AOI tag in program.LocalTags)
                 {
@@ -203,49 +203,49 @@ public class Controller
 
         // Apply sort.
 
-        Tags.Sort(CompareTAGS);
+        //Tags.Sort(CompareTAGS);
         DateTime End = DateTime.Now;
         LogHelper.DebugPrint($"INFO: Created {Tags.Count} Tags. Time {(End-Start).TotalMilliseconds} ms.");
         return Tags;
     }
 
-    private static int CompareTAGS(PLCTag? first, PLCTag? second)
-    {
-        if (first != null && second != null)
-        {
-            int r;
-            if (first.GetType() != typeof(PLCTag) & second.GetType() != typeof(PLCTag))
-            {
-                XTO_AOI t1 = (XTO_AOI)first;
-                XTO_AOI t2 = (XTO_AOI)second;
-                // Check EquipID first
-                r = t1.EquipNum.CompareTo(t2.EquipNum);
-                if (r != 0) return r;
-            }
+    //private static int CompareTAGS(PLCTag<object>? first, PLCTag<object>? second)
+    //{
+    //    if (first != null && second != null)
+    //    {
+    //        int r;
+    //        if (first.GetType() != typeof(PLCTag<object>) & second.GetType() != typeof(PLCTag<object>))
+    //        {
+    //            XTO_AOI t1 = (XTO_AOI<object>)first;
+    //            XTO_AOI t2 = (XTO_AOI<object>)second;
+    //            // Check EquipID first
+    //            r = t1.EquipNum.CompareTo(t2.EquipNum);
+    //            if (r != 0) return r;
+    //        }
 
-            // next check the scope
-            r = first.Path.CompareTo(second.Path);
-            if (r != 0) return r;
+    //        // next check the scope
+    //        r = first.Path.CompareTo(second.Path);
+    //        if (r != 0) return r;
 
-            // check the name
-            return first.Name.CompareTo(second.Name);
-        }
+    //        // check the name
+    //        return first.Name.CompareTo(second.Name);
+    //    }
 
-        if (first == null && second == null)
-        {
-            // We can't compare any properties, so they are essentially equal.
-            return 0;
-        }
+    //    if (first == null && second == null)
+    //    {
+    //        // We can't compare any properties, so they are essentially equal.
+    //        return 0;
+    //    }
 
-        if (first != null)
-        {
-            // Only the first instance is not null, so prefer that.
-            return -1;
-        }
+    //    if (first != null)
+    //    {
+    //        // Only the first instance is not null, so prefer that.
+    //        return -1;
+    //    }
 
-        // Only the second instance is not null, so prefer that.
-        return 1;
-    }
+    //    // Only the second instance is not null, so prefer that.
+    //    return 1;
+    //}
 
 
 
@@ -254,7 +254,7 @@ public class Controller
     /// </summary>
     /// <param name="node">XML node to be checked.</param>
     /// <returns>Null if not a type we care about, or a converted tag.</returns>
-    static public PLCTag? CreateTag(XmlNode node)
+    static public PLCTag CreateTag(XmlNode node)
     {
         string Name, TagType, DataType;
         Name = string.Empty;
@@ -354,7 +354,7 @@ public class Controller
                 tag.ClearCounts();
                 tag.IOs.Clear();
 
-                foreach (Program program in Programs)
+                foreach (Programs program in Programs)
                 {
                     if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
 
@@ -404,7 +404,7 @@ public class Controller
                             break;
 
                         default:
-                            LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");
+                        LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");
                             break;
                     }
                 }
@@ -432,17 +432,26 @@ public class Controller
 
     #region Online Functions
     // ----------------- Online Functions --------------------------------
-    private string ip = "192.168.1.10";
-    private string path = "1,0";
-    private PlcType plcType = PlcType.ControlLogix;
-    private Protocol protocol = Protocol.ab_eip;
+    private static string ip = "192.168.1.10";
+    private static string path = "1,0";
+    private static PlcType plcType = PlcType.ControlLogix;
+    private static Protocol protocol = Protocol.ab_eip;
     private Tag<TagInfoPlcMapper, TagInfo[]>? onlinetags;
     private IEnumerable<int>? uniqueUdtTypeIds;
     private Dictionary<int, string>? udt_id_pairs;
-    private bool connected = false;
+    public static bool Connected = false;
     private static readonly ushort TYPE_IS_STRUCT = 0x8000;
     private static readonly ushort TYPE_IS_SYSTEM = 0x1000;
     private static readonly ushort TYPE_UDT_ID_MASK = 0x0FFF;
+    public static TimeSpan Timeout = TimeSpan.FromSeconds(60);
+
+    public static string connection_string
+    {
+        get
+        {
+            return $"protocol={protocol}&gateway={ip}&path={path}&plc={plcType}";
+        }
+    }
 
     static bool TagIsUdt(TagInfo tag) { return ((tag.Type & TYPE_IS_STRUCT) != 0) && !((tag.Type & TYPE_IS_SYSTEM) != 0); }
 
@@ -496,20 +505,20 @@ public class Controller
             {
                 onlinetags = new Tag<TagInfoPlcMapper, TagInfo[]>()
                 {
-                    Gateway = this.ip,
-                    Path = this.path,
-                    PlcType = this.plcType,
-                    Protocol = this.protocol,
+                    Gateway = ip,
+                    Path = path,
+                    PlcType = plcType,
+                    Protocol = protocol,
                     Name = "@tags"
                 };
                 onlinetags.Read();
                 if (onlinetags.GetStatus() != Status.Ok)
                 {
-                    connected = false;
+                    Connected = false;
                     throw new Exception(($"PLC did not respond."));
                 }
-                connected = true;
-                if (connected) LogHelper.DebugPrint("connected");
+                Connected = true;
+                if (Connected) LogHelper.DebugPrint("connected");
             }
 
             Tag<TagInfoPlcMapper, TagInfo[]> returnvalue = new();
@@ -551,10 +560,10 @@ public class Controller
                 {
                     var udtTag = new Tag<UdtInfoPlcMapper, UdtInfo>()
                     {
-                        Gateway = this.ip,
-                        Path = this.path,
-                        PlcType = this.plcType,
-                        Protocol = this.protocol,
+                        Gateway = ip,
+                        Path = path,
+                        PlcType = plcType,
+                        Protocol = protocol,
                         Name = $"@udt/{udtId}",
                     };
 
@@ -562,14 +571,14 @@ public class Controller
 
                     if (udtTag.GetStatus() != Status.Ok)
                     {
-                        connected = false;
+                        Connected = false;
                         throw new Exception(($"PLC did not respond."));
                     }
 
                     UdtInfo udt = udtTag.Value;
                     udt_id_pairs.Add(udtId, udt.Name);
                 }
-                connected = true;
+                Connected = true;
             }
             return udt_id_pairs;
         }
@@ -577,7 +586,7 @@ public class Controller
 
     private void ClearCaches()
     {
-        connected = false;
+        Connected = false;
         onlinetags = null;
         uniqueUdtTypeIds = null;
         udt_id_pairs = null;
@@ -620,10 +629,10 @@ public class Controller
             {
                 var udtTag = new Tag<UdtInfoPlcMapper, UdtInfo>()
                 {
-                    Gateway = this.ip,
-                    Path = this.path,
-                    PlcType = this.plcType,
-                    Protocol = this.protocol,
+                    Gateway = ip,
+                    Path = path,
+                    PlcType = plcType,
+                    Protocol = protocol,
                     Name = $"@udt/{udtId}",
                 };
                 udtTag.Read();

@@ -1,17 +1,11 @@
-﻿namespace CnE2PLC.PLC.XTO;
+﻿namespace CnE2PLC.PLC;
 
-class AI_CTRL : PLCTag
+class AI_CTRL : AddOnInstructionDataType
 {
     /// <summary>
     /// Analog Input
     /// </summary>
     public AI_CTRL() { }
-
-    /// <summary>Enable Input - System Defined Parameter</summary>
-    public bool? EnableIn {  get; set; }
-
-    /// <summary>Enable Output - System Defined Parameter</summary>
-    public bool? EnableOut { get; set; }
 
     /// <summary>Value in Tick of the Channel Data as defined in the I/O Hardware Configuration</summary>
     public float? Ch_Data_Raw { get; set; }

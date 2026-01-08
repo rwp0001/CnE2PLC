@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 
-namespace CnE2PLC.PLC.XTO;
+namespace CnE2PLC.PLC;
 
 public class AOData : XTO_AOI
 {

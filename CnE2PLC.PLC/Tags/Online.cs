@@ -3,7 +3,7 @@ using libplctag;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace CnE2PLC.PLC;
+namespace CnE2PLC.PLC.Tags;
 
 internal class Online : INotifyPropertyChanged
 {

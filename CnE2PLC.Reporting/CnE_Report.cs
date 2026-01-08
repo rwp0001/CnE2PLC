@@ -1,11 +1,10 @@
 ﻿using CnE2PLC.Helpers;
 using CnE2PLC.PLC;
-using CnE2PLC.PLC.XTO;
 using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
-using System.Data;
+
 
 
 namespace CnE2PLC.Reporting;

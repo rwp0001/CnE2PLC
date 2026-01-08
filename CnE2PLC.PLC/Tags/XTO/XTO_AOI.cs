@@ -3,14 +3,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
 
-
-namespace CnE2PLC.PLC.XTO;
-
+namespace CnE2PLC.PLC;
 
 /// <summary>
 /// Base class for all XTO Add-on Instructions
 /// </summary>
-public class XTO_AOI : PLCTag
+public class XTO_AOI : AddOnInstructionDataType
 {
     [DebuggerStepThrough]
     public XTO_AOI() { }
@@ -90,16 +88,6 @@ public class XTO_AOI : PLCTag
             return rv;
         }
     }
-
-    /// <summary>
-    /// all AOIs have this bit.
-    /// </summary>
-    public bool? EnableIn { get; set; }
-    
-    /// <summary>
-    /// all AOIs have this bit.
-    /// </summary>
-    public bool? EnableOut { get; set; }
 
     /// <summary>
     /// used to indicate if a device is installed.
@@ -322,14 +310,12 @@ public class XTO_AOI : PLCTag
 }
 
 
-public class AlmData : PLCTag
+public class AlmData : AddOnInstructionDataType
 {
     // 80 bytes on PLC
     //static readonly int Length = 80;
 
     //Parameters
-    public bool? EnableIn { get; }
-    public bool? EnableOut { get; }
     public bool? Enable { get; set; }
     public bool? Status { get; set; }
     public bool? Active { get; set; }
@@ -353,14 +339,12 @@ public class AlmData : PLCTag
     public ABTimer? SDTmr { get; set; }
 }
 
-public class BypData : PLCTag
+public class BypData : AddOnInstructionDataType
 {
     // 24 bytes on PLC
     //static readonly int Length = 24;
 
     //Parameters
-    public bool? EnableIn { get; }
-    public bool? EnableOut { get; }
     public bool? TimedReq { get; set; }
     public bool? SupvReq { get; set; }
     public bool? StopReq { get; set; }

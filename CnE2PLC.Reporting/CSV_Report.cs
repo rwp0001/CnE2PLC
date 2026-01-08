@@ -1,7 +1,6 @@
-﻿using CnE2PLC.PLC.XTO;
-using NPOI.SS.Formula.Functions;
+﻿using NPOI.SS.Formula.Functions;
 using System.ComponentModel.DataAnnotations;
-
+using CnE2PLC.PLC;
 namespace CnE2PLC.Reporting;
 
 public static class CSV_Report

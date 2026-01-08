@@ -1,7 +1,7 @@
 ﻿using CnE2PLC.Helpers;
 using System.Xml;
 
-namespace CnE2PLC.PLC.XTO;
+namespace CnE2PLC.PLC;
 
 
 public class Bat_TnkCfgXTO { }

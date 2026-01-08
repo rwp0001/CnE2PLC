@@ -1,6 +1,5 @@
 ﻿using CnE2PLC.Helpers;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace CnE2PLC.PLC;
 

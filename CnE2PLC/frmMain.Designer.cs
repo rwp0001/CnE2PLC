@@ -1,4 +1,4 @@
-﻿using CnE2PLC.PLC.XTO;
+﻿using CnE2PLC.PLC;
 
 namespace CnE2PLC
 {

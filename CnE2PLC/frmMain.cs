@@ -1,6 +1,5 @@
 ﻿using CnE2PLC.Helpers;
 using CnE2PLC.PLC;
-using CnE2PLC.PLC.XTO;
 using CnE2PLC.Properties;
 using CnE2PLC.Reporting;
 using System.ComponentModel;
@@ -140,11 +139,11 @@ public partial class frmMain : Form
     private void TagsDataView_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
         PLCTag? tag = (PLCTag?)dgvTags.Rows[e.RowIndex].DataBoundItem;
-        if (tag == null) return;
+        if (tag is null) return;
 
-        if (tag is XTO_AOI)
+        if (tag is XTO_AOI xtoAoiTag)
         {
-            if (((XTO_AOI)tag).Simmed)
+            if (xtoAoiTag.Simmed)
             {
                 e.CellStyle.BackColor = Color.Red;
                 e.CellStyle.ForeColor = Color.White;
@@ -152,60 +151,60 @@ public partial class frmMain : Form
                 return;
             }
 
-            if (((XTO_AOI)tag).NotInUse || ((XTO_AOI)tag).Placeholder)
+            if (xtoAoiTag.NotInUse || xtoAoiTag.Placeholder)
             {
                 e.CellStyle.BackColor = Color.LightGray;
             }
 
-            if (((XTO_AOI)tag).AOICalls == 0)
+            if (xtoAoiTag.AOICalls == 0)
             {
                 e.CellStyle.BackColor = Color.LightGray;
                 e.CellStyle.Font = new Font(e.CellStyle.Font ?? Control.DefaultFont, FontStyle.Italic);
 
             }
 
-            if (((XTO_AOI)tag).References == 0)
+            if (xtoAoiTag.References == 0)
             {
                 e.CellStyle.ForeColor = Color.DarkCyan;
             }
         }
-        if (tag is AIData)
+        if (tag is AIData aiDataTag)
         {
 
-            if (((AIData)tag).BadPVAlarm == true)
+            if (aiDataTag.BadPVAlarm == true)
             {
                 e.CellStyle.BackColor = Color.Red;
                 e.CellStyle.ForeColor = Color.Cyan;
                 return;
             }
 
-            if (((AIData)tag).HiAlarm == true || ((AIData)tag).LoAlarm == true)
+            if (aiDataTag.HiAlarm == true || aiDataTag.LoAlarm == true)
             {
                 e.CellStyle.ForeColor = Color.DarkOrange;
             }
 
-            if (((AIData)tag).HiHiAlarm == true || ((AIData)tag).LoLoAlarm == true)
+            if (aiDataTag.HiHiAlarm == true || aiDataTag.LoLoAlarm == true)
             {
                 e.CellStyle.ForeColor = Color.Red;
             }
         }
-        if (tag is DIData)
+        if (tag is DIData diDataTag)
         {
-            if (((DIData)tag).Alarm == true)
+            if (diDataTag.Alarm == true)
             {
                 e.CellStyle.ForeColor = Color.Red;
             }
         }
-        if (tag is Intlk_8)
+        if (tag is Intlk_8 intlk8Tag)
         {
-            if (((Intlk_8)tag).BypActive == true)
+            if (intlk8Tag.BypActive == true)
             {
                 e.CellStyle.BackColor = Color.Red;
                 e.CellStyle.ForeColor = Color.White;
                 e.CellStyle.Font = new Font(e.CellStyle.Font ?? Control.DefaultFont, FontStyle.Bold);
                 return;
             }
-            if (((Intlk_8)tag).IntlkOK != true)
+            if (intlk8Tag.IntlkOK != true)
             {
                 e.CellStyle.ForeColor = Color.Red;
             }

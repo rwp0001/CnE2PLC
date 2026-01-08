@@ -1,14 +1,13 @@
 using System.Xml;
 using CnE2PLC.Helpers;
-using CnE2PLC.PLC.XTO;
 
 namespace CnE2PLC.PLC;
 
-public class Program
+public class Programs
 {
-    public Program() { }
+    public Programs() { }
 
-    public Program(XmlNode node) 
+    public Programs(XmlNode node) 
     {
         try
         {
@@ -31,10 +30,13 @@ public class Program
                 switch (node2.Name)
                 {
                     case "Tags":
-                        foreach (XTO_AOI tag in Controller.ProcessTags(node2))
+                        foreach (PLCTag tag in Controller.ProcessTags(node2))
                         {
-                            tag.Path = Name;
-                            LocalTags.Add(tag);
+                            if (tag is XTO_AOI xtoAoiTag)
+                            {
+                                xtoAoiTag.Path = Name;
+                                LocalTags.Add(xtoAoiTag);
+                            }
                         }
                         break;
 

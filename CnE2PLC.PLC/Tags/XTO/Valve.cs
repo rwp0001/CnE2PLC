@@ -1,7 +1,6 @@
 ﻿using System.Xml;
 
-namespace CnE2PLC.PLC.XTO;
-
+namespace CnE2PLC.PLC;
 
 public class Valve : XTO_AOI
 {

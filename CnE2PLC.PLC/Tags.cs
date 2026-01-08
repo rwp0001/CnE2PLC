@@ -1,5 +1,5 @@
 ﻿using CnE2PLC.Helpers;
-using CnE2PLC.PLC.XTO;
+using libplctag.NativeImport;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Xml;
@@ -9,7 +9,7 @@ namespace CnE2PLC.PLC;
 /// <summary>
 /// Base class for a Logix Tag.
 /// </summary>
-public class PLCTag
+public abstract class PLCTag
 {
     [DebuggerStepThrough]
     public PLCTag() { }
@@ -52,6 +52,37 @@ public class PLCTag
             GetDimensions(node.GetNamedAttributeItemInnerText("Dimensions"));
             Description = node.GetChildNodeInnerText("Description", true); // Tag Comments
 
+            //foreach (XmlNode item in node.ChildNodes)
+            //{
+            //    if (item.Name == "Data")
+            //    {
+            //        try
+            //        {
+
+            //            if (item.GetNamedAttributeItemValue("Format") == "Decorated")
+            //            {
+            //                foreach (XmlNode DataValue in item.ChildNodes)
+            //                {
+            //                    SetProperty(
+            //                        "Value",
+            //                        DataValue.GetNamedAttributeItemValue("DataType").Trim(),
+            //                        DataValue.GetNamedAttributeItemValue("Value").Trim()
+            //                        );
+            //                }
+            //                continue;
+            //            }
+
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            LogHelper.DebugPrint($"ERROR: PLC_Base: Import Child Node {node.Name} Exception: {ex.Message}");
+            //        }
+            //    }
+            //}
+
+
+
+
         }
         catch (Exception ex)
         {
@@ -59,7 +90,14 @@ public class PLCTag
         }
     }
 
-
+    ~PLCTag() 
+    {
+        if (_TagID != 0)
+        {
+            // Destroy the tag
+            plctag.plc_tag_destroy(_TagID);
+        }
+    }
 
     #region Public Properties
     /// <summary>
@@ -74,12 +112,12 @@ public class PLCTag
     {
         get
         {
-            if (PathValue == string.Empty) return Controller.ControllerScopeName;
-            return PathValue;
+            if (field == string.Empty) return Controller.ControllerScopeName;
+            return field;
         }
         set
         {
-            PathValue = value;
+            field = value;
         }
     }
 
@@ -94,19 +132,19 @@ public class PLCTag
     {
         get
         {
-            return DescriptionValue;
+            return field;
         }
         set
         {
             value = CleanString(value);
             if (value.Length > 1)
             {
-                DescriptionValue = value;
+                field = value;
             }
         }
     }
 
-    public int[]? Dimension { get; set; } = { 0, 0, 0 };
+    public int[] Dimension { get; set; } = { 0, 0, 0 };
 
     /// <summary>
     /// Base or Alias
@@ -120,6 +158,8 @@ public class PLCTag
     public TagAccess? ExternalAccess { get; set; }
 
     public TagClasses? TagClass { get; set; }
+
+    
 
     /// <summary>
     /// Is this tag modifable?
@@ -141,71 +181,11 @@ public class PLCTag
     /// <summary>
     /// Used to store the Type ID from the online PLC.
     /// </summary>
-    static int? TypeID {  get; set; }
+    public static int? TypeID { get; set; } = 0;
 
     public override string ToString()
     {
-        string c = $"Name: {Name}\n";
-        c += $"PLC Tag Description: {Description}\n";
-        c += $"PLC DataType: {DataType}\n";
-        return c;
-    }
-
-    /// <summary>
-    /// How is a tag used.
-    /// </summary>
-    public enum TagUsages
-    {
-        Local,
-        Input,
-        Output,
-        InOut,
-        Public
-    }
-
-    /// <summary>
-    /// Types of tags.
-    /// </summary>
-    public enum TagTypes
-    {
-        Base,
-        Alias,
-        Produced,
-        Consumed
-    }
-
-    /// <summary>
-    /// How to display the data.
-    /// </summary>
-    public enum TagRadix
-    {
-        Decimal,
-        Float,
-        Hex,
-        ASCII,
-        Octal,
-        Exponential,
-        DateTime,
-        DateTimeNS
-    }
-
-    /// <summary>
-    /// Used to select the access allowed to the tag from external applications such as HMIs. 
-    /// </summary>
-    public enum TagAccess
-    {
-        ReadWrite,
-        ReadOnly,
-        None
-    }
-
-    /// <summary>
-    /// Indicates whether the tag is a Standard tag or a Safety tag.
-    /// </summary>
-    public enum TagClasses
-    {
-        Standard,
-        Safety
+        return  $"Name: {Name} DataType: {DataType} Description: {Description}";
     }
 
     /// <summary>
@@ -243,14 +223,112 @@ public class PLCTag
         return false;
     }
 
+    // used on udts for bool packing
+    public bool Hidden { get; set; } = false;
+
+    /*
+    DataType        DataType    
+    Type            Code
+    Name            (hex)   Description                         Range
+    BOOL*           C1      Boolean                             0 = FALSE; 1 = TRUE
+    SINT            C2      Short Integer                       -128 SINT 127
+    INT             C3      Integer                             -32768 INT 32767
+    DINT            C4      Double Integer                      -231 DINT(231 – 1)
+    LINT            C5      Long Integer                        -263 LINT(263 – 1)
+    USINT           C6      Unsigned Short Integer              0 USINT 255
+    UINT            C7      Unsigned Integer                    0 UINT 65536
+    UDINT           C8      Unsigned Double Integer             0 UDINT(232 – 1)
+    ULINT           C9      Unsigned Long Integer               0 ULINT(264 – 1)
+    REAL            CA      Single Precision Float              See IEEE 754
+    LREAL           CB      Double Precision Float              See IEEE 754
+    BYTE            D1      bit string – 8 bits                 N/A
+    WORD            D2      bit string – 16 bits                N/A
+    DWORD           D3      bit string – 32 bits                N/A
+    LWORD           D4      bit string – 64 bits                N/A
+    SHORT STRING    DA      { length, 1-byte characters[n]}     N/A
+    * BOOL data type is defined by the CIP standard to be an 8-bit unsigned integer with enumeration of 0 for False and 1 for True.
+    */
+
+
+
+
     #endregion
 
     #region Private Values
-    protected string NameValue = string.Empty;
-    protected string DataTypeValue = string.Empty;
-    protected string PathValue = string.Empty;
-    protected string DescriptionValue = string.Empty;
+
+
+
     #endregion
+
+    #region Online 
+
+    protected object _data { get; set; }
+
+    private string ConnectionString
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(field))
+            {
+                field = $"{Controller.connection_string}&elem_ssize={_size}&elem_count=1&&name={Name}";
+            }
+            return field;
+        }
+    }
+
+    protected int _TagID
+    {
+        get
+        {
+
+            if (field != 0) return field;
+
+            try
+            {
+                int timeOut = (int)Controller.Timeout.TotalMilliseconds;
+
+                // Create the tag
+                LogHelper.DebugPrint($"INFO: Connecting to tag: {Name}");
+                field = plctag.plc_tag_create(ConnectionString, timeOut);
+                int rc = plctag.plc_tag_status(_TagID);
+                if (rc != 0) throw new Exception($"{plctag.plc_tag_decode_error(rc)}");
+            }
+            catch (Exception ex)
+            {
+                field = 0;
+                string s = $"ERROR: Failed to crate tag {Name} with error: {ex.Message}";
+                LogHelper.DebugPrint(s);
+            }
+
+            return field;
+
+        }
+    }
+    protected int _size = 0;
+
+    protected int _offset = 0;
+
+    public int PackingBytes { get; set; } = 0;
+
+    public virtual void Get(){
+        // Read the tag to the PLC.
+        LogHelper.DebugPrint($"INFO: Writing tag: {Name}");
+        int timeOut = (int)Controller.Timeout.TotalMilliseconds;
+        int rc = plctag.plc_tag_read(_TagID, timeOut);
+        if (rc != 0) throw new Exception($"Failed to write tag {Name} with code {rc}: {plctag.plc_tag_decode_error(rc)}");
+    }
+
+    public virtual void Set()
+    {
+        // Write the tag to the PLC.
+        LogHelper.DebugPrint($"INFO: Writing tag: {Name}");
+        int timeOut = (int)Controller.Timeout.TotalMilliseconds;
+        int rc = plctag.plc_tag_write(_TagID, timeOut);
+        if (rc != 0) throw new Exception($"Failed to write tag {Name} with code {rc}: {plctag.plc_tag_decode_error(rc)}");
+    }
+
+        #endregion
+
 
     /// <summary>
     /// Used to set the property of class without cast to the class.
@@ -259,7 +337,7 @@ public class PLCTag
     /// <param name="DLM_DataType">Property Data Type</param>
     /// <param name="DLM_Value">Property Value</param>
     /// <exception cref="Exception"></exception>
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     protected void SetProperty(string DLM_Name, string DLM_DataType, string DLM_Value)
     {
         try
@@ -304,7 +382,7 @@ public class PLCTag
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"ERROR: SetProperty: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {ex.Message}");
+            LogHelper.DebugPrint($"ERROR: PLCTag: SetProperty: Failed to set property {DLM_Name} to value {DLM_Value} with ex: {ex.Message}");
         }
 
 
@@ -329,10 +407,6 @@ public class PLCTag
                     r = t1.EquipNum.CompareTo(t2.EquipNum);
                     if (r != 0) return r;
                 }
-
-
-
-
 
                 // next check the scope
                 r = first.Path.CompareTo(second.Path);
@@ -359,139 +433,74 @@ public class PLCTag
         }
     }
 
+
+
+
 }
 
-public class PLC_Base : PLCTag
+#region Enums
+
+/// <summary>
+/// How is a tag used.
+/// </summary>
+public enum TagUsages
 {
-    public PLC_Base() { }
-    public PLC_Base(XmlNode node) : base(node)
-    {
-        try
-        {
-            foreach (XmlNode item in node.ChildNodes)
-            {
-                if (item.Name == "Data")
-                {
-                    try
-                    {
-
-                        if (item.GetNamedAttributeItemValue("Format") == "Decorated")
-                        {
-                            foreach (XmlNode DataValue in item.ChildNodes)
-                            {
-                                SetProperty(
-                                    "Value",
-                                    DataValue.GetNamedAttributeItemValue("DataType").Trim(),
-                                    DataValue.GetNamedAttributeItemValue("Value").Trim()
-                                    );
-                            }
-                            continue;
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.DebugPrint($"ERROR: PLC_Base: Import Child Node {node.Name} Exception: {ex.Message}");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            LogHelper.DebugPrint($"ERROR: PLC_Base: Ceate Tag {node.Name} failed. Exception: {ex.Message}");
-        }
-    }
+    Local,
+    Input,
+    Output,
+    InOut,
+    Public
 }
 
-public class PLC_Bool : PLC_Base
+/// <summary>
+/// Types of tags.
+/// </summary>
+public enum TagTypes
 {
-    public PLC_Bool() { DataType = "BOOL"; }
-    public PLC_Bool(XmlNode node) : base(node) { DataType = "BOOL"; }
-    public bool? Value { get; set; }
-    public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
+    Base,
+    Alias,
+    Produced,
+    Consumed
 }
-public class PLC_Int : PLC_Base
+
+/// <summary>
+/// How to display the data.
+/// </summary>
+public enum TagRadix
 {
-    public PLC_Int() { DataType = "INT"; }
-    public PLC_Int(XmlNode node) : base(node) { DataType = "INT"; }
-    public int? Value { get; set; }
-    public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
+    Decimal,
+    Float,
+    Hex,
+    ASCII,
+    Octal,
+    Exponential,
+    DateTime,
+    DateTimeNS
 }
-public class PLC_Real : PLC_Base
+
+/// <summary>
+/// Used to select the access allowed to the tag from external applications such as HMIs. 
+/// </summary>
+public enum TagAccess
 {
-    public PLC_Real() { DataType = "REAL"; }
-    public PLC_Real(XmlNode node) : base(node) { DataType = "REAL"; }
-    public float? Value { get; set; }
-    public override string ToString() { return $"{base.ToString()}Value: {Value}\n"; }
+    ReadWrite,
+    ReadOnly,
+    None
 }
-public class ABTimer : PLC_Base
+
+/// <summary>
+/// Indicates whether the tag is a Standard tag or a Safety tag.
+/// </summary>
+public enum TagClasses
 {
-    // Standard AB Timer Data Type
-    // 12 bytes on PLC
-    public Int32 PRE;
-    public Int32 ACC;
-    public bool EN;
-    public bool TT;
-    public bool DN;
-
+    Standard,
+    Safety
 }
-public class ABString : PLC_Base
+
+public enum FamilyTypes
 {
-    private static int Max_Length = 82;
-    public Int32 LEN = 0;
-    public byte[] DATA;
-
-    public ABString()
-    {
-        DataType = "STRING";
-        DATA = new byte[Max_Length];
-    }
-    public ABString(string Input, int Length = 82)
-    {
-        DataType = "STRING";
-        SetLength(Length);
-        DATA = new byte[Max_Length];
-        Set(Input);
-    }
-    public ABString(int Length)
-    {
-        DataType = "STRING";
-        SetLength(Length);
-        DATA = new byte[Max_Length];
-    }
-    public ABString(XmlNode node)
-    {
-        DataType = "STRING";
-        DATA = new byte[Max_Length];
-        throw new NotImplementedException();
-
-
-    }
-
-    public void Set(string Input)
-    {
-        DATA = new byte[Max_Length];
-        if (Input.Length > Max_Length) Input = Input.Substring(0, Max_Length);
-        for (int i = 0; i < Input.Length; i++) DATA[i] = (byte)Input[i];
-        LEN = Input.Length;
-        if (LEN > Max_Length) LEN = Max_Length;
-    }
-    public void SetLength(int Input)
-    {
-        if (Input < 0) throw new Exception("Must be greater then zero.");
-        string Old_Value = ToString();
-        Max_Length = Input;
-        Set(Old_Value);
-    }
-    public override string ToString()
-    {
-        string value = "";
-        for (int i = 0; i < LEN; i++)
-        {
-            if (DATA[i] == 0) break;
-            value.Append((char)DATA[i]);
-        }
-        return value;
-    }
-
+    NoFamily,
+    StringFamily
 }
+
+#endregion
