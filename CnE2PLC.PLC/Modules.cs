@@ -13,7 +13,8 @@ public class Module
         {
             Name = node.GetNamedAttributeItemInnerText("Name");
             CatalogNumber = node.GetNamedAttributeItemInnerText("CatalogNumber");
-            Description = node.GetNamedAttributeItemInnerText("Description");
+            var descNode = node.SelectSingleNode("Description");
+            Description = descNode?.InnerText ?? string.Empty;
             ParentModule = node.GetNamedAttributeItemInnerText("ParentModule");
             
             Vendor = node.GetNamedAttributeItemInnerTextAsInt("Vendor") ?? 0;

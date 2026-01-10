@@ -46,8 +46,13 @@ public class AddOnInstructionDefinition
         EditedDate = DateTime.TryParse(node.GetNamedAttributeItemInnerText("EditedDate"), out DateTime editedDate) ? editedDate : DateTime.MinValue;
         EditedBy = node.GetNamedAttributeItemInnerText("EditedBy");
         SoftwareRevision = node.GetNamedAttributeItemInnerText("SoftwareRevision");
-        Description = node.GetNamedAttributeItemInnerText("Description");
-        RevisionNote = node.GetNamedAttributeItemInnerText("RevisionNote");
+
+        var descNode = node.SelectSingleNode("Description");
+        Description = descNode?.InnerText ?? string.Empty;
+
+        var revNode = node.SelectSingleNode("RevisionNote");
+        RevisionNote = revNode?.InnerText ?? string.Empty;
+
         foreach (XmlNode child in node.ChildNodes)
         {
             if (child.Name == "LocalTags")

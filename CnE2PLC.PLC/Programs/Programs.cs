@@ -21,6 +21,10 @@ public class Programs
             // optional
             MainRoutineName = node.GetNamedAttributeItemValue("MainRoutineName");
 
+            var descNode = node.SelectSingleNode("Description");
+            Description = descNode?.InnerText ?? string.Empty;
+
+
             LocalTags = new();
             Routines = new();
 
@@ -90,6 +94,7 @@ public class Programs
 
     #region Public Properties
     public string? Name {  get; set; }
+    public string? Description { get; set; }
     public string? TestEdits { get; set; }
     public string? MainRoutineName { get; set; }
     public string? Disabled { get; set; }

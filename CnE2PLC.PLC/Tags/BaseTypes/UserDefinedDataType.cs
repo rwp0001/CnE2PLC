@@ -54,9 +54,11 @@ public class DataType
         try
         {
             Name = node.GetNamedAttributeItemInnerText("Name");
-            Description = node.GetNamedAttributeItemInnerText("Description");
             Family = Enum.TryParse(node.GetNamedAttributeItemInnerText("Family"), out FamilyTypes fam) ? fam : FamilyTypes.NoFamily;
             Class = Enum.TryParse(node.GetNamedAttributeItemInnerText("Class"), out ClassTypes cls) ? cls : ClassTypes.User;
+
+            var descNode = node.SelectSingleNode("Description");
+            Description = descNode?.InnerText ?? string.Empty;
 
             XmlNode Membersnode = node?.SelectSingleNode("Members") ?? XMLHelper.CreateGenericXmlNode();
 

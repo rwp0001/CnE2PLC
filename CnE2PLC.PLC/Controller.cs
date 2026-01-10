@@ -33,6 +33,9 @@ public class Controller
             LastModifiedDate = node.GetNameAttributeItemInnerTextAsDateTime("LastModifiedDate");
             CommPath = node.GetNamedAttributeItemInnerText("CommPath");
 
+            var descNode = node.SelectSingleNode("Description");
+            Description = descNode?.InnerText ?? string.Empty;
+
             // Collections
             XmlNode dataTypes = node?.SelectSingleNode("DataTypes") ?? XMLHelper.CreateGenericXmlNode();
             XmlNode modules = node?.SelectSingleNode("Modules") ?? XMLHelper.CreateGenericXmlNode();
