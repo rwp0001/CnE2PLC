@@ -66,5 +66,12 @@ public class DOData : XTO_AOI
         }
     }
 
-    public override void ClearCounts() { }
+    public int Value_Count { get; set; }
+    public int Raw_Count { get; set; }
+
+    public override void ClearCounts() 
+    {
+        Value_Count = 0;
+        Raw_Count = 0;
+    }
 }

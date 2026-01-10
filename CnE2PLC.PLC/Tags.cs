@@ -112,7 +112,7 @@ public abstract class PLCTag
     {
         get
         {
-            if (field == string.Empty) return Controller.ControllerScopeName;
+            if (field == null ) return Controller.ControllerScopeName;
             return field;
         }
         set

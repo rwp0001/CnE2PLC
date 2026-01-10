@@ -349,71 +349,71 @@ public class Controller
         // count the number of time a tag is used.
         foreach (XTO_AOI tag in AOI_Tags)
         {
-            //try
-            //{
-                tag.ClearCounts();
-                tag.IOs.Clear();
 
-                foreach (Programs program in Programs)
+            tag.ClearCounts();
+            tag.IOs.Clear();
+
+            foreach (Programs program in Programs)
+            {
+                if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
+
+                int calls, refs;
+                calls = program.RefCount($"{tag.DataType}({tag.Name},");
+                //refs = program.RefCount($"{tag.Name}.");
+                tag.AOICalls += calls;
+                //tag.References += refs - calls;
+
+                // record the io points found.
+                if (calls != 0) tag.IOs.AddRange(program.GetIO($"{tag.DataType}({tag.Name}"));
+
+                switch (tag.DataType)
                 {
-                    if (tag.Path != ControllerScopeName & tag.Path != program.Name) continue;
+                    case "AIData":
+                    case "AIData_FIMS":
+                        ((AIData)tag).HSD_Count += program.RefCount($"{tag.Name}.HSD");
+                        ((AIData)tag).LSD_Count += program.RefCount($"{tag.Name}.LSD");
+                        ((AIData)tag).HiHi_Count += program.RefCount($"{tag.Name}.HiHiAlarm");
+                        ((AIData)tag).Hi_Count += program.RefCount($"{tag.Name}.HiAlarm");
+                        ((AIData)tag).Lo_Count += program.RefCount($"{tag.Name}.LoAlarm");
+                        ((AIData)tag).LoLo_Count += program.RefCount($"{tag.Name}.LoLoAlarm");
+                        ((AIData)tag).PV_Count += program.RefCount($"{tag.Name}.PV");
+                        ((AIData)tag).BadPV_Count += program.RefCount($"{tag.Name}.BadPVAlarm");
+                        ((AIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                        break;
 
-                    int c, r;
-                    c = program.RefCount($"{tag.DataType}({tag.Name},");
-                    r = program.RefCount($"{tag.Name}.");
-                    tag.AOICalls += c;
-                    tag.References += r - c;
+                    case "DIData":
+                    case "DIData_FIMS":
+                        ((DIData)tag).SD_Count += program.RefCount($"{tag.Name}.Shutdown");
+                        ((DIData)tag).Val_Count += program.RefCount($"{tag.Name}.Value");
+                        ((DIData)tag).Alm_Count += program.RefCount($"{tag.Name}.Alarm");
+                        ((DIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                        break;
 
-                    // record the io points found.
-                    if (c != 0) tag.IOs.AddRange(program.GetIO($"{tag.DataType}({tag.Name}"));
+                    case "TwoPositionValveV2":
+                    case "TwoPositionValve":
+                        ((TwoPositionValveV2)tag).Open_Count += program.RefCount($"{tag.Name}.Open");
+                        ((TwoPositionValveV2)tag).Close_Count += program.RefCount($"{tag.Name}.Close");
+                        ((TwoPositionValveV2)tag).FTO_Count += program.RefCount($"{tag.Name}.FailedToOpen");
+                        ((TwoPositionValveV2)tag).FTC_Count += program.RefCount($"{tag.Name}.FailedToClose");
+                        break;
 
-                    switch (tag.DataType)
-                    {
-                        case "AIData":
-                        case "AIData_FIMS":
-                            ((AIData)tag).HSD_Count += program.RefCount($"{tag.Name}.HSD");
-                            ((AIData)tag).LSD_Count += program.RefCount($"{tag.Name}.LSD");
-                            ((AIData)tag).HiHi_Count += program.RefCount($"{tag.Name}.HiHiAlarm");
-                            ((AIData)tag).Hi_Count += program.RefCount($"{tag.Name}.HiAlarm");
-                            ((AIData)tag).Lo_Count += program.RefCount($"{tag.Name}.LoAlarm");
-                            ((AIData)tag).LoLo_Count += program.RefCount($"{tag.Name}.LoLoAlarm");
-                            ((AIData)tag).PV_Count += program.RefCount($"{tag.Name}.PV");
-                            ((AIData)tag).BadPV_Count += program.RefCount($"{tag.Name}.BadPVAlarm");
-                            ((AIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
-                            break;
+                    case "ValveAnalog":
+                        ((ValveAnalog)tag).Pos_Count += program.RefCount($"{tag.Name}.Pos");
+                        ((ValveAnalog)tag).PosFail_Count += program.RefCount($"{tag.Name}.PosFail");
+                        break;
 
-                        case "DIData":
-                        case "DIData_FIMS":
-                            ((DIData)tag).SD_Count += program.RefCount($"{tag.Name}.Shutdown");
-                            ((DIData)tag).Val_Count += program.RefCount($"{tag.Name}.Value");
-                            ((DIData)tag).Alm_Count += program.RefCount($"{tag.Name}.Alarm");
-                            ((DIData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
-                            break;
+                    case "DOData":
+                        ((DOData)tag).Value_Count += program.RefCount($"{tag.Name}.Output");
+                        ((DOData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                        break;
 
-                        case "TwoPositionValveV2":
-                        case "TwoPositionValve":
-                            ((TwoPositionValveV2)tag).Open_Count += program.RefCount($"{tag.Name}.Open");
-                            ((TwoPositionValveV2)tag).Close_Count += program.RefCount($"{tag.Name}.Close");
-                            ((TwoPositionValveV2)tag).FTO_Count += program.RefCount($"{tag.Name}.FailedToOpen");
-                            ((TwoPositionValveV2)tag).FTC_Count += program.RefCount($"{tag.Name}.FailedToClose");
-                            break;
 
-                        case "ValveAnalog":
-                            ((ValveAnalog)tag).Pos_Count += program.RefCount($"{tag.Name}.Pos");
-                            ((ValveAnalog)tag).PosFail_Count += program.RefCount($"{tag.Name}.PosFail");
-                            break;
-
-                        default:
-                        LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");
-                            break;
-                    }
+                    default:
+                        //LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");
+                        break;
                 }
+            }
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    LogHelper.DebugPrint($"ERROR: UpdateCounts: Failed updating {tag.Name} with {ex.Message}");
-            //}
         }
 
         DateTime End = DateTime.Now;

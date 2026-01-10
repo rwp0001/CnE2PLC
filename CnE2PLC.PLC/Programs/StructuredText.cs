@@ -34,7 +34,7 @@ public class ST_Routine : Routine
     public override int RefCount(string tag)
     {
         int count = 0;
-        foreach (Line line in Lines) count += line.TagCount(tag);
+        foreach (Line line in Lines) count += line.RefCount(tag);
         return count;
     }
 
@@ -71,7 +71,7 @@ public class Line
 
     public string Text { get; set; } = string.Empty;
 
-    public int TagCount(string tag) 
+    public int RefCount(string tag) 
     { 
         return Regex.Matches(Text, Regex.Escape(tag)).Count; 
     }

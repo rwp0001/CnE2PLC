@@ -228,7 +228,7 @@ public class Transition : ChartElement
     public override int RefCount(string tag) 
     {
         int count = 0;
-        foreach (Line line in Conditions) count += line.TagCount(tag);
+        foreach (Line line in Conditions) count += line.RefCount(tag);
         return count;
     }
 

@@ -69,14 +69,8 @@ public class Sheet
         try
         {
 
-            //Description = node.Attributes.GetNamedItem("Description").Value;
-            string s = node.GetNamedAttributeItemValue("Number");
-            if (s != null)
-            {
-                int n;
-                int.TryParse(s, out n);
-                Number = n;
-            }
+            Description = node.GetNamedAttributeItemInnerText("Description");
+            Number = node.GetNamedAttributeItemInnerTextAsInt("Number") ?? -1;
 
             foreach (XmlNode element in node.ChildNodes)
             {
@@ -130,25 +124,35 @@ public class Sheet
 
     public string Name { get; set; } = string.Empty;
 
-
-
     public int RefCount(string tag)
     {
         int r = 0;
         if (tag.Contains('(')) // aoi count
         {
+            tag = tag.Substring(0,tag.Length-1);
             string[] s = tag.Split('(');
             foreach (SheetElement element in Elements)
             {
                 if (element is not AddOnInstruction) continue;
-                if ( s[0] == ((AddOnInstruction)element).Operand & s[1] == ((AddOnInstruction)element).Name ) r++;
+                if ( s[1] == ((AddOnInstruction)element).Operand & s[0] == ((AddOnInstruction)element).Name ) r++;
             }
         } 
         else // ref count
         {
             foreach (SheetElement element in Elements)
             {
-                r += element.RefCount(tag);
+                switch(element)
+                {
+                    case IRef iref:
+                        if (iref.Operand == tag) r++;
+                        break;
+                    case ORef oref:
+                        if (oref.Operand == tag) r++;
+                        break;
+                    case Block block:
+                        if (block.Operand == tag) r++;
+                        break;
+                }
             }
         }
         return r;
@@ -178,28 +182,10 @@ public class SheetElement
     {
         try
         {
-            string s = node.GetNamedAttributeItemValue("ID");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                ID = n;
-            }
-            s = node.GetNamedAttributeItemValue("X");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                X = n;
-            }
+            ID = node.GetNamedAttributeItemInnerTextAsInt("ID")?? 0;
+            X = node.GetNamedAttributeItemInnerTextAsInt("X")?? 0;
+            Y = node.GetNamedAttributeItemInnerTextAsInt("Y")?? 0;
 
-            s = node.GetNamedAttributeItemValue("Y");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                Y = n;
-            }
         }
         catch (Exception ex)
         {
@@ -216,11 +202,6 @@ public class SheetElement
 
     #endregion
 
-    public virtual int RefCount(string tag) 
-    { 
-        throw new NotImplementedException(); 
-    }
-
     public override string ToString() { return $"ID: {ID} at  X:{X}, Y:{Y}"; }
 
 }
@@ -231,9 +212,8 @@ public class IRef : SheetElement
     {
         try
         {
-            Operand = node.GetNamedAttributeItemValue("Operand");
-            string s = node.GetNamedAttributeItemValue("HideDesc");
-            HideDesc = s[0] == 'f' ? false : true;
+            Operand = node.GetNamedAttributeItemInnerText("Operand");
+            HideDesc = node.GetNamedAttributeItemInnerTextAsBool("HideDesc") ?? false;
         }
         catch (Exception ex)
         {
@@ -242,17 +222,8 @@ public class IRef : SheetElement
 
     }
 
-
-
     public string Operand { get; set; } = string.Empty;
     public bool HideDesc { get; set; } = false;
-
-
-
-    public override int RefCount(string tag) 
-    { 
-        return Operand.Contains(tag) ? 1 : 0; 
-    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
 }
@@ -265,8 +236,7 @@ public class ORef : SheetElement
         try
         {
             Operand = node.GetNamedAttributeItemValue("Operand");
-            string s = node.GetNamedAttributeItemValue("HideDesc");
-            HideDesc = s[0] == 'f' ? false : true;
+            HideDesc = node.GetNamedAttributeItemInnerTextAsBool("HideDesc") ?? false;
         }
         catch (Exception ex)
         {
@@ -280,13 +250,6 @@ public class ORef : SheetElement
     public string Operand { get; set; } = string.Empty ;
     public bool HideDesc { get; set; } = false;
 
-
-
-    public override int RefCount(string tag)
-    {
-        return Operand.Contains(tag) ? 1 : 0;
-    }
-
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand}"; }
 }
 
@@ -299,29 +262,18 @@ public class Block : SheetElement
             Type = node.GetNamedAttributeItemValue("Type");
             Operand = node.GetNamedAttributeItemValue("Operand");
             VisiblePins = node.GetNamedAttributeItemValue("VisiblePins");
-            string s = node.GetNamedAttributeItemValue("HideDesc");
-            HideDesc = s[0] == 'f' ? false : true;
+            HideDesc = node.GetNamedAttributeItemInnerTextAsBool("HideDesc") ?? false;
         }
         catch (Exception ex)
         {
             LogHelper.DebugPrint($"ERROR: Block: Import node {node.Name} failed with {ex.Message}");
         }
-
     }
-
-
 
     public string Type { get; set; } = string.Empty;
     public string Operand { get; set; } = string.Empty;
     public string VisiblePins { get; set; } = string.Empty;
     public bool HideDesc { get; set; } = false;
-
-
-
-    public override int RefCount(string tag)
-    {
-        return Operand.Contains(tag) ? 1 : 0;
-    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Type: {Type}"; }
 }
@@ -332,62 +284,21 @@ public class Wire : SheetElement
     {
         try
         {
-            string s;
-
-            s = node.GetNamedAttributeItemValue("ToID");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                ToID = n;
-            }
-
-            s = node.GetNamedAttributeItemValue("FromID");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                FromID = n;
-            }
-
-            try { 
-                ToParam = node.GetNamedAttributeItemValue("ToParam"); 
-            } 
-            catch (Exception ex )
-            { 
-                LogHelper.DebugPrint($"ERROR: Wire: ToParam: Error: {ex.Message}"); 
-            }
-
-            try { 
-                FromParam = node.GetNamedAttributeItemValue("FromParam"); 
-            } 
-            catch (Exception ex) 
-            { 
-                LogHelper.DebugPrint($"ERROR: Wire: FromParam: Error: {ex.Message}"); 
-            }
+            ToID = node.GetNamedAttributeItemInnerTextAsInt("ToID") ?? -1;
+            FromID = node.GetNamedAttributeItemInnerTextAsInt("FromID") ?? -1;
+            ToParam = node.GetNamedAttributeItemInnerText("ToParam");
+            FromParam = node.GetNamedAttributeItemInnerText("FromParam");
         }
         catch (Exception ex)
         {
             LogHelper.DebugPrint($"ERROR: Wire: Import node {node.Name} failed with {ex.Message}");
         }
-
-
-
     }
-
-
 
     public int ToID { get; set; } = -1;
     public int FromID { get; set; } = -1;
     public string ToParam { get; set; } = string.Empty;
     public string FromParam { get; set; } = string.Empty;
-
-
-
-    public override int RefCount(string tag)
-    { 
-        return 0; 
-    }
 
     public override string ToString()
     {
@@ -409,21 +320,11 @@ public class AddOnInstruction : SheetElement
         {
             LogHelper.DebugPrint($"ERROR: AddOnInstruction: Import node {node.Name} Failed with {ex.Message}");
         }
-
     }
-
-
 
     public string Name { get; set; } = string.Empty;
     public string Operand { get; set; } = string.Empty;
     public string VisiblePins { get; set; } = string.Empty;
-
-
-
-    public override int RefCount(string tag)
-    {
-        return Operand.Contains(tag) ? 1 : 0;
-    }
 
     public override string ToString() { return $"{base.ToString()} - Operand: {Operand} Name: {Name}"; }
 }
@@ -434,34 +335,17 @@ public class FBD_TextBox : SheetElement
     {
         try
         {
-            string? s;
-            s = node.GetNamedAttributeItemValue("Width");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                Width = n;
-            }
-            Text = node.GetNamedAttributeItemValue("Text");
+            Width = node.GetNamedAttributeItemInnerTextAsInt("Width") ?? -1;
+            Text = node.GetNamedAttributeItemInnerText("Text");
         }
         catch (Exception ex)
         {
             LogHelper.DebugPrint($"ERROR: FBD_TextBox: Import node {node.Name} Failed with {ex.Message}");
         }
-
     }
-
-
 
     public int Width { get; set; } = -1;
     public string Text { get; set; } = string.Empty;
-
-
-
-    public override int RefCount(string tag) 
-    { 
-        return 0; 
-    }
 
     public override string ToString() { return $"{base.ToString()} - Text: {Text}"; }
 
@@ -473,41 +357,17 @@ public class Attachment : SheetElement
     {
         try
         {
-            string? s;
-            s = node.GetNamedAttributeItemValue("ToID");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                ToID = n;
-            }
-
-            s = node.GetNamedAttributeItemValue("FromID");
-            if (s != null)
-            {
-                int n = 0;
-                int.TryParse(s, out n);
-                FromID = n;
-            }
+            ToID = node.GetNamedAttributeItemInnerTextAsInt("ToID") ?? -1;
+            FromID = node.GetNamedAttributeItemInnerTextAsInt("FromID") ?? -1;
         }
         catch (Exception ex)
         {
             LogHelper.DebugPrint($"ERROR: Attachment: Import node {node.Name} Failed with {ex.Message}");
         }
-
     }
-
-
 
     public int ToID { get; set; } = -1;
     public int FromID { get; set; } = -1;
-
-
-
-    public override int RefCount(string tag) 
-    { 
-        return 0; 
-    }
 
     public override string ToString()
     {
