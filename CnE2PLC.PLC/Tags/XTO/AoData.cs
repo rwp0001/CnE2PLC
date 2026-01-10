@@ -83,5 +83,14 @@ public class AOData : XTO_AOI
     // Local Tags
     public string? Cfg_EU { get; set; }
 
-    public override void ClearCounts() {}
+    public int Raw_Count { get; set; }
+    public int CV_Count { get; set; }
+
+
+
+    public override void ClearCounts() 
+    {
+        Raw_Count = 0;
+        CV_Count = 0;
+    }
 }

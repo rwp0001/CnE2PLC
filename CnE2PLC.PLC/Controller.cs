@@ -359,9 +359,9 @@ public class Controller
 
                 int calls, refs;
                 calls = program.RefCount($"{tag.DataType}({tag.Name},");
-                //refs = program.RefCount($"{tag.Name}.");
+                refs = program.RefCount($"{tag.Name}.");
                 tag.AOICalls += calls;
-                //tag.References += refs - calls;
+                tag.References += refs;
 
                 // record the io points found.
                 if (calls != 0) tag.IOs.AddRange(program.GetIO($"{tag.DataType}({tag.Name}"));
@@ -407,6 +407,10 @@ public class Controller
                         ((DOData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
                         break;
 
+                    case "AOData":
+                        ((AOData)tag).CV_Count += program.RefCount($"{tag.Name}.CV");
+                        ((AOData)tag).Raw_Count += program.RefCount($"{tag.Name}.Raw");
+                        break;
 
                     default:
                         //LogHelper.DebugPrint($"WARNING: UpdateCounts: No code to counts for datatype {tag.DataType} and tag {tag.Name}.");

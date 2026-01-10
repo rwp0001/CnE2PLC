@@ -89,5 +89,11 @@ public enum PortTypes
     None
 }
 
+public enum TaskTypes
+{
+    CONTINUOUS,
+    PERIODIC,
+    EVENT
+}
 
 #endregion

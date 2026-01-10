@@ -10,20 +10,18 @@ public class Task
     {
         try
         {
-            int n;
-
             Name = node.GetNamedAttributeItemInnerText("Name");
-            Type = node.GetNamedAttributeItemInnerText("Type");
-            Description = node.GetNamedAttributeItemInnerText("Description");
+            Type = Enum.Parse<TaskTypes>(node.GetNamedAttributeItemInnerText("Type"));
+            
+            var descNode = node.SelectSingleNode("Description");
+            Description = descNode?.InnerText ?? string.Empty;
 
-            int.TryParse(node.GetNamedAttributeItemInnerText("Rate"), out n);
-            Rate = n;
+            Rate = node.GetNamedAttributeItemInnerTextAsInt("Rate");
+            Priority = node.GetNamedAttributeItemInnerTextAsInt("Priority") ?? 0;
+            Watchdog = node.GetNamedAttributeItemInnerTextAsInt("Watchdog") ?? 0;
 
-            int.TryParse(node.GetNamedAttributeItemInnerText("Priority"), out n);
-            Priority = n;
-
-            int.TryParse(node.GetNamedAttributeItemInnerText("Watchdog"), out n);
-            Watchdog = n;
+            DisableUpdateOutputs = node.GetNamedAttributeItemInnerTextAsBool("DisableUpdateOutputs");
+            InhibitTask = node.GetNamedAttributeItemInnerTextAsBool("InhibitTask") ?? false;
 
             // get all the program names
             XmlNode sched = node.SelectSingleNode("ScheduledPrograms", XMLHelper.CreateGenericXmlNode());
@@ -42,16 +40,36 @@ public class Task
         }
     }
 
-    public string? Name { get; set; }
-    public string? Type { get; set; }
+    public string Name { get; set; }
+    public TaskTypes Type { get; set; }
     public int? Rate { get; set; }
-    public int? Priority { get; set; }
-    public int? Watchdog { get; set; }
+    public int Priority { get; set; }
+    public int Watchdog { get; set; }
     public bool? DisableUpdateOutputs { get; set; }
-    public bool? InhibitTask { get; set; }
+    public bool InhibitTask { get; set; }
     public string? Description { get; set; }
     public List<string> ScheduledPrograms { get; set; } = new();
 
     public override string ToString() { return $"{Name} {Description} Scheduled Programs: {ScheduledPrograms.Count}"; }
 
+}
+
+public class EventInfo {     
+    public EventInfo() { }
+    public EventInfo(XmlNode node)
+    {
+        try
+        {
+            EventTrigger = node.GetNamedAttributeItemInnerText("EventTrigger");
+            EnableTimeout = node.GetNamedAttributeItemInnerTextAsBool("EnableTimeout") ?? false;
+            LogHelper.DebugPrint($"INFO: Created event info: {ToString()}");
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"ERROR: EventInfo: Import node {node.Name} failed with {ex.Message}");
+        }
+    }
+    public string EventTrigger { get; set; } = string.Empty;
+    public bool EnableTimeout { get; set; } = false;
+    public override string ToString() { return $"{EventTrigger}"; }
 }
