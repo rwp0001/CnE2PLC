@@ -35,19 +35,19 @@ public abstract class PLCTag
             switch (node.GetNamedAttributeItemInnerText("ExternalAccess"))
             {
                 case "Read/Write":
-                    ExternalAccess = TagAccess.ReadWrite;
+                    ExternalAccess = Accesses.ReadWrite;
                     break;
 
                 case "Read Only":
-                    ExternalAccess = TagAccess.ReadOnly;
+                    ExternalAccess = Accesses.ReadOnly;
                     break;
 
                 case "None":
-                    ExternalAccess = TagAccess.None;
+                    ExternalAccess = Accesses.None;
                     break;
             }
 
-            Radix = node.GetNamedAttributeItemInnerText("Radix").ParseEnum<TagRadix>();
+            Radix = node.GetNamedAttributeItemInnerText("Radix").ParseEnum<Radixes>();
             
             GetDimensions(node.GetNamedAttributeItemInnerText("Dimensions"));
             Description = node.GetChildNodeInnerText("Description", true); // Tag Comments
@@ -151,11 +151,11 @@ public abstract class PLCTag
     /// </summary>
     public TagTypes? TagType { get; set; }
 
-    public TagUsages? Usage { get; set; } 
+    public Usages? Usage { get; set; } 
 
-    public TagRadix? Radix { get; set; }
+    public Radixes? Radix { get; set; }
 
-    public TagAccess? ExternalAccess { get; set; }
+    public Accesses? ExternalAccess { get; set; }
 
     public TagClasses? TagClass { get; set; }
 
@@ -434,73 +434,126 @@ public abstract class PLCTag
     }
 
 
+    private static int CompareTAGS(PLCTag? first, PLCTag? second)
+    {
+        if (first != null && second != null)
+        {
+            int r;
+            if (first.GetType() != typeof(PLCTag) & second.GetType() != typeof(PLCTag))
+            {
+                XTO_AOI t1 = (XTO_AOI)first;
+                XTO_AOI t2 = (XTO_AOI)second;
+                // Check EquipID first
+                r = t1.EquipNum.CompareTo(t2.EquipNum);
+                if (r != 0) return r;
+            }
+
+            // next check the scope
+            r = first.Path.CompareTo(second.Path);
+            if (r != 0) return r;
+
+            // check the name
+            return first.Name.CompareTo(second.Name);
+        }
+
+        if (first == null && second == null)
+        {
+            // We can't compare any properties, so they are essentially equal.
+            return 0;
+        }
+
+        if (first != null)
+        {
+            // Only the first instance is not null, so prefer that.
+            return -1;
+        }
+
+        // Only the second instance is not null, so prefer that.
+        return 1;
+    }
+
+    static public PLCTag CreateTag(XmlNode node)
+    {
+        string Name, TagType, DataType;
+        Name = string.Empty;
+        DataType = string.Empty;
+        TagType = string.Empty;
+        //int Dimensions, i;
+
+        if (node.Attributes?.Count != 0)
+        {
+            string it = String.Empty;
+            it = node.GetNamedAttributeItemInnerText("Name");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            Name = it;
+
+            it = node.GetNamedAttributeItemInnerText("TagType");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            TagType = it;
+
+            it = node.GetNamedAttributeItemInnerText("DataType");
+            if (it.Length == 0) return null; // can't make a tag, abort
+            DataType = it;
+
+            // handle differrent lenght strings
+            if (DataType.ToLower().Contains("string")) DataType = "String";
+
+            if (TagType == "Alias") DataType = TagType;
+
+            //Dimensions = node.GetNamedAttributeItemInnerTextAsInt("Dimensions");
+
+            Name += node.GetNamedAttributeItemInnerText("Index");
+        }
+
+        switch (DataType)
+        {
+
+            // Base tags
+            //case "BOOL": return new PLC_Bool(node);
+            //case "REAL": return new PLC_Real(node);
+            //case "SINT": return new PLC_Int(node);
+            //case "INT": return new PLC_Int(node);
+            //case "DINT": return new PLC_Int(node);
+            //case "String": return new ABString(node);
+
+            // Basic IO AIO
+            case "AIData": return new AIData(node);
+            case "AOData": return new AOData(node);
+            case "DIData": return new DIData(node);
+            case "DOData": return new DOData(node);
+
+            // FIMS
+            case "AIData_FIMS": return new AIData(node);
+            case "DIData_FIMS": return new DIData(node);
+
+            // Valves
+            case "TwoPositionValveV2": return new TwoPositionValveV2(node);
+            case "TwoPositionValve": return new TwoPositionValve(node);
+            case "ValveAnalog": return new ValveAnalog(node);
+
+            // Motors and Pumps
+            case "Motor_VFD": return new Motor_VFD(node);
+            case "PumpData": return new PumpData(node);
+            case "PumpVData": return new PumpVData(node);
+
+            // Interlocks
+            case "Intlk_8": return new Intlk_8(node);
+            case "Intlk_16": return new Intlk_16(node);
+            case "Intlk_64V3": return new Intlk_64V3(node);
+            case "Intlk_64V2": return new Intlk_64V2(node);
+            case "Intlk_64": return new Intlk_64(node);
+            /*    
+            case "IntlkESD": return new IntlkESD(node);
+             */
+
+            // TankData
+            case "TankData": return new TankData(node);
+
+            default: return null;
+        }
+    }
+
 
 
 }
 
-#region Enums
-
-/// <summary>
-/// How is a tag used.
-/// </summary>
-public enum TagUsages
-{
-    Local,
-    Input,
-    Output,
-    InOut,
-    Public
-}
-
-/// <summary>
-/// Types of tags.
-/// </summary>
-public enum TagTypes
-{
-    Base,
-    Alias,
-    Produced,
-    Consumed
-}
-
-/// <summary>
-/// How to display the data.
-/// </summary>
-public enum TagRadix
-{
-    Decimal,
-    Float,
-    Hex,
-    ASCII,
-    Octal,
-    Exponential,
-    DateTime,
-    DateTimeNS
-}
-
-/// <summary>
-/// Used to select the access allowed to the tag from external applications such as HMIs. 
-/// </summary>
-public enum TagAccess
-{
-    ReadWrite,
-    ReadOnly,
-    None
-}
-
-/// <summary>
-/// Indicates whether the tag is a Standard tag or a Safety tag.
-/// </summary>
-public enum TagClasses
-{
-    Standard,
-    Safety
-}
-
-public enum FamilyTypes
-{
-    NoFamily,
-    StringFamily
-}
-
-#endregion

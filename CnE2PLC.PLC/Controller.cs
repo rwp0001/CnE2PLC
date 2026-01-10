@@ -3,6 +3,7 @@ using libplctag;
 using libplctag.DataTypes;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Xml;
 
 
@@ -11,11 +12,12 @@ namespace CnE2PLC.PLC;
 public class Controller
 {
     public Controller() { }
+
     public Controller(XmlNode node)
     {
-        //try
-        //{
-            DateTime Start = DateTime.Now; 
+        try
+        {
+            DateTime Start = DateTime.Now;
             LogHelper.DebugPrint("INFO: Creating Controller.");
 
             if (node == null) throw new ArgumentNullException(nameof(node));
@@ -30,28 +32,46 @@ public class Controller
             ProjectCreationDate = node.GetNameAttributeItemInnerTextAsDateTime("ProjectCreationDate");
             LastModifiedDate = node.GetNameAttributeItemInnerTextAsDateTime("LastModifiedDate");
             CommPath = node.GetNamedAttributeItemInnerText("CommPath");
-            
+
+            // Collections
+            XmlNode dataTypes = node?.SelectSingleNode("DataTypes") ?? XMLHelper.CreateGenericXmlNode();
+            XmlNode modules = node?.SelectSingleNode("Modules") ?? XMLHelper.CreateGenericXmlNode();
+            XmlNode aois = node?.SelectSingleNode("AddOnInstructionDefinitions") ?? XMLHelper.CreateGenericXmlNode();
+            XmlNode tags = node?.SelectSingleNode("Tags") ?? XMLHelper.CreateGenericXmlNode();
+            XmlNode programs = node?.SelectSingleNode("Programs") ?? XMLHelper.CreateGenericXmlNode();
+            XmlNode tasks = node?.SelectSingleNode("Tasks") ?? XMLHelper.CreateGenericXmlNode();
+
+            // modules
+            foreach (XmlNode p_node in modules.ChildNodes) Modules.Add(new Module(p_node));
+
+            // AddOnInstructionDefinitions
+            foreach (XmlNode p_node in aois.ChildNodes) AddOnInstructionDefinitions.Add(new AddOnInstructionDefinition(p_node));
+
+            // data types
+            foreach (XmlNode p_node in dataTypes.ChildNodes) DataTypes.Add(new DataType(p_node));
+
             // get global tags
-            Tags = ProcessTags(node?.SelectSingleNode("Tags") ?? XMLHelper.CreateGenericXmlNode());
+            Tags = ProcessTags(tags);
             // i may change the program to add all tags later, but for now i'm only doing the aoi's i need.
 
-            // get all the task
-            XmlNode tasks = node?.SelectSingleNode("Tasks") ?? XMLHelper.CreateGenericXmlNode();
+            // get all the tasks
             foreach (XmlNode p_node in tasks.ChildNodes) Tasks.Add(new Task(p_node));
 
             // get all the programs
-            XmlNode programs = node?.SelectSingleNode("Programs") ?? XMLHelper.CreateGenericXmlNode();
             foreach (XmlNode p_node in programs.ChildNodes) Programs.Add(new Programs(p_node));
+
+
+
 
             UpdateCounts();
 
             DateTime End = DateTime.Now;
             LogHelper.DebugPrint($"Controller: {ToString()} was imported. Time {(End - Start).TotalMilliseconds} ms.");
-        //}
-        //catch (Exception ex)
-        //{
-        //    LogHelper.DebugPrint($"ERROR: Controller: Import failed with {ex.Message}");
-        //}
+        }
+        catch (Exception ex)
+        {
+            LogHelper.DebugPrint($"ERROR: Controller: Import failed with {ex.Message}");
+        }
     }
 
     #region L5X Properties
@@ -68,13 +88,27 @@ public class Controller
     public string? Description { get; set; }
 
     #endregion
-    public static string ControllerScopeName = "Controller Scope";
 
-    private List<PLCTag> Tags { get; set; } = new();
+    #region L5X Collections
+
+    public List<DataType> DataTypes { get; set; } = new();
+
+    public List<Module> Modules { get; set; } = new();
+
+    public List<AddOnInstructionDefinition> AddOnInstructionDefinitions { get; set; } = new();
+
+    public List<PLCTag> Tags { get; set; } = new();
+
+    public List<Programs> Programs { get; set; } = new();
 
     public List<Task> Tasks { get; set; } = new();
 
-    public List<Programs> Programs { get; set; } = new();
+    #endregion
+
+
+
+
+    public static string ControllerScopeName = "Controller Scope";
 
     public BindingList<PLCTag> AllTags
     {
@@ -92,7 +126,7 @@ public class Controller
         {
             BindingList<XTO_AOI> list = new();
             
-            foreach (XTO_AOI tag in Tags )
+            foreach ( XTO_AOI tag in Tags )
             {
                 if (Filter_Alarmed & !tag.Alarmed) continue;
                 if (Filter_Bypassed & !tag.Bypassed) continue;
@@ -209,43 +243,7 @@ public class Controller
         return Tags;
     }
 
-    //private static int CompareTAGS(PLCTag<object>? first, PLCTag<object>? second)
-    //{
-    //    if (first != null && second != null)
-    //    {
-    //        int r;
-    //        if (first.GetType() != typeof(PLCTag<object>) & second.GetType() != typeof(PLCTag<object>))
-    //        {
-    //            XTO_AOI t1 = (XTO_AOI<object>)first;
-    //            XTO_AOI t2 = (XTO_AOI<object>)second;
-    //            // Check EquipID first
-    //            r = t1.EquipNum.CompareTo(t2.EquipNum);
-    //            if (r != 0) return r;
-    //        }
 
-    //        // next check the scope
-    //        r = first.Path.CompareTo(second.Path);
-    //        if (r != 0) return r;
-
-    //        // check the name
-    //        return first.Name.CompareTo(second.Name);
-    //    }
-
-    //    if (first == null && second == null)
-    //    {
-    //        // We can't compare any properties, so they are essentially equal.
-    //        return 0;
-    //    }
-
-    //    if (first != null)
-    //    {
-    //        // Only the first instance is not null, so prefer that.
-    //        return -1;
-    //    }
-
-    //    // Only the second instance is not null, so prefer that.
-    //    return 1;
-    //}
 
 
 
@@ -291,11 +289,13 @@ public class Controller
         {
 
             // Base tags
-            //case "BOOL": return new PLC_Bool(node);
-            //case "REAL": return new PLC_Real(node);
-            //case "SINT": return new PLC_Int(node);
-            //case "INT": return new PLC_Int(node);
-            //case "DINT": return new PLC_Int(node);
+            //case "BOOL": return new BOOL(node);
+            //case "REAL": return new REAL(node);
+            //case "SINT": return new SINT(node);
+            //case "INT": return new INT(node);
+            //case "DINT": return new DINT(node);
+
+            // Strings
             //case "String": return new ABString(node);
 
             // Basic IO AIO
@@ -497,6 +497,7 @@ public class Controller
         return null;
     }
 
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public Tag<TagInfoPlcMapper, TagInfo[]> OnlineTags
     {
         get
@@ -534,6 +535,7 @@ public class Controller
         }
     }
 
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IEnumerable<int> UniqueUdtTypeIds
     {
         get
@@ -549,6 +551,7 @@ public class Controller
         }
     }
 
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public Dictionary<int, string> UDT_ID_Pairs
     {
         get

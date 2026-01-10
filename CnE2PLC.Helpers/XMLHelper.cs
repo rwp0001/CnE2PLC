@@ -29,14 +29,38 @@ public static class XMLHelper
         return int.TryParse(node.GetNamedAttributeItemInnerText(name), out var value) ? value : null;
     }
 
+    public static bool? GetNamedAttributeItemInnerTextAsBool(this XmlNode node, string name)
+    {
+        string s = node.GetNamedAttributeItemInnerText(name);
+        return s.ToLower() switch
+        {
+            "true" => true,
+            "false" => false,
+            _ => null,
+        };
+
+    }
+
+
     public static DateTime? GetNameAttributeItemInnerTextAsDateTime(this XmlNode node, string name)
     {
         string input = node.GetNamedAttributeItemInnerText(name);
-        var sp = input.Split(' ');
-        input = sp[1] + " " + sp[2] + ", " + sp[4] + " " + sp[3];
+
+        if(input.Contains('-'))
+        {
+            // 2015-03-05T15:24:52.183Z
+            var sp = input.Split('T');
+            var d = sp[0].Split('-');
+            input = $"{d[1]}/{d[2]}/{d[0]} {sp[1].Substring(0,8)}";
+
+        } else
+        {
+            // Sat May 11 10:43:06 2024
+            var sp = input.Split(' ');
+            input = $"{sp[1]} {sp[2]}, {sp[4]} {sp[3]}";
+        }
+
         return DateTime.TryParse(input, out DateTime dt) ? dt : null;
-        // Sat May 11 10:43:06 2024
-        
     }
 
     public static XmlNode SelectSingleNode(this XmlNode node, string name, XmlNode defaultIfNull)
