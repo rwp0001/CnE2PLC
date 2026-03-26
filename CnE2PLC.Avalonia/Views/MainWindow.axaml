@@ -1,0 +1,196 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CnE2PLC.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="CnE2PLC.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding Title}"
+        Width="1200" Height="700"
+        MinWidth="800" MinHeight="500">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+
+        <!-- Menu -->
+        <Menu DockPanel.Dock="Top" x:Name="InWindowMenu">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open L5X File..." Command="{Binding OpenL5XCommand}"/>
+                <MenuItem Header="Open _Recent" IsEnabled="{Binding RecentFiles.Count}"
+                          ItemsSource="{Binding RecentFiles}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding}"/>
+                            <Setter Property="Command"
+                                    Value="{Binding $parent[Menu].DataContext.OpenRecentFileCommand}"/>
+                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Quit" Command="{Binding QuitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_PLC">
+                <MenuItem Header="Get _UDTs" Command="{Binding GetUDTsCommand}"/>
+                <MenuItem Header="Get _Tags" Command="{Binding GetTagsCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Output">
+                <MenuItem Header="Export _Tags" Command="{Binding ExportTagsCommand}"/>
+                <MenuItem Header="_IO Report"  Command="{Binding IOReportCommand}"/>
+                <Separator/>
+                <MenuItem Header="In _Use Summary" Command="{Binding InUseSummaryCommand}"/>
+            </MenuItem>
+            <MenuItem Header="F_ilter">
+                <MenuItem Header="_In Use"
+                          IsChecked="{Binding FilterInUse}"
+                          ToggleType="CheckBox"/>
+                <MenuItem Header="_Simmed"
+                          IsChecked="{Binding FilterSimmed}"
+                          ToggleType="CheckBox"/>
+                <MenuItem Header="_Bypassed"
+                          IsChecked="{Binding FilterBypassed}"
+                          ToggleType="CheckBox"/>
+                <MenuItem Header="_Alarmed"
+                          IsChecked="{Binding FilterAlarmed}"
+                          ToggleType="CheckBox"/>
+                <MenuItem Header="_Placeholder"
+                          IsChecked="{Binding FilterPlaceholder}"
+                          ToggleType="CheckBox"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Command="{Binding ShowAboutCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Debug">
+                <MenuItem Header="_Level">
+                    <MenuItem Header="_Info"    Command="{Binding SetDebugLevelInfoCommand}"    IsChecked="{Binding DebugLevelIsInfo,    Mode=OneWay}"/>
+                    <MenuItem Header="_Warning" Command="{Binding SetDebugLevelWarningCommand}" IsChecked="{Binding DebugLevelIsWarning, Mode=OneWay}"/>
+                    <MenuItem Header="_Error"   Command="{Binding SetDebugLevelErrorCommand}"   IsChecked="{Binding DebugLevelIsError,   Mode=OneWay}"/>
+                    <MenuItem Header="_None"    Command="{Binding SetDebugLevelNoneCommand}"    IsChecked="{Binding DebugLevelIsNone,    Mode=OneWay}"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Toggle _Debug Panel" Command="{Binding ToggleDebugCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Filter toolbar -->
+        <WrapPanel DockPanel.Dock="Top" Margin="4,2" Orientation="Horizontal">
+            <TextBlock Text="Filters:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ToggleButton Content="In Use"      IsChecked="{Binding FilterInUse}"        Margin="2"/>
+            <ToggleButton Content="Simmed"      IsChecked="{Binding FilterSimmed}"       Margin="2"/>
+            <ToggleButton Content="Bypassed"    IsChecked="{Binding FilterBypassed}"     Margin="2"/>
+            <ToggleButton Content="Alarmed"     IsChecked="{Binding FilterAlarmed}"      Margin="2"/>
+            <ToggleButton Content="Placeholder" IsChecked="{Binding FilterPlaceholder}"  Margin="2"/>
+        </WrapPanel>
+
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="0,1,0,0"
+                Height="26">
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="8,0"
+                        VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding IsLoading}"
+                             Width="100" Height="14" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding TagCount}"
+                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding UdtCount}"
+                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding DeviceCount}"
+                           Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main content area -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="{Binding DebugVisible,
+                    Converter={StaticResource BoolToGridLengthConverter},
+                    ConverterParameter=200}"/>
+            </Grid.RowDefinitions>
+
+            <!-- DataGrid (tags) -->
+            <DataGrid x:CompileBindings="False"
+                      Grid.Row="0"
+                      ItemsSource="{Binding FilteredTags}"
+                      IsReadOnly="True"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      CanUserSortColumns="True"
+                      FontFamily="Courier New"
+                      FontSize="9"
+                      AutoGenerateColumns="False">
+
+                <DataGrid.Styles>
+                    <!-- FontWeight, FontStyle, and ToolTip live on the row -->
+                    <Style Selector="DataGridRow">
+                        <Setter Property="FontWeight" Value="{Binding Converter={StaticResource TagFontWeightConverter}}"/>
+                        <Setter Property="FontStyle"  Value="{Binding Converter={StaticResource TagFontStyleConverter}}"/>
+                        <Setter Property="ToolTip.Tip" Value="{Binding}"/>
+                        <Setter Property="ToolTip.ShowDelay" Value="400"/>
+                    </Style>
+                    <!-- Background and Foreground must both target DataGridCell —
+                         the Fluent theme renders a cell-level white background that sits on top of
+                         the row background, so background and foreground must match at the same level. -->
+                    <Style Selector="DataGridRow DataGridCell">
+                        <Setter Property="Background"
+                                Value="{Binding $parent[DataGridRow].DataContext,
+                                        Converter={StaticResource TagBgConverter}}"/>
+                        <Setter Property="Foreground"
+                                Value="{Binding $parent[DataGridRow].DataContext,
+                                        Converter={StaticResource TagFgConverter}}"/>
+                    </Style>
+                </DataGrid.Styles>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tag Name"        Binding="{Binding Name}"         Width="140"/>
+                    <DataGridTextColumn Header="Scope"           Binding="{Binding Path}"         Width="100"/>
+                    <DataGridTextColumn Header="Data Type"       Binding="{Binding DataType}"     Width="100"/>
+                    <DataGridTextColumn Header="AOI Calls"       Binding="{Binding AOICalls}"     Width="70"/>
+                    <DataGridTextColumn Header="Refs"            Binding="{Binding References}"   Width="50"/>
+                    <DataGridTextColumn Header="I/O"             Binding="{Binding IO}"           Width="120"/>
+                    <DataGridTextColumn Header="Description"     Binding="{Binding Description}"  Width="*"/>
+                    <DataGridTextColumn Header="Equip ID"        Binding="{Binding Cfg_EquipID}"  Width="90"/>
+                    <DataGridTextColumn Header="Equip Description" Binding="{Binding Cfg_EquipDesc}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Row="1"
+                          Height="4"
+                          HorizontalAlignment="Stretch"
+                          IsVisible="{Binding DebugVisible}"/>
+
+            <!-- Log panel -->
+            <Grid Grid.Row="2" IsVisible="{Binding DebugVisible}">
+                <TextBox Text="{Binding LogText}"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         TextWrapping="NoWrap"
+                         FontFamily="Courier New"
+                         FontSize="9"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy"      Command="{Binding $parent[TextBox].Copy}"/>
+                            <MenuItem Header="Clear Log" Click="ClearLog_Click"/>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                </TextBox>
+            </Grid>
+        </Grid>
+
+    </DockPanel>
+</Window>
+

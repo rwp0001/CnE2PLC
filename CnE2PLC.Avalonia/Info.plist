@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.cne2plc.app</string>
+    <key>CFBundleName</key>
+    <string>CnE2PLC</string>
+    <key>CFBundleDisplayName</key>
+    <string>CnE2PLC</string>
+    <key>CFBundleExecutable</key>
+    <string>CnE2PLC.Avalonia</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <!-- Declare that this app can open .L5X files -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Logix Designer Export</string>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>L5X</string>
+                <string>l5x</string>
+            </array>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.cne2plc.l5x</string>
+            </array>
+        </dict>
+    </array>
+    <!-- Declare the custom UTI for .L5X so Finder recognises the type -->
+    <key>UTImportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>com.cne2plc.l5x</string>
+            <key>UTTypeDescription</key>
+            <string>Logix Designer L5X Export</string>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.xml</string>
+            </array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>L5X</string>
+                    <string>l5x</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

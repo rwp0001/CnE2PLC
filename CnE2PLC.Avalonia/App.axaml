@@ -1,0 +1,40 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CnE2PLC.Avalonia.App"
+             xmlns:local="using:CnE2PLC.Avalonia"
+             xmlns:vm="using:CnE2PLC.Avalonia.ViewModels"
+             xmlns:converters="using:CnE2PLC.Avalonia.Converters"
+             Name="CnE2PLC"
+             RequestedThemeVariant="Default">
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <converters:TagBgConverter           x:Key="TagBgConverter"/>
+            <converters:TagFgConverter           x:Key="TagFgConverter"/>
+            <converters:TagFontWeightConverter   x:Key="TagFontWeightConverter"/>
+            <converters:TagFontStyleConverter    x:Key="TagFontStyleConverter"/>
+            <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <!-- macOS app menu (the "CnE2PLC" dropdown, first item in the system menu bar).
+         Defined in AXAML so it is present before the native exporter fires.
+         Click handlers are wired in App.axaml.cs after the ViewModel is ready. -->
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About CnE2PLC"/>
+            <NativeMenuItemSeparator/>
+            <NativeMenuItem Header="Quit CnE2PLC"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+</Application>

@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- macOS bundle metadata (used when packaging as a .app) -->
+    <CFBundleIdentifier>com.cne2plc.app</CFBundleIdentifier>
+    <CFBundleName>CnE2PLC</CFBundleName>
+    <CFBundleDisplayName>CnE2PLC</CFBundleDisplayName>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+    <!-- Include Info.plist for macOS app bundle packaging -->
+    <None Include="Info.plist" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- After publish on macOS, assemble the .app bundle in-place next to the publish output -->
+  <Target Name="CreateMacOSAppBundle" AfterTargets="Publish"
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) AND '$(RuntimeIdentifier)' != '' AND $(RuntimeIdentifier.StartsWith('osx'))">
+    <PropertyGroup>
+      <_AppName>CnE2PLC</_AppName>
+      <_BundleDir>$(PublishDir)..\$(_AppName).app\</_BundleDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_BundleDir)Contents\MacOS" />
+    <MakeDir Directories="$(_BundleDir)Contents\Resources" />
+
+    <!-- Copy published output to Contents/MacOS/ -->
+    <ItemGroup>
+      <_PublishedFiles Include="$(PublishDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PublishedFiles)"
+          DestinationFiles="@(_PublishedFiles->'$(_BundleDir)Contents\MacOS\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Place Info.plist -->
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\Info.plist"
+          DestinationFiles="$(_BundleDir)Contents\Info.plist" />
+
+    <Exec Command="chmod +x &quot;$(_BundleDir)Contents/MacOS/CnE2PLC.Avalonia&quot;" />
+
+    <Message Text="macOS app bundle created: $(_BundleDir)" Importance="High" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.12" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CnE2PLC.PLC\CnE2PLC.PLC.csproj" />
+    <ProjectReference Include="..\CnE2PLC.Helpers\CnE2PLC.Helpers.csproj" />
+    <ProjectReference Include="..\CnE2PLC.Reporting\CnE2PLC.Reporting.csproj" />
+  </ItemGroup>
+</Project>

@@ -46,6 +46,54 @@ on:
 
 jobs:
 
+  build-avalonia:
+    name: Build Avalonia (${{ matrix.os }})
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build Avalonia project
+      run: dotnet build CnE2PLC.Avalonia/CnE2PLC.Avalonia.csproj -c Release
+
+  publish-macos:
+    name: Publish macOS App (${{ matrix.rid }})
+    runs-on: macos-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: build-avalonia
+    strategy:
+      matrix:
+        rid: [osx-arm64, osx-x64]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Publish app bundle
+      run: bash scripts/publish-macos.sh ${{ matrix.rid }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: CnE2PLC-${{ matrix.rid }}
+        path: artifacts/${{ matrix.rid }}/CnE2PLC-${{ matrix.rid }}.zip
+
   build:
 
     strategy:
