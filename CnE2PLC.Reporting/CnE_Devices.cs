@@ -274,7 +274,7 @@ namespace CnE2PLC
             }
             set
             {
-                this.SCADA_AlarmValue = value;
+                this.Callout_CodeValue = value;
                 NotifyPropertyChanged();
             }
         }
