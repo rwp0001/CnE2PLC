@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 
 namespace CnE2PLC
 {
@@ -11,7 +13,7 @@ namespace CnE2PLC
             if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void AddDefaultColumns(){
+        private static void AddDefaultColumns(){
             Columns = new Dictionary<int, string>
             {
                 { 1, "Equipment" },
@@ -36,29 +38,6 @@ namespace CnE2PLC
         {
             if (Columns == null) AddDefaultColumns();
         }
-
-        //public CnE_Device(Microsoft.Office.Interop.Excel.Range row)
-        //{
-        //    try
-        //    {
-        //        if (Columns == null) AddDefaultColumns();
-
-        //        foreach (int i in Columns.Keys)
-        //        {
-        //            if (row.Cells[1, i].Value != null)
-        //            {
-        //                // Use reflection to set
-        //                var prop = this.GetType().GetProperty(Columns[i]);
-        //                prop.SetValue(this, row.Cells[1, i].Value.ToString());
-        //            }
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw new Exception("Failed to create object.");
-        //    }
-
-        //}
 
         #region PrivateData
         private string EquipmentValue = String.Empty;
@@ -311,76 +290,67 @@ namespace CnE2PLC
         {
             Devices = new BindingList<CnE_Device>();
 
-            //Excel.Application? excelApp = null;
-            //Devices = new BindingList<CnE_Device>();
+            if (Columns == null) AddDefaultColumns();
+            IDictionary<int, string> columns = Columns!;
 
-            //try
-            //{
-            //    excelApp = new Excel.Application();
-            //    excelApp.Visible = !Properties.Settings.Default.HideExcel;
+            using FileStream input = new FileStream(FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using XSSFWorkbook workbook = new XSSFWorkbook(input);
 
-            //    Excel.Workbook? CnE_Workbook = null;
-            //    Excel.Worksheet? CnE_Sheet = null;
+            DataFormatter formatter = new DataFormatter();
+            IFormulaEvaluator evaluator = workbook.GetCreationHelper().CreateFormulaEvaluator();
 
-            //    // open the file as readonly.
-            //    excelApp.Workbooks.Open(FileName, false, true);
-            //    CnE_Workbook = excelApp.ActiveWorkbook;
+            for (int sheetIndex = 0; sheetIndex < workbook.NumberOfSheets; sheetIndex++)
+            {
+                ISheet sheet = workbook.GetSheetAt(sheetIndex);
+                if (sheet == null || sheet.LastRowNum < 15)
+                {
+                    continue;
+                }
 
+                for (int rowIndex = 15; rowIndex <= sheet.LastRowNum; rowIndex++)
+                {
+                    IRow? row = sheet.GetRow(rowIndex);
+                    if (row == null)
+                    {
+                        continue;
+                    }
 
+                    CnE_Device device = new CnE_Device();
 
-            //    // select the sheet
-            //    foreach (Excel.Worksheet ws in CnE_Workbook.Worksheets)
-            //    {
-            //        try
-            //        {
-            //            // Find the last real row
-            //            int lastUsedRow = ws.Cells.Find("*", System.Reflection.Missing.Value,
-            //                                           System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-            //                                           Excel.XlSearchOrder.xlByRows, Excel.XlSearchDirection.xlPrevious,
-            //                                           false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Row;
+                    foreach (KeyValuePair<int, string> column in columns)
+                    {
+                        string value = GetCellText(row, column.Key, formatter, evaluator);
+                        if (string.IsNullOrWhiteSpace(value))
+                        {
+                            continue;
+                        }
 
-            //            // Find the last real column
-            //            int lastUsedColumn = ws.Cells.Find("*", System.Reflection.Missing.Value,
-            //                                           System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-            //                                           Excel.XlSearchOrder.xlByColumns, Excel.XlSearchDirection.xlPrevious,
-            //                                           false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Column;
+                        var prop = device.GetType().GetProperty(column.Value);
+                        if (prop != null && prop.CanWrite)
+                        {
+                            prop.SetValue(device, value);
+                        }
+                    }
 
-            //            //search for the correct sheet
-            //            //if (lastUsedColumn != 23) continue;
-            //            if (lastUsedRow < 15) continue;
-            //            //if (ws.Cells[1, 1].Value.ToString() != "COLOR LEGEND") continue;
-            //            //if (ws.Cells[1, 2].Value.ToString() != "CALLOUT CODES") continue;
-            //            //if (ws.Cells[1, 11].Value.ToString() != "C&E ACRONYM LEGEND") continue;
-            //            Excel.Range range = ws.Cells;
+                    if (string.IsNullOrWhiteSpace(device.PLC_Tag_Name))
+                    {
+                        continue;
+                    }
 
-            //            int count = 0;
+                    Devices.Add(device);
+                }
+            }
+        }
 
-            //            for (int i = 16; i < lastUsedRow; i++)
-            //            {
-            //                Excel.Range row = range.Rows[i];
-            //                CnE_Device ThisRow = new CnE_Device(row);
-            //                if (ThisRow.PLC_Tag_Name == string.Empty) continue;
-            //                Devices.Add(ThisRow);
-            //                count++;
-            //                Application.DoEvents();
-            //            }
+        private static string GetCellText(IRow row, int oneBasedColumn, DataFormatter formatter, IFormulaEvaluator evaluator)
+        {
+            ICell? cell = row.GetCell(oneBasedColumn - 1);
+            if (cell == null)
+            {
+                return string.Empty;
+            }
 
-            //        }
-            //        catch (Exception e)
-            //        {
-
-            //        }
-
-            //    }
-
-            //    excelApp.Quit();
-
-            //}
-            //catch (Exception e)
-            //{
-            //    if (excelApp != null) excelApp.Quit();
-            //}
-
+            return formatter.FormatCellValue(cell, evaluator).Trim();
         }
 
         static public IDictionary<int, string>? Columns;
