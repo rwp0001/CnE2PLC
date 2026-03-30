@@ -28,7 +28,13 @@ public static class CnE_Report
             DateTime StartTime = DateTime.Now;
             LogHelper.DebugPrint($"CnE Report: Tag {plc.Name} Starting...");
 
-            XSSFWorkbook CnE_Workbook = new XSSFWorkbook("CnE_Template.xlsx");
+            string templatePath = GetTemplateFilePath();
+            if (!System.IO.File.Exists(templatePath))
+            {
+                throw new FileNotFoundException($"Template file not found at: {templatePath}");
+            }
+
+            XSSFWorkbook CnE_Workbook = new XSSFWorkbook(templatePath);
             CnE_Workbook.SetSheetName(0, plc.Name);
 
             ISheet CnE_Sheet = CnE_Workbook.GetSheetAt(0);
@@ -144,8 +150,33 @@ public static class CnE_Report
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"CnE Report: Create Report Exception: {ex.Message}");
-            throw new ApplicationException("CnE Report failed to failed to generate.");
+            LogHelper.DebugPrint($"CnE Report: Create Report Exception: {ex.Message}\n{ex.StackTrace}");
+            throw new ApplicationException($"CnE Report failed to generate: {ex.Message}", ex);
+        }
+
+        static string GetTemplateFilePath()
+        {
+            // Try multiple locations for the template file
+            string[] potentialPaths = new[]
+            {
+                "CnE_Template.xlsx",
+                Path.Combine(AppContext.BaseDirectory, "CnE_Template.xlsx"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CnE_Template.xlsx"),
+                Path.Combine(System.IO.Path.GetDirectoryName(typeof(CnE_Report).Assembly.Location) ?? "", "CnE_Template.xlsx")
+            };
+
+            foreach (var path in potentialPaths)
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    LogHelper.DebugPrint($"CnE Report: Found template at: {path}");
+                    return Path.GetFullPath(path);
+                }
+            }
+
+            // If not found in any location, return the first option with full debugging info
+            LogHelper.DebugPrint($"CnE Report: Template not found. Tried paths:\n{string.Join("\n", potentialPaths)}");
+            return potentialPaths[0];
         }
 
         void FixConditionalRowFormating(ISheet ws)
