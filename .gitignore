@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 # macOS publish artifacts
 artifacts/
+*.DS_Store

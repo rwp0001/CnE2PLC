@@ -28,7 +28,13 @@ public static class CnE_Report
             DateTime StartTime = DateTime.Now;
             LogHelper.DebugPrint($"CnE Report: Tag {plc.Name} Starting...");
 
-            XSSFWorkbook CnE_Workbook = new XSSFWorkbook("CnE_Template.xlsx");
+            string templatePath = GetTemplateFilePath();
+            if (!System.IO.File.Exists(templatePath))
+            {
+                throw new FileNotFoundException($"Template file not found at: {templatePath}");
+            }
+
+            XSSFWorkbook CnE_Workbook = new XSSFWorkbook(templatePath);
             CnE_Workbook.SetSheetName(0, plc.Name);
 
             ISheet CnE_Sheet = CnE_Workbook.GetSheetAt(0);
@@ -144,8 +150,33 @@ public static class CnE_Report
         }
         catch (Exception ex)
         {
-            LogHelper.DebugPrint($"CnE Report: Create Report Exception: {ex.Message}");
-            throw new ApplicationException("CnE Report failed to failed to generate.");
+            LogHelper.DebugPrint($"CnE Report: Create Report Exception: {ex.Message}\n{ex.StackTrace}");
+            throw new ApplicationException($"CnE Report failed to generate: {ex.Message}", ex);
+        }
+
+        static string GetTemplateFilePath()
+        {
+            // Try multiple locations for the template file
+            string[] potentialPaths = new[]
+            {
+                "CnE_Template.xlsx",
+                Path.Combine(AppContext.BaseDirectory, "CnE_Template.xlsx"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CnE_Template.xlsx"),
+                Path.Combine(System.IO.Path.GetDirectoryName(typeof(CnE_Report).Assembly.Location) ?? "", "CnE_Template.xlsx")
+            };
+
+            foreach (var path in potentialPaths)
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    LogHelper.DebugPrint($"CnE Report: Found template at: {path}");
+                    return Path.GetFullPath(path);
+                }
+            }
+
+            // If not found in any location, return the first option with full debugging info
+            LogHelper.DebugPrint($"CnE Report: Template not found. Tried paths:\n{string.Join("\n", potentialPaths)}");
+            return potentialPaths[0];
         }
 
         void FixConditionalRowFormating(ISheet ws)
@@ -236,195 +267,8 @@ public static class CnE_Report
 
     public static void UpdateReport(Controller plc, string FileName)
     {
-        //Excel.Application? excelApp = null;
-
-        //try
-        //{
-        //    excelApp = new Excel.Application();
-        //    excelApp.Visible = !Properties.Settings.Default.HideExcel;
-
-        //    Excel.Workbook? CnE_Workbook = null;
-        //    Excel.Worksheet? CnE_Sheet = null;
-
-        //    // open the file as readonly.
-        //    excelApp.Workbooks.Open(FileName, false, true);
-        //    CnE_Workbook = excelApp.ActiveWorkbook;
-
-        //    // select the sheet
-        //    foreach (Excel.Worksheet ws in CnE_Workbook.Worksheets)
-        //    {
-        //        try
-        //        {
-        //            // Find the last real row
-        //            int lastUsedRow = ws.Cells.Find("*", System.Reflection.Missing.Value,
-        //                                           System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-        //                                           Excel.XlSearchOrder.xlByRows, Excel.XlSearchDirection.xlPrevious,
-        //                                           false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Row;
-
-        //            // Find the last real column
-        //            int lastUsedColumn = ws.Cells.Find("*", System.Reflection.Missing.Value,
-        //                                           System.Reflection.Missing.Value, System.Reflection.Missing.Value,
-        //                                           Excel.XlSearchOrder.xlByColumns, Excel.XlSearchDirection.xlPrevious,
-        //                                           false, System.Reflection.Missing.Value, System.Reflection.Missing.Value).Column;
-
-        //            //search for the correct sheet
-        //            //if (lastUsedColumn != 23) continue;
-        //            //if (lastUsedRow < 15) continue;
-        //            //if (ws.Cells[1, 1].Value.ToString() != "COLOR LEGEND") continue;
-        //            //if (ws.Cells[1, 2].Value.ToString() != "CALLOUT CODES") continue;
-        //            //if (ws.Cells[1, 11].Value.ToString() != "C&E ACRONYM LEGEND") continue;
-        //            Excel.Range range = ws.Cells;
-
-        //            int count = 0;
-
-        //            for (int i = 16; i < lastUsedRow; i++)
-        //            {
-
-        //                // tage name is 3
-        //                // full tagname is 4
-        //                // IO Details is 5
-        //                // setpoint is 7
-        //                // alarm on time is 8
-        //                // alarm off time is 10
-        //                // Auto Ack is 15
-        //                // Status / Not in use is 6
-
-        //                Excel.Range row = range.Rows[i];
-        //                row.Cells[1, 4].Activate();
-
-        //                // check for tag name
-        //                if (row.Cells[1, 4].Value == null) continue;
-
-        //                // get the tag name
-        //                string BaseTag = row.Cells[1, 4].Value;
-        //                string Element = string.Empty;
-        //                if (BaseTag.Contains(".")) Element = BaseTag.Split('.')[1];
-        //                BaseTag = BaseTag.Split('.')[0];
-
-        //                var Tag = Tags.SingleOrDefault(tag => tag.Name == BaseTag);
-        //                if (Tag == null) continue;
-
-        //                switch (Tag.DataType.ToLower())
-        //                {
-        //                    case "didata":
-        //                        if (Element == string.Empty) continue;
-        //                        DIData DiTag = (DIData)Tag;
-
-
-
-        //                        row.Cells[1, 6].Value = "Not In Use";
-        //                        row.Cells[1, 15].Value = "";
-
-        //                        switch (Element.ToLower())
-        //                        {
-        //                            case "valve":
-        //                                //if (DiTag.InUse == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                DiTag.ToValueRow(row);
-        //                                break;
-
-        //                            case "alarm":
-        //                                //if (DiTag.InUse == true) row.Cells[1, 6].Value = "Soft IO";
-        //                                //row.Cells[1, 9].Value = string.Format("{0} Sec.", DiTag.Cfg_AlmOnTmr);
-        //                                //row.Cells[1, 10].Value = string.Format("{0} Sec.", DiTag.Cfg_AlmOffTmr);
-        //                                //if (DiTag.AlmAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                DiTag.ToAlarmRow(row);
-        //                                break;
-
-        //                            default:
-        //                                break;
-        //                        }
-
-
-        //                        break;
-
-        //                    case "aidata":
-        //                        if (Element == string.Empty) continue;
-        //                        AIData AiTag = (AIData)Tag;
-
-        //                        row.Cells[1, 6].Value = "Not In Use";
-        //                        row.Cells[1, 15].Value = "";
-
-        //                        switch (Element.ToLower())
-        //                        {
-        //                            case "pv":
-        //                                if (AiTag.InUse == true) { row.Cells[1, 6].Value = "Standard IO"; }
-        //                                row.Cells[1, 5].Value = "Analog Input";
-        //                                break;
-
-        //                            case "hihialarm":
-        //                                if (AiTag.HiHiEnable == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                row.Cells[1, 5].Value = "Soft IO";
-        //                                row.Cells[1, 7].Value = AiTag.HiHiSP;
-        //                                row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_HiHiOnTmr);
-        //                                row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_HiHiOffTmr);
-        //                                if (AiTag.HiHiAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                break;
-
-        //                            case "hialarm":
-        //                                if (AiTag.HiEnable == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                row.Cells[1, 5].Value = "Soft IO";
-        //                                row.Cells[1, 7].Value = AiTag.HiSP;
-        //                                row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_HiOnTmr);
-        //                                row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_HiOffTmr);
-        //                                if (AiTag.HiAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                break;
-
-        //                            case "loalarm":
-        //                                if (AiTag.LoEnable == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                row.Cells[1, 5].Value = "Soft IO";
-        //                                row.Cells[1, 7].Value = AiTag.LoSP;
-        //                                row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_LoOnTmr);
-        //                                row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_LoOffTmr);
-        //                                if (AiTag.LoAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                break;
-
-        //                            case "loloalarm":
-        //                                if (AiTag.LoLoEnable == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                row.Cells[1, 5].Value = "Soft IO";
-        //                                row.Cells[1, 7].Value = AiTag.LoLoSP;
-        //                                row.Cells[1, 9].Value = string.Format("{0} Sec.", AiTag.Cfg_LoLoOnTmr);
-        //                                row.Cells[1, 10].Value = string.Format("{0} Sec.", AiTag.Cfg_LoLoOffTmr);
-        //                                if (AiTag.LoLoAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                break;
-
-        //                            case "badpvalarm":
-        //                                if (AiTag.BadPVEnable == true) row.Cells[1, 6].Value = "Standard IO";
-        //                                row.Cells[1, 5].Value = "Soft IO";
-        //                                if (AiTag.BadPVAutoAck == true) row.Cells[1, 15].Value = "Y";
-        //                                break;
-
-
-
-        //                            default:
-        //                                break;
-        //                        }
-
-        //                        break;
-
-        //                    default:
-        //                        break;
-        //                }
-
-
-        //                count++;
-        //                //Application.DoEvents();
-        //            }
-
-        //        }
-        //        catch (Exception e)
-        //        {
-
-        //        }
-
-        //    }
-
-        //    //excelApp.Quit();
-
-        //}
-        //catch (Exception e)
-        //{
-
-        //}
+        using FileStream output = new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.Read);
+        CreateReport(plc, output);
     }
 
 
@@ -1307,7 +1151,7 @@ public static class CnE_Report
         row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue("");
         row.GetCell(i++).SetCellValue("");
-
+        
         }
 
     public static void ToFailedToOpenRow(TwoPositionValveV2 tag, IRow row, IWorkbook WB)
